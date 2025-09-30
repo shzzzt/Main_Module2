@@ -1,0 +1,89 @@
+{
+    "classes": [
+        {
+            "class_id": 1,
+            "code": "ITSD81",
+            "title": "Desktop Application Development",
+            "section": "BSIT 3C",
+            "instructor": "Neil John Jomaya",
+            "instructor_id": "faculty_001",
+            "schedule": "MONDAY - 1:00 - 4:00 PM",
+            "room": "Room 1",
+            "semester": "1st Semester",
+            "academic_year": "2025-2026",
+            "status": "active",
+            "created_at": "2025-08-01",
+            "students": [
+                "student_001",
+                "student_002",
+                "student_003"
+            ],
+            "recent_posts": "Desktop Project Guidelines posted"
+        },
+        {
+            "class_id": 2,
+            "code": "IT59",
+            "title": "Data Structures and Algorithms",
+            "section": "BSIT 3A",
+            "instructor": "John Doe",
+            "instructor_id": "faculty_002",
+            "schedule": "TUESDAY - 9:00 - 12:00 PM",
+            "room": "Room 2",
+            "semester": "1st Semester",
+            "academic_year": "2025-2026",
+            "status": "active",
+            "created_at": "2025-08-01",
+            "students": [
+                "student_004",
+                "student_005"
+            ],
+            "recent_posts": "No recent posts"
+        },
+        {
+            "class_id": 3,
+            "code": "IT95",
+            "title": "Capstone Project",
+            "section": "BSIT 3A",
+            "instructor": "Jinky",
+            "instructor_id": "faculty_003",
+            "schedule": "WEDNESDAY - 2:00 - 5:00 PM",
+            "room": "Room 3",
+            "semester": "1st Semester",
+            "academic_year": "2025-2026",
+            "status": "active",
+            "created_at": "2025-08-01",
+            "students": [
+                "student_006",
+                "student_007",
+                "student_008"
+            ],
+            "recent_posts": "Project proposal due next week"
+        }
+    ],
+    "topics": [
+        {
+            "topic_id": 1,
+            "class_id": 1,
+            "title": "Lecture: Topic 1",
+            "description": "Introduction to Desktop Application Development",
+            "created_at": "2025-08-15",
+            "order": 1
+        },
+        {
+            "topic_id": 2,
+            "class_id": 1,
+            "title": "Lecture: Topic 2",
+            "description": "Advanced Concepts in Desktop Development",
+            "created_at": "2025-08-25",
+            "order": 2
+        },
+        {
+            "topic_id": 3,
+            "class_id": 1,
+            "created_at": "2025-09-23",
+            "order": 3,
+            "title": "New Topic",
+            "description": "Topic description"
+        }
+    ]
+}
