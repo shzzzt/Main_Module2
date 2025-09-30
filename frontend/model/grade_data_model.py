@@ -21,6 +21,13 @@ class GradeDataModel(QObject):
             'exams': ['Prelim Exam', 'Final Exam']
         }
         
+        # Max scores for each component type
+        self.component_max_scores = {
+            'performance_tasks': 50,
+            'quizzes': 40,
+            'exams': 100
+        }
+        
         # Rubric configuration
         self.rubric_config = {
             'midterm': {
@@ -135,6 +142,16 @@ class GradeDataModel(QObject):
         term_key = 'midterm' if term == 'midterm' else 'final'
         comp_name_lower = component_name.lower()
         return self.rubric_config[term_key]['components'].get(comp_name_lower, 0)
+
+    def get_component_items_with_scores(self, type_key):
+        """
+        Get list of component items with their max scores.
+        Returns list of dicts with 'name' and 'max_score' keys.
+        """
+        items = self.components.get(type_key, [])
+        max_score = self.component_max_scores.get(type_key, 40)
+        
+        return [{'name': item, 'max_score': max_score} for item in items]
 
     def update_rubric_config(self, rubric_data):
         """Update rubric configuration from grading system dialog"""
