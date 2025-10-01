@@ -1,23 +1,54 @@
-# view_content_ui.py
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
 class Ui_viewContent(object):
     def setupUi(self, viewContent, content_type="material"):
         viewContent.setObjectName("viewContent")
-        viewContent.resize(1030, 634)
-        viewContent.setMinimumSize(QtCore.QSize(940, 530))
+        viewContent.resize(747, 452)
+        viewContent.setMinimumSize(QtCore.QSize(200, 300))
         viewContent.setStyleSheet("QWidget { background-color: white; font-family: \"Poppins\", Arial, sans-serif; }")
         
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(viewContent)
+        # Top-level layout for viewContent
+        main_layout = QtWidgets.QVBoxLayout(viewContent)
+        main_layout.setObjectName("main_layout")
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create QScrollArea
+        scroll_area = QtWidgets.QScrollArea(parent=viewContent)
+        scroll_area.setObjectName("scrollArea")
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setStyleSheet("""
+            QScrollArea { border: none; background-color: white; }
+            QScrollBar:vertical {
+                border: none;
+                background: #f8f9fa;
+                width: 10px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #084924;
+                border-radius: 5px;
+            }
+        """)
+        
+        # Create content widget for scroll area
+        scroll_content = QtWidgets.QWidget()
+        scroll_content.setObjectName("scrollAreaWidgetContents")
+        scroll_content.setStyleSheet("QWidget { background-color: white; }")
+        
+        # Move original verticalLayout_2 to scroll content
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(scroll_content)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(10, 10, 10, 10)
+        self.verticalLayout_2.setSpacing(8)
         
         # Header
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setObjectName("headerLayout")
-        self.backButton = QtWidgets.QPushButton(parent=viewContent)
+        self.backButton = QtWidgets.QPushButton(parent=scroll_content)
         self.backButton.setStyleSheet("border: none; background: transparent; padding: 5px;")
         self.backButton.setText("")
         icon = QtGui.QIcon()
@@ -29,18 +60,19 @@ class Ui_viewContent(object):
         
         self.titleMetaLayout = QtWidgets.QVBoxLayout()
         self.titleMetaLayout.setObjectName("titleMetaLayout")
-        self.title_label = QtWidgets.QLabel(parent=viewContent)
+        self.title_label = QtWidgets.QLabel(parent=scroll_content)
         self.title_label.setStyleSheet("font-size: 54px; font-weight: 400; color: #333; margin-bottom: 10px;")
+        self.title_label.setWordWrap(True)
         self.title_label.setObjectName("title_label")
         self.titleMetaLayout.addWidget(self.title_label)
         
         self.metaLayout = QtWidgets.QHBoxLayout()
         self.metaLayout.setObjectName("metaLayout")
-        self.instructor_label = QtWidgets.QLabel(parent=viewContent)
+        self.instructor_label = QtWidgets.QLabel(parent=scroll_content)
         self.instructor_label.setStyleSheet("font-size: 20px; color: #24292f; margin-left: 10px;")
         self.instructor_label.setObjectName("instructor_label")
         self.metaLayout.addWidget(self.instructor_label)
-        self.date_label = QtWidgets.QLabel(parent=viewContent)
+        self.date_label = QtWidgets.QLabel(parent=scroll_content)
         self.date_label.setStyleSheet("font-size: 20px; color: #656d76; padding-left: 5px;")
         self.date_label.setObjectName("date_label")
         self.metaLayout.addWidget(self.date_label)
@@ -51,7 +83,7 @@ class Ui_viewContent(object):
         
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.headerLayout.addItem(spacerItem1)
-        self.menuButton = QtWidgets.QPushButton(parent=viewContent)
+        self.menuButton = QtWidgets.QPushButton(parent=scroll_content)
         self.menuButton.setMaximumSize(QtCore.QSize(40, 40))
         self.menuButton.setStyleSheet(
             "QPushButton { background: transparent; border: none; color: #6c757d; font-size: 40px; font-weight: bold; border-radius: 20px; }"
@@ -67,7 +99,7 @@ class Ui_viewContent(object):
         self.scoreLayout = QtWidgets.QHBoxLayout()
         self.scoreLayout.setContentsMargins(80, 10, -1, 10)
         self.scoreLayout.setObjectName("scoreLayout")
-        self.score_label = QtWidgets.QLabel(parent=viewContent)
+        self.score_label = QtWidgets.QLabel(parent=scroll_content)
         self.score_label.setStyleSheet("font-size: 18px; font-weight: 400; color: #084924; margin-bottom: 10px;")
         self.score_label.setObjectName("score_label")
         if content_type == "assessment":
@@ -75,10 +107,19 @@ class Ui_viewContent(object):
         self.verticalLayout_2.addLayout(self.scoreLayout)
         
         # Description
-        self.descriptionEdit = QtWidgets.QTextEdit(parent=viewContent)
-        self.descriptionEdit.setMinimumSize(QtCore.QSize(0, 0))
-        self.descriptionEdit.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.descriptionEdit.setStyleSheet("font-size: 16px; color: #000000; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-left: 80px; margin-bottom: 10px;")
+        self.descriptionEdit = QtWidgets.QTextEdit(parent=scroll_content)
+        self.descriptionEdit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        self.descriptionEdit.setMinimumSize(QtCore.QSize(200, 0))
+        self.descriptionEdit.setMaximumSize(QtCore.QSize(16777215, 100))  # Limit height to ~3-5 lines
+        self.descriptionEdit.setStyleSheet("""
+            font-size: 16px;
+            color: #000000;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-left: 80px;
+            margin-bottom: 8px;
+        """)
         self.descriptionEdit.setLineWrapMode(QtWidgets.QTextEdit.LineWrapMode.WidgetWidth)
         self.descriptionEdit.setLineWrapColumnOrWidth(0)
         self.descriptionEdit.setReadOnly(True)
@@ -91,7 +132,7 @@ class Ui_viewContent(object):
         self.attachementLayout.setContentsMargins(80, 10, -1, 10)
         self.attachementLayout.setSpacing(10)
         self.attachementLayout.setObjectName("attachementLayout")
-        self.attachmentFrame = QtWidgets.QFrame(parent=viewContent)
+        self.attachmentFrame = QtWidgets.QFrame(parent=scroll_content)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
         self.attachmentFrame.setSizePolicy(sizePolicy)
         self.attachmentFrame.setMinimumSize(QtCore.QSize(300, 76))
@@ -124,25 +165,30 @@ class Ui_viewContent(object):
         self.commentLayout.setObjectName("commentLayout")
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
         self.commentLayout.addItem(spacerItem3)
-        self.label = QtWidgets.QLabel(parent=viewContent)
+        self.label = QtWidgets.QLabel(parent=scroll_content)
         self.label.setMaximumSize(QtCore.QSize(38, 38))
         self.label.setStyleSheet("background-color: #084924; border-radius: 19px; color: white; min-width: 38px; min-height: 38px; text-align: center; line-height: 38px;")
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
         self.commentLayout.addWidget(self.label)
-        self.commentBox = QtWidgets.QTextEdit(parent=viewContent)
-        self.commentBox.setMaximumSize(QtCore.QSize(16777215, 38))
+        self.commentBox = QtWidgets.QTextEdit(parent=scroll_content)
+        self.commentBox.setMinimumSize(QtCore.QSize(200, 20))
+        self.commentBox.setMaximumSize(QtCore.QSize(16777215, 50))
         self.commentBox.setStyleSheet("font-size: 14px; color: #24292f; padding: 5px; border: 1px solid #ddd; border-radius: 16.5px;")
         self.commentBox.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.commentBox.setObjectName("commentBox")
         self.commentLayout.addWidget(self.commentBox)
-        self.pushButton = QtWidgets.QPushButton(parent=viewContent)
+        self.pushButton = QtWidgets.QPushButton(parent=scroll_content)
         self.pushButton.setObjectName("pushButton")
         self.commentLayout.addWidget(self.pushButton)
         self.verticalLayout_2.addLayout(self.commentLayout)
         
         spacerItem4 = QtWidgets.QSpacerItem(20, 60, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_2.addItem(spacerItem4)
+        
+        # Set scroll content as the scroll area's widget
+        scroll_area.setWidget(scroll_content)
+        main_layout.addWidget(scroll_area)
 
         self.retranslateUi(viewContent)
         QtCore.QMetaObject.connectSlotsByName(viewContent)
@@ -167,6 +213,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     viewContent = QtWidgets.QWidget()
     ui = Ui_viewContent()
-    ui.setupUi(viewContent, content_type="material")  # change to "material" for material view or "assessment" for yea
+    ui.setupUi(viewContent, content_type="material")
     viewContent.show()
     sys.exit(app.exec())

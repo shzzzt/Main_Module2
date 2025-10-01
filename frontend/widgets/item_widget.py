@@ -13,7 +13,8 @@ class ItemWidget(QWidget):
     def setup_ui(self):
         layout = QHBoxLayout(self)
         layout.setSpacing(12)
-        layout.setContentsMargins(15, 10, 15, 10)  # Added proper margins around the content
+        layout.setSpacing(8)  # Reduced spacing to save horizontal space
+        layout.setContentsMargins(10, 8, 10, 8)
 
         # Icon Label (placeholder green circle)
         icon_label = QLabel(self)
@@ -47,6 +48,7 @@ class ItemWidget(QWidget):
                 padding: 2px;          /* Added padding for text */
             }
         """)
+        title_label.setWordWrap(True)
         layout.addWidget(title_label)
 
         # Spacer

@@ -12,7 +12,7 @@ class TopicFrame(QFrame):
         self.controller = controller
         self.user_role = user_role
         self.setObjectName(f"topicItemFrame_{id(self)}")
-        self.setMinimumSize(800, 70)
+        self.setMinimumSize(200, 70)
         self.setMaximumHeight(70)
         self.setStyleSheet("""
             QFrame {

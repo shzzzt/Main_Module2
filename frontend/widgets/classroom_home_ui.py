@@ -19,10 +19,11 @@ class Ui_ClassCard(object):
 "    background: transparent;\n"
 "    border: 1px solid #e0e0e0;\n"
 "    border-radius: 20px;\n"
-"    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n"
 "    font-family: \"Poppins\";\n"
 "}")
         ClassCard.setFrameShape(QtWidgets.QFrame.Shape.Box)
+        shadow = QtWidgets.QGraphicsDropShadowEffect(blurRadius=20, xOffset=0, yOffset=3, color=QtGui.QColor(0, 0, 0, 40))
+        ClassCard.setGraphicsEffect(shadow)
         self.main_layout = QtWidgets.QVBoxLayout(ClassCard)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)

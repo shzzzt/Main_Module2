@@ -10,9 +10,15 @@
     <height>530</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="minimumSize">
    <size>
-    <width>940</width>
+    <width>400</width>
     <height>530</height>
    </size>
   </property>
@@ -80,7 +86,7 @@
           <string>Create</string>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../../../../../../src/icons.qrc">
            <normaloff>:/icons/baseline-add.svg</normaloff>:/icons/baseline-add.svg</iconset>
          </property>
          <property name="popupMode">
@@ -164,6 +170,12 @@
      </item>
      <item>
       <widget class="QScrollArea" name="topicScrollArea">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
@@ -208,6 +220,12 @@
           <height>370</height>
          </rect>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <layout class="QVBoxLayout" name="topicListLayout">
@@ -247,8 +265,8 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../src/icons.qrc"/>
-  <include location="../../../../../src/icons.qrc"/>
+  <include location="../../../../../../src/font.qrc"/>
+  <include location="../../../../../../src/icons.qrc"/>
  </resources>
  <connections/>
 </ui>

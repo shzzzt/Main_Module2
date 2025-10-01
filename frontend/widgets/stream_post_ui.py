@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_ClassroomStreamContent(object):
     def setupUi(self, ClassroomStreamContent):
         ClassroomStreamContent.setObjectName("ClassroomStreamContent")
-        ClassroomStreamContent.resize(932, 513)
+        ClassroomStreamContent.resize(934, 513)
         ClassroomStreamContent.setStyleSheet("QWidget {\n"
 "    background-color: transparent;\n"
 "    font-family:\"Poppins\";\n"
@@ -23,7 +23,7 @@ class Ui_ClassroomStreamContent(object):
         self.main_layout.setSpacing(0)
         self.main_layout.setObjectName("main_layout")
         self.mainContent = QtWidgets.QWidget(parent=ClassroomStreamContent)
-        self.mainContent.setMinimumSize(QtCore.QSize(0, 0))
+        self.mainContent.setMinimumSize(QtCore.QSize(200, 0))
         self.mainContent.setStyleSheet("QWidget {\n"
 "    background: transparent;\n"
 "    border-radius: 12px;\n"
@@ -31,11 +31,48 @@ class Ui_ClassroomStreamContent(object):
         self.mainContent.setObjectName("mainContent")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.mainContent)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.contentlayout = QtWidgets.QVBoxLayout()
-        self.contentlayout.setContentsMargins(0, 0, 0, 0)
-        self.contentlayout.setObjectName("contentlayout")
-        self.courseHeDER = QtWidgets.QWidget(parent=self.mainContent)
-        self.courseHeDER.setMinimumSize(QtCore.QSize(0, 200))
+        self.scrollArea = QtWidgets.QScrollArea(parent=self.mainContent)
+        self.scrollArea.setMinimumSize(QtCore.QSize(200, 0))
+        self.scrollArea.setStyleSheet("QScrollArea {\n"
+"       border: none;\n"
+"       background-color: transparent;\n"
+"   }\n"
+"   QScrollBar:vertical {\n"
+"       border: none;\n"
+"       background: #F1F1F1;\n"
+"       width: 8px;\n"
+"       border-radius: 4px;\n"
+"   }\n"
+"   QScrollBar::handle:vertical {\n"
+"       background: #C1C1C1;\n"
+"       border-radius: 4px;\n"
+"       min-height: 20px;\n"
+"   }\n"
+"QScrollBar:horizontal {\n"
+"       border: none;\n"
+"       background: #F1F1F1;\n"
+"       width: 8px;\n"
+"       border-radius: 4px;\n"
+"   }\n"
+"   QScrollBar::handle:horizontal {\n"
+"       background: #C1C1C1;\n"
+"       border-radius: 4px;\n"
+"       min-height: 20px;\n"
+"   }")
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, -11, 888, 548))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.courseHeDER = QtWidgets.QWidget(parent=self.scrollAreaWidgetContents)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.courseHeDER.sizePolicy().hasHeightForWidth())
+        self.courseHeDER.setSizePolicy(sizePolicy)
+        self.courseHeDER.setMinimumSize(QtCore.QSize(200, 200))
         self.courseHeDER.setStyleSheet("QWidget {\n"
 "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, \n"
 "        stop:0 #2d8f6f, stop:1 #4db38b);\n"
@@ -64,6 +101,7 @@ class Ui_ClassroomStreamContent(object):
 "    font-family: \"Poppins-Semi-Bold\";\n"
 "    background: transparent;\n"
 "}")
+        self.courseTitle_label.setWordWrap(True)
         self.courseTitle_label.setObjectName("courseTitle_label")
         self.headerLayout_2.addWidget(self.courseTitle_label)
         self.courseSection_label = QtWidgets.QLabel(parent=self.courseHeDER)
@@ -78,38 +116,11 @@ class Ui_ClassroomStreamContent(object):
         self.courseSection_label.setObjectName("courseSection_label")
         self.headerLayout_2.addWidget(self.courseSection_label)
         self.verticalLayout_4.addLayout(self.headerLayout_2)
-        self.contentlayout.addWidget(self.courseHeDER)
-        self.verticalLayout.addLayout(self.contentlayout)
-        self.scrollArea = QtWidgets.QScrollArea(parent=self.mainContent)
-        self.scrollArea.setStyleSheet("QScrollArea {\n"
-"       border: none;\n"
-"       background-color: transparent;\n"
-"   }\n"
-"   QScrollBar:vertical {\n"
-"       border: none;\n"
-"       background: #F1F1F1;\n"
-"       width: 8px;\n"
-"       border-radius: 4px;\n"
-"   }\n"
-"   QScrollBar::handle:vertical {\n"
-"       background: #C1C1C1;\n"
-"       border-radius: 4px;\n"
-"       min-height: 20px;\n"
-"   }")
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 889, 295))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.verticalLayout_5.addWidget(self.courseHeDER)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 30)
+        self.horizontalLayout_5.setContentsMargins(0, 8, 0, 30)
         self.horizontalLayout_5.setSpacing(20)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.verticalLayout_7 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_7.setContentsMargins(10, -1, -1, -1)
-        self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.syllabusFrame = QtWidgets.QFrame(parent=self.scrollAreaWidgetContents)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -148,7 +159,6 @@ class Ui_ClassroomStreamContent(object):
 "    font-size: 18px;\n"
 "}")
         self.icon_label2.setText("")
-        self.icon_label2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.icon_label2.setWordWrap(False)
         self.icon_label2.setObjectName("icon_label2")
         self.horizontalLayout_7.addWidget(self.icon_label2)
@@ -167,10 +177,7 @@ class Ui_ClassroomStreamContent(object):
         self.pushButton.setObjectName("pushButton")
         self.syllabusCard_layout.addWidget(self.pushButton)
         self.verticalLayout_9.addLayout(self.syllabusCard_layout)
-        self.verticalLayout_7.addWidget(self.syllabusFrame)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayout_7.addItem(spacerItem1)
-        self.horizontalLayout_5.addLayout(self.verticalLayout_7)
+        self.horizontalLayout_5.addWidget(self.syllabusFrame, 0, QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignTop)
         self.stream_item_container = QtWidgets.QWidget(parent=self.scrollAreaWidgetContents)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -179,12 +186,12 @@ class Ui_ClassroomStreamContent(object):
         self.stream_item_container.setSizePolicy(sizePolicy)
         self.stream_item_container.setObjectName("stream_item_container")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.stream_item_container)
-        self.verticalLayout_6.setContentsMargins(9, 0, -1, -1)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.stream_items_layout = QtWidgets.QVBoxLayout()
         self.stream_items_layout.setSpacing(10)
         self.stream_items_layout.setObjectName("stream_items_layout")
         self.postTemplate = QtWidgets.QFrame(parent=self.stream_item_container)
+        self.postTemplate.setMinimumSize(QtCore.QSize(200, 0))
         self.postTemplate.setStyleSheet("QFrame {\n"
 "    background-color: white;\n"
 "    border-radius: 8px;\n"
@@ -192,10 +199,8 @@ class Ui_ClassroomStreamContent(object):
 "}\n"
 "QFrame:hover {\n"
 "    border: 1px solid #e9ecef;\n"
-"    box-shadow: 0 2px 8px rgba(0,0,0,0.08);\n"
 "}")
-        self.postTemplate.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
-        self.postTemplate.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.postTemplate.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.postTemplate.setObjectName("postTemplate")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.postTemplate)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -213,6 +218,7 @@ class Ui_ClassroomStreamContent(object):
         self.title_label = QtWidgets.QLabel(parent=self.postTemplate)
         self.title_label.setStyleSheet("font-size: 18px;\n"
 "border:none;")
+        self.title_label.setWordWrap(True)
         self.title_label.setObjectName("title_label")
         self.verticalLayout_3.addWidget(self.title_label)
         self.date_label = QtWidgets.QLabel(parent=self.postTemplate)
@@ -246,12 +252,12 @@ class Ui_ClassroomStreamContent(object):
         self.horizontalLayout_2.addWidget(self.menu_button)
         self.stream_items_layout.addWidget(self.postTemplate)
         self.verticalLayout_6.addLayout(self.stream_items_layout)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayout_6.addItem(spacerItem2)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout_6.addItem(spacerItem1)
         self.horizontalLayout_5.addWidget(self.stream_item_container)
         self.verticalLayout_5.addLayout(self.horizontalLayout_5)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayout_5.addItem(spacerItem3)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout_5.addItem(spacerItem2)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
         self.main_layout.addWidget(self.mainContent)

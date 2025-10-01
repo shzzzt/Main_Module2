@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'frontend\ui\Classroom\classroom_classworks_content.ui'
+# Form implementation generated from reading ui file 'frontend/ui/Classroom/classroom_classworks_content.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
@@ -13,7 +13,12 @@ class Ui_ClassroomClassworksContent(object):
     def setupUi(self, ClassroomClassworksContent):
         ClassroomClassworksContent.setObjectName("ClassroomClassworksContent")
         ClassroomClassworksContent.resize(940, 530)
-        ClassroomClassworksContent.setMinimumSize(QtCore.QSize(940, 530))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(ClassroomClassworksContent.sizePolicy().hasHeightForWidth())
+        ClassroomClassworksContent.setSizePolicy(sizePolicy)
+        ClassroomClassworksContent.setMinimumSize(QtCore.QSize(400, 530))
         ClassroomClassworksContent.setStyleSheet("QWidget {\n"
 "       background-color: transparent;\n"
 "       font-family: \"Poppins\", Arial, sans-serif;\n"
@@ -25,23 +30,19 @@ class Ui_ClassroomClassworksContent(object):
         self.classworkMainVerticalLayout.setSpacing(15)
         self.classworkMainVerticalLayout.setObjectName("classworkMainVerticalLayout")
         self.topBarLayout = QtWidgets.QHBoxLayout()
-        self.topBarLayout.setContentsMargins(-1, -1, -1, 20)
         self.topBarLayout.setSpacing(15)
         self.topBarLayout.setObjectName("topBarLayout")
         self.createButton = QtWidgets.QToolButton(parent=ClassroomClassworksContent)
-        self.createButton.setMinimumSize(QtCore.QSize(100, 50))
         self.createButton.setMaximumSize(QtCore.QSize(100, 40))
         self.createButton.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.createButton.setStyleSheet("   QToolButton {\n"
 "       background-color: #084924;\n"
 "       color: white;\n"
 "       border: none;\n"
-"       padding: 10px 5px;\n"
-"       border-radius: 23.5px;\n"
+"       padding: 6px 12px;\n"
+"       border-radius: 5px;\n"
 "       font-weight: 600;\n"
-"       font-size: 16px;\n"
-"       min-width: 90px;\n"
-"       min-height: 30px;\n"
+"       font-size: 11px;\n"
 "   }\n"
 "   QToolButton:hover {\n"
 "       background-color: #1B5E20;\n"
@@ -61,14 +62,13 @@ class Ui_ClassroomClassworksContent(object):
         self.topBarLayout.addItem(spacerItem)
         self.classworkMainVerticalLayout.addLayout(self.topBarLayout)
         self.filterComboBox = QtWidgets.QComboBox(parent=ClassroomClassworksContent)
-        self.filterComboBox.setMaximumSize(QtCore.QSize(276, 55))
+        self.filterComboBox.setMaximumSize(QtCore.QSize(276, 40))
         self.filterComboBox.setStyleSheet("QComboBox {\n"
 "       border: 1px solid #D0D7DE;\n"
 "       border-radius: 4px;\n"
-"       padding: 10px 8px;\n"
+"       padding: 5px 8px;\n"
 "       background-color: white;\n"
-"       font-size: 16px;\n"
-"        \n"
+"       font-size: 12px;\n"
 "   }\n"
 "   QComboBox:hover {\n"
 "       border-color: #A8A8A8;\n"
@@ -92,6 +92,7 @@ class Ui_ClassroomClassworksContent(object):
         self.filterComboBox.addItem("")
         self.classworkMainVerticalLayout.addWidget(self.filterComboBox)
         self.topicScrollArea = QtWidgets.QScrollArea(parent=ClassroomClassworksContent)
+        self.topicScrollArea.setMinimumSize(QtCore.QSize(200, 0))
         self.topicScrollArea.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.topicScrollArea.setBaseSize(QtCore.QSize(0, 0))
         self.topicScrollArea.setStyleSheet("QScrollArea {\n"
@@ -113,7 +114,8 @@ class Ui_ClassroomClassworksContent(object):
         self.topicScrollArea.setWidgetResizable(True)
         self.topicScrollArea.setObjectName("topicScrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 882, 319))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 882, 370))
+        self.scrollAreaWidgetContents.setMinimumSize(QtCore.QSize(200, 0))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
