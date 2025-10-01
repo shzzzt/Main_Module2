@@ -25,9 +25,9 @@ class ClassesPage(QWidget):
         header_layout.addStretch()
         
         # Sort by dropdown
-        sort_combo = QComboBox()
-        sort_combo.addItems(["Sort by", "Code", "Title", "Section"])
-        sort_combo.setStyleSheet("""
+        self.sort_combo = QComboBox()
+        self.sort_combo.addItems(["Sort by", "Code", "Title", "Section"])
+        self.sort_combo.setStyleSheet("""
             QComboBox {
                 background-color: #1e5631;
                 color: white;
@@ -43,11 +43,11 @@ class ClassesPage(QWidget):
                 border: none;
             }
         """)
-        header_layout.addWidget(sort_combo)
+        header_layout.addWidget(self.sort_combo)
         
         # Add Class button
-        add_btn = QPushButton("Add Class")
-        add_btn.setStyleSheet("""
+        self.add_btn = QPushButton("Add Class")
+        self.add_btn.setStyleSheet("""
             QPushButton {
                 background-color: #ffc107;
                 color: #2d2d2d;
@@ -61,12 +61,12 @@ class ClassesPage(QWidget):
                 background-color: #ffcd38;
             }
         """)
-        header_layout.addWidget(add_btn)
+        header_layout.addWidget(self.add_btn)
         layout.addLayout(header_layout)
         
         # Table
-        table = QTableView()
-        table.setObjectName("classesTable")
+        self.table = QTableView()
+        self.table.setObjectName("classesTable")
         
         # Sample data
         data = [
@@ -79,10 +79,10 @@ class ClassesPage(QWidget):
         ]
         
         model = ClassesTableModel(data)
-        table.setModel(model)
+        self.table.setModel(model)
         
         # Table styling
-        table.setStyleSheet("""
+        self.table.setStyleSheet("""
             QTableView {
                 background-color: white;
                 border-radius: 8px;
@@ -107,31 +107,37 @@ class ClassesPage(QWidget):
             }
         """)
         
-        table.setAlternatingRowColors(True)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        table.horizontalHeader().setMinimumSectionSize(100)
-        table.horizontalHeader().setStretchLastSection(True)
-        table.verticalHeader().setVisible(False)
-        # table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
-        table.setSelectionMode(QTableView.SelectionMode.NoSelection)
+        self.table.setAlternatingRowColors(True)
+        self.table.horizontalHeader().setMinimumSectionSize(100)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setSelectionMode(QTableView.SelectionMode.NoSelection)
 
         
         # Set reasonable column widths
-        header = table.horizontalHeader()
+        header = self.table.horizontalHeader()
+        # header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(9, QHeaderView.ResizeMode.Fixed)
-        table.setColumnWidth(0, 60)  # No.
-        table.setColumnWidth(1, 80)  # Code
-        table.setColumnWidth(2, 200) # Title
-        table.setColumnWidth(3, 60)  # Units
-        table.setColumnWidth(4, 80)  # Section
-        table.setColumnWidth(5, 120) # Schedule
-        table.setColumnWidth(6, 100) # Room
-        table.setColumnWidth(7, 150) # Instructor
-        table.setColumnWidth(8, 100) # Type
-        table.setColumnWidth(9, 80)  # Edit button
+
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(7, QHeaderView.ResizeMode.Stretch)
+
+        self.table.setColumnWidth(0, 10)  # No.
+        self.table.setColumnWidth(1, 60)  # Code
+        self.table.setColumnWidth(2, 200) # Title
+        self.table.setColumnWidth(3, 30)  # Units
+        self.table.setColumnWidth(4, 60)  # Section
+        self.table.setColumnWidth(5, 120) # Schedule
+        self.table.setColumnWidth(6, 60) # Room
+        self.table.setColumnWidth(7, 150) # Instructor
+        self.table.setColumnWidth(8, 80) # Type
+        self.table.setColumnWidth(9, 80)  # Edit button
         
         # Add Edit buttons to last column
         for row in range(model.rowCount()):
@@ -150,9 +156,9 @@ class ClassesPage(QWidget):
                     background-color: #ffcd38;
                 }
             """)
-            table.setIndexWidget(model.index(row, 9), edit_btn)
+            self.table.setIndexWidget(model.index(row, 9), edit_btn)
         
-        layout.addWidget(table)
+        layout.addWidget(self.table)
         self.setLayout(layout)
 
-        add_btn.clicked.connect(lambda: CreateClassDialog(self).exec())
+        self.add_btn.clicked.connect(lambda: CreateClassDialog(self).exec())

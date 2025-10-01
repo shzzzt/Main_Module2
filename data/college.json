@@ -1,85 +1,86 @@
-[
+[{
+    "sections": [
     {
-        "no": 1,
+        "id": 1,
         "section": "A",
         "program": "BS Computer Science",
         "curriculum": "BSIT 2023",
-        "year": 1,
+        "year": "1",
         "type": "Lecture",
         "capacity": 45,
         "remarks": "Regular"
     },
     {
-        "no": 2,
+        "id": 2,
         "section": "B",
         "program": "BS Information Technology",
         "curriculum": "BSIT 2023",
-        "year": 2,
+        "year": "2",
         "type": "Lecture",
         "capacity": 50,
         "remarks": "Regular"
     },
     {
-        "no": 3,
+        "id": 3,
         "section": "C",
         "program": "BS Computer Engineering",
         "curriculum": "BSIT 2023",
-        "year": 3,
+        "year": "3",
         "type": "Laboratory",
         "capacity": 30,
         "remarks": "Special"
     },
     {
-        "no": 4,
+        "id": 4,
         "section": "D",
         "program": "BS Information Systems",
         "curriculum": "BSIT 2023",
-        "year": 1,
+        "year": "1",
         "type": "Lecture",
         "capacity": 40,
         "remarks": "Regular"
     },
     {
-        "no": 5,
-        "section": "E",
+        "id": 5,
+        "section": "A",
         "program": "BS Software Engineering",
         "curriculum": "BSIT 2023",
-        "year": 4,
+        "year": "4",
         "type": "Laboratory",
         "capacity": 25,
         "remarks": "Capstone"
     },
     {
-        "no": 6,
-        "section": "F",
+        "id": 6,
+        "section": "D",
         "program": "BS Data Science",
         "curriculum": "BSDS 2023",
-        "year": 2,
+        "year": "1",
         "type": "Lecture",
         "capacity": 35,
         "remarks": "Regular"
     },
     {
-        "no": 7,
-        "section": "G",
+        "id": 7,
+        "section": "C",
         "program": "BS Cybersecurity",
         "curriculum": "BSIT 2023",
-        "year": 3,
+        "year": "1",
         "type": "Laboratory",
         "capacity": 28,
         "remarks": "Special"
     },
     {
-        "no": 8,
-        "section": "H",
+        "id": 8,
+        "section": "B",
         "program": "BS Game Development",
         "curriculum": "BSIT 2023",
-        "year": 1,
+        "year": "1",
         "type": "Lecture",
         "capacity": 32,
         "remarks": "Regular"
     },
-    {
+    {   "id": 9,
         "section": "C",
         "program": "BSIT",
         "curriculum": "2021",
@@ -88,4 +89,10 @@
         "type": "Lecture",
         "remarks": "Regular"
     }
-]
+    ]
+}, {
+    "classes": [
+        
+    ]
+} ]
+    

@@ -1,8 +1,13 @@
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                             QHBoxLayout, QPushButton, QLabel, QTableView,
-                             QStackedWidget, QComboBox, QHeaderView)
-from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex
-from PyQt6.QtGui import QFont, QIcon, QColor
+from PyQt6.QtWidgets import (QApplication, 
+                             QMainWindow, 
+                             QWidget, 
+                             QVBoxLayout, 
+                             QHBoxLayout, 
+                             QPushButton, 
+                             QLabel, 
+                             QTableView,
+                             QHeaderView)
+from PyQt6.QtGui import QFont
 from .sections_table_model import SectionsTableModel
 from .create_section_dialog import CreateSectionDialog
 
@@ -24,9 +29,9 @@ class SectionsPage(QWidget):
         header_layout.addWidget(title)
         header_layout.addStretch()
         
-        add_btn = QPushButton("Add Section")
-        add_btn.setFixedHeight(40)
-        add_btn.setStyleSheet("""
+        self.add_btn = QPushButton("Add Section")
+        self.add_btn.setFixedHeight(40)
+        self.add_btn.setStyleSheet("""
             QPushButton {
                 background-color: #1e5631;
                 color: white;
@@ -39,12 +44,12 @@ class SectionsPage(QWidget):
                 background-color: #2d5a3d;
             }
         """)
-        header_layout.addWidget(add_btn)
+        header_layout.addWidget(self.add_btn)
         layout.addLayout(header_layout)
         
         # Table
-        table = QTableView()
-        table.setObjectName("sectionsTable")
+        self.table = QTableView()
+        self.table.setObjectName("sectionsTable")
         
         # Sample data
         data = [
@@ -55,10 +60,10 @@ class SectionsPage(QWidget):
         ]
         
         model = SectionsTableModel(data)
-        table.setModel(model)
+        self.table.setModel(model)
         
         # Table styling
-        table.setStyleSheet("""
+        self.table.setStyleSheet("""
             QTableView {
                 background-color: white;
                 border-radius: 8px;
@@ -83,26 +88,26 @@ class SectionsPage(QWidget):
             }
         """)
         
-        table.setAlternatingRowColors(True)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        table.horizontalHeader().setMinimumSectionSize(100)
-        table.horizontalHeader().setStretchLastSection(True)
-        table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.table.horizontalHeader().setMinimumSectionSize(100)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.verticalHeader().setVisible(False)
         # table.setSelectionBehavior(QTableView.SelectionBehavior.)
         # table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         
         # Set reasonable column widths
-        header = table.horizontalHeader()
+        header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        table.setColumnWidth(0, 60)  # No.
-        table.setColumnWidth(1, 80)  # Section
-        table.setColumnWidth(2, 200) # Program
-        table.setColumnWidth(3, 60)  # Year
-        table.setColumnWidth(4, 100) # Type
-        table.setColumnWidth(5, 80)  # Capacity
+        self.table.setColumnWidth(0, 60)  # No.
+        self.table.setColumnWidth(1, 80)  # Section
+        self.table.setColumnWidth(2, 200) # Program
+        self.table.setColumnWidth(3, 60)  # Year
+        self.table.setColumnWidth(4, 100) # Type
+        self.table.setColumnWidth(5, 80)  # Capacity
         
-        layout.addWidget(table)
+        layout.addWidget(self.table)
         self.setLayout(layout)
 
-        add_btn.clicked.connect(lambda: CreateSectionDialog(self).exec())
+        self.add_btn.clicked.connect(lambda: CreateSectionDialog(self).exec())

@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QComboBox, QPushButton, QGridLayout, QApplication
+    QComboBox, QPushButton, QGridLayout, QApplication, QSpinBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -13,16 +13,11 @@ class CreateSectionDialog(QDialog):
         self.setWindowTitle("Create Section")
         # self.setFixedSize(480, 400)  # Larger height to avoid overlap
         self.setStyleSheet("""
-            QDialog {
-  
-                border: 2px solid #1e5631;
-                border-radius: 10px;
-            }
             QLabel {
                 color: #2d2d2d;
                 font-size: 14px;
             }
-            QLineEdit, QComboBox {
+            QLineEdit, QComboBox, QSpinBox{
                 border: 1px solid #cccccc;
                 border-radius: 5px;
                 padding: 6px 10px;
@@ -37,6 +32,7 @@ class CreateSectionDialog(QDialog):
             QComboBox::drop-down {
                 border: none;
                 width: 20px;
+                height: 5px;
             }
             QPushButton {
                 background-color: #1e5631;
@@ -96,24 +92,26 @@ class CreateSectionDialog(QDialog):
 
         year_label = QLabel("Year")
         self.year_combo = QComboBox()
-        self.year_combo.addItems(["1", "2", "3", "4"])
+        self.year_combo.addItems(["1st", "2nd", "3rd", "4th"])
         self.year_combo.setMaximumWidth(20)  # Different width for grid combobox
         grid_layout.addWidget(year_label, 0, 0)
         grid_layout.addWidget(self.year_combo, 1, 0)
 
         capacity_label = QLabel("Capacity")
-        self.capacity_combo = QComboBox()
-        self.capacity_combo.addItems(["30", "40", "50", "60"])
-        self.capacity_combo.setMaximumWidth(20)  # Different width for grid combobox
+        # self.capacity_input = QLineEdit()  
+        self.capacity_input = QSpinBox()
+        self.capacity_input.setMinimum(1)
+        self.capacity_input.setMaximum(50)
+        # # Different width for grid combobox
         grid_layout.addWidget(capacity_label, 0, 1)
-        grid_layout.addWidget(self.capacity_combo, 1, 1)
+        grid_layout.addWidget(self.capacity_input, 1, 1)
 
-        lecture_label = QLabel("Type")
-        self.lecture_combo = QComboBox()
-        self.lecture_combo.addItems(["Lecture", "Laboratory"])
-        self.lecture_combo.setMaximumWidth(40)  # Different width for grid combobox
-        grid_layout.addWidget(lecture_label, 0, 2)
-        grid_layout.addWidget(self.lecture_combo, 1, 2)
+        type_label = QLabel("Type")
+        self.type_combo = QComboBox()
+        self.type_combo.addItems(["Lecture", "Laboratory"])
+        self.type_combo.setMaximumWidth(40)  # Different width for grid combobox
+        grid_layout.addWidget(type_label, 0, 2)
+        grid_layout.addWidget(self.type_combo, 1, 2)
 
         main_layout.addLayout(grid_layout)
 
@@ -131,6 +129,23 @@ class CreateSectionDialog(QDialog):
         # Connect signals
         cancel_btn.clicked.connect(self.reject)
         create_btn.clicked.connect(self.accept)
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            event.ignore()
+        else: 
+            return super().keyPressEvent(event)
+
+    def get_input_data(self) -> dict:
+        """Retrieve user input from the dialog."""
+        return {
+            "section": self.section_input.text(),
+            "program": self.program_combo.currentText(),
+            "curriculum": self.curriculum_combo.currentText(),
+            "year": self.year_combo.currentText(),
+            "capacity": self.capacity_input.value(),
+            "type": self.type_combo.currentText()
+        }
 
 
 if __name__ == "__main__":

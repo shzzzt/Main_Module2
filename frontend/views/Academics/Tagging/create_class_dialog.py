@@ -8,11 +8,6 @@ class CreateClassDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Create Class")
         self.setStyleSheet("""
-            QDialog {
-                background-color: #ffffff;
-                border: 2px solid #1e5631;
-                border-radius: 10px;
-            }
             QLabel {
                 color: #2d2d2d;
                 font-size: 14px;
