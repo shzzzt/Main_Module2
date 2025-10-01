@@ -1,16 +1,20 @@
 # classroom_stream.py
 from PyQt6.QtWidgets import QWidget, QLabel, QFrame, QVBoxLayout, QHBoxLayout, QPushButton,QSizePolicy
 from PyQt6.QtCore import pyqtSignal, Qt
-from frontend.widgets.stream_post_ui import Ui_ClassroomStreamContent
+from widgets.stream_post_ui import Ui_ClassroomStreamContent
 
 class ClassroomStream(QWidget):
     post_selected = pyqtSignal(dict)
 
-    def __init__(self, cls, controller, parent=None):
+    def __init__(self, cls, username, roles, primary_role, token, controller, parent=None):
         super().__init__(parent)
         self.cls = cls
         self.controller = controller
         self.controller.set_class(cls["id"])
+        self.username = username
+        self.roles = roles
+        self.primary_role = primary_role
+        self.token = token
         
         # Setup the UI from the .ui file
         self.ui = Ui_ClassroomStreamContent()

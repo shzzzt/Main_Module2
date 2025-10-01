@@ -1,6 +1,7 @@
 """
 Complete classroom grades application with QAbstractTableModel.
 Features: bulk input, draft/upload status, expandable columns.
+FIXED: Better column widths and text display
 """
 import os
 import sys
@@ -40,7 +41,7 @@ class MainWindow(QMainWindow):
         
         self.setWindowTitle("Classroom Grades - Enhanced")
         self.setAutoFillBackground(True)
-        self.setFixedSize(QSize(1200, 600))
+        self.setGeometry(100, 100, 900, 600)
         
         # Initialize models and controllers
         self.grade_model = GradeDataModel()
@@ -161,17 +162,22 @@ class MainWindow(QMainWindow):
         self.grades_table.load_data(columns_info)
     
     def _build_columns_info(self):
-        """Build column information based on rubric configuration"""
+        """
+        Build column information based on rubric configuration
+        FIXED: Better column widths for text display
+        """
         columns = [
-            {'name': 'No.', 'type': 'fixed', 'width': 50},
-            {'name': 'Sort by Last Name', 'type': 'fixed', 'width': 200}
+            {'name': 'No.', 'type': 'fixed', 'width': 60},
+            {'name': 'Sort by Last Name', 'type': 'fixed', 'width': 220}
         ]
         
+        # ═══════════════════════════════════════════════════════════════
         # MIDTERM SECTION
+        # ═══════════════════════════════════════════════════════════════
         columns.append({
             'name': 'Midterm Grade',
             'type': 'expandable_main',
-            'width': 120,
+            'width': 140,  # Increased from 120
             'target': 'midterm'
         })
         
@@ -185,7 +191,7 @@ class MainWindow(QMainWindow):
                 columns.append({
                     'name': comp_display_name,
                     'type': 'expandable_component',
-                    'width': 120,
+                    'width': 150,  # Increased from 120
                     'term': 'midterm',
                     'component': comp_key
                 })
@@ -202,18 +208,20 @@ class MainWindow(QMainWindow):
                         columns.append({
                             'name': f'{item_name} (M)',
                             'type': 'grade_input',
-                            'width': 120,
+                            'width': 130,  # Increased from 120
                             'term': 'midterm',
                             'component': comp_key,
                             'component_key': f"{item_name.lower().replace(' ', '')}_midterm",
                             'max_score': max_score  # Pass max_score to column info
                         })
         
+        # ═══════════════════════════════════════════════════════════════
         # FINAL TERM SECTION
+        # ═══════════════════════════════════════════════════════════════
         columns.append({
             'name': 'Final Term Grade',
             'type': 'expandable_main',
-            'width': 130,
+            'width': 150,  # Increased from 130
             'target': 'finalterm'
         })
         
@@ -227,7 +235,7 @@ class MainWindow(QMainWindow):
                 columns.append({
                     'name': comp_display_name,
                     'type': 'expandable_component',
-                    'width': 120,
+                    'width': 150,  # Increased from 120
                     'term': 'finalterm',
                     'component': comp_key
                 })
@@ -236,20 +244,29 @@ class MainWindow(QMainWindow):
                 state_key = f'{comp_key}_finalterm_expanded'
                 if self.grade_model.get_column_state(state_key):
                     type_key = self.grade_model.get_component_type_key(comp_name)
-                    sub_items = self.grade_model.components.get(type_key, [])
+                    sub_items = self.grade_model.get_component_items_with_scores(type_key)
                     
-                    for sub_item in sub_items:
+                    for item in sub_items:
+                        item_name = item['name']
+                        max_score = item['max_score']
                         columns.append({
-                            'name': f'{sub_item} (F)',
+                            'name': f'{item_name} (F)',
                             'type': 'grade_input',
-                            'width': 120,
+                            'width': 130,  # Increased from 120
                             'term': 'finalterm',
                             'component': comp_key,
-                            'component_key': f"{sub_item.lower().replace(' ', '')}_finalterm"
+                            'component_key': f"{item_name.lower().replace(' ', '')}_finalterm",
+                            'max_score': max_score
                         })
         
+        # ═══════════════════════════════════════════════════════════════
         # FINAL GRADE
-        columns.append({'name': 'Final Grade', 'type': 'calculated', 'width': 100})
+        # ═══════════════════════════════════════════════════════════════
+        columns.append({
+            'name': 'Final Grade',
+            'type': 'calculated',
+            'width': 110
+        })
         
         return columns
 

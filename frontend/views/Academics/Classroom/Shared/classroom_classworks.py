@@ -2,14 +2,14 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QDialog, QLineEdit, QTextEdit, QPushButton, QMenu, QToolButton
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QAction, QPixmap, QIcon
-from frontend.widgets.classroom_classworks_content_ui import Ui_ClassroomClassworksContent
-from frontend.widgets.topic_widget import TopicWidget
+from widgets.classroom_classworks_content_ui import Ui_ClassroomClassworksContent
+from widgets.topic_widget import TopicWidget
 import os
 
 class ClassroomClassworks(QWidget):
     post_selected = pyqtSignal(dict)
 
-    def __init__(self, cls, user_role, controller, parent=None):
+    def __init__(self, cls, username, roles, primary_role, token, controller, parent=None):
         super().__init__(parent)
         self.setStyleSheet("""
             ClassroomClassworks {
@@ -19,10 +19,13 @@ class ClassroomClassworks(QWidget):
                 background-color: white;
             }
         """)
+        self.username = username
+        self.roles = roles
+        self.primary_role = primary_role
+        self.token = token
         self.ui = Ui_ClassroomClassworksContent()
         self.ui.setupUi(self)
         self.cls = cls
-        self.user_role = user_role
         self.controller = controller
         self.controller.set_class(cls["id"])
         self.topic_widgets = []
@@ -58,7 +61,7 @@ class ClassroomClassworks(QWidget):
         return icon
 
     def setup_role_based_ui(self):
-        if self.user_role == "student":
+        if self.primary_role == "student":
             self.ui.createButton.hide()
         else:
             self.ui.createButton.show()
@@ -301,13 +304,13 @@ class ClassroomClassworks(QWidget):
                     # Add untitled posts directly without TopicWidget container
                     for post in topic_posts:
                         from frontend.widgets.topic_frame import TopicFrame
-                        frame = TopicFrame(post, self.controller, self.user_role)
+                        frame = TopicFrame(post, self.controller, self.primary_role)
                         frame.post_clicked.connect(self.post_selected.emit)
                         layout.addWidget(frame)
                         self.untitled_frames.append(frame)
                 else:
                     # Use TopicWidget for posts with topics
-                    topic_widget = TopicWidget(topic_title, topic_posts, self.controller, self.user_role)
+                    topic_widget = TopicWidget(topic_title, topic_posts, self.controller, self.primary_role)
                     
                     # Connect post selection signal
                     for frame in topic_widget.frames:

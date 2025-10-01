@@ -1,7 +1,7 @@
 # post_details.py - Add better error handling
 from PyQt6.QtWidgets import QWidget, QLabel
 from PyQt6.QtCore import pyqtSignal
-from frontend.widgets.Ui_viewContent import Ui_viewContent
+from widgets.Ui_viewContent import Ui_viewContent
 
 class PostDetails(QWidget):
     back_clicked = pyqtSignal()
