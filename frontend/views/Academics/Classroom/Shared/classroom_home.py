@@ -1,13 +1,16 @@
 from PyQt6 import QtWidgets, QtCore
-from frontend.widgets.classroom_home_ui import Ui_ClassCard
-from frontend.controller.classroom_controller import ClassroomController
+from widgets.classroom_home_ui import Ui_ClassCard
+from controller.classroom_controller import ClassroomController
 
 class ClassroomHome(QtWidgets.QWidget):
     class_selected = QtCore.pyqtSignal(dict)  # Signal to emit when a class is clicked
 
-    def __init__(self, user_role, parent=None):
+    def __init__(self, username, roles, primary_role, token, parent=None):
         super().__init__(parent)
-        self.user_role = user_role
+        self.username = username
+        self.roles = roles
+        self.primary_role = primary_role
+        self.token = token
         self.controller = ClassroomController()
         self.setup_ui()
         self.load_classes()

@@ -30,8 +30,8 @@
           "id": 3,
           "name": "Classes",
           "function": "ClassroomMain()",
-          "path": "",
-          "access": ["student", "admin"],
+          "path": "views.Academics.ClassroomWrapper",
+          "access": ["student", "faculty", "admin"],
           "modulars":[]
         },
         {
