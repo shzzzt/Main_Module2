@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1030</width>
-    <height>530</height>
+    <width>747</width>
+    <height>452</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>940</width>
-    <height>530</height>
+    <width>200</width>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -27,6 +27,9 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <layout class="QHBoxLayout" name="headerLayout">
+       <property name="topMargin">
+        <number>10</number>
+       </property>
        <item>
         <widget class="QLabel" name="backButton">
          <property name="minimumSize">
@@ -57,10 +60,14 @@
          <item>
           <widget class="QLabel" name="title_label">
            <property name="styleSheet">
-            <string notr="true">font-size: 54px; font-weight: 400; color: #333; margin-bottom: 10px;</string>
+            <string notr="true">font-size: 54px; font-weight: 400; color: #333; margin-bottom: 10px;
+</string>
            </property>
            <property name="text">
             <string>Desktop Project Guidelines</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -155,13 +162,13 @@ QPushButton:pressed {
     <widget class="QTextEdit" name="descriptionEdit">
      <property name="minimumSize">
       <size>
-       <width>0</width>
+       <width>200</width>
        <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>900</width>
+       <width>16777215</width>
        <height>16777215</height>
       </size>
      </property>
@@ -328,10 +335,16 @@ text-decoration: underline;
      </item>
      <item>
       <widget class="QTextEdit" name="commentBox">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>20</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>38</height>
+         <height>50</height>
         </size>
        </property>
        <property name="styleSheet">

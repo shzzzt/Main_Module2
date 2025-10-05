@@ -30,13 +30,6 @@ class ClassroomView(QWidget):
         layout = QVBoxLayout(self)
         
         header_layout = QHBoxLayout()
-        back_button = QPushButton("Back")
-        back_button.setStyleSheet("""
-            QPushButton { border: none; background: transparent; padding: 5px; font-size: 16px; }
-            QPushButton:hover { text-decoration: underline; }
-        """)
-        back_button.clicked.connect(self.back_clicked.emit)
-        header_layout.addWidget(back_button)
         header_layout.addStretch()
         lecture_btn = QPushButton("LECTURE")
         lecture_btn.setStyleSheet("""

@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QPushButton, QApplication, QHBoxLayout, QLabel, QStackedWidget
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsDropShadowEffect, QPushButton, QApplication, QHBoxLayout, QLabel, QStackedWidget
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QColor
 import sys
 import os
 
@@ -11,6 +11,7 @@ try:
     from .Classroom.Shared.post_details import PostDetails
     from .ClassroomView import ClassroomView
     from ...controller.classroom_controller import ClassroomController
+
 except ImportError:
     try:
         # Fallback: import from current directory structure
@@ -18,11 +19,13 @@ except ImportError:
         from Classroom.Shared.post_details import PostDetails
         from ClassroomView import ClassroomView
         from controller.classroom_controller import ClassroomController
+
     except ImportError:
         # Final fallback: import using full path
         from views.Academics.Classroom.Shared.classroom_home import ClassroomHome
         from views.Academics.Classroom.Shared.post_details import PostDetails
         from views.Academics.ClassroomView import ClassroomView
+
 
 class ClassroomMain(QWidget):
     def __init__(self, username, roles, primary_role, token, parent=None):
@@ -34,70 +37,107 @@ class ClassroomMain(QWidget):
         self.setMinimumSize(940, 530)
         self.setStyleSheet("background-color: white;")
         
-        # Main layout - horizontal for sidebar + content
-        main_layout = QHBoxLayout(self)
+        # Main layout - vertical for header + sidebar-content area
+        main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         
+        # Header (spans full width)
+        header = QWidget()
+        header.setFixedHeight(60)
+        header.setStyleSheet("""
+            QWidget {
+                background-color: white; 
+                border-bottom: 1px solid #d0d0d0;
+            }
+        """)
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(20, 0, 20, 0)
+        
+        header_title = QLabel("CLASSROOM")
+        header_title.setFont(QFont("Poppins", 16, QFont.Weight.Bold))
+        header_title.setStyleSheet("color: #1e5631;")
+        header_layout.addWidget(header_title)
+        header_layout.addStretch()
+        
+        main_layout.addWidget(header)
+        
+        # Content area (sidebar + main content)
+        content_area = QWidget()
+        content_area_layout = QHBoxLayout(content_area)
+        content_area_layout.setContentsMargins(0, 0, 0, 0)
+        content_area_layout.setSpacing(0)
+        
         # Sidebar
         sidebar = QWidget()
-        sidebar.setFixedWidth(90)
+        sidebar.setFixedWidth(120)
         sidebar.setStyleSheet("""
             QWidget {
-                background-color: ##F1F1F3;
+                background-color: #white;
+                border-right: 1px solid #d0d0d0;
             }
         """)
         sidebar_layout = QVBoxLayout(sidebar)
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(0)
         
-        # Home button in sidebar
+        # Sidebar buttons
         home_button = QPushButton("Home")
         home_button.setFixedHeight(50)
         home_button.setStyleSheet("""
             QPushButton {
-                background-color: white;
                 color: black;
                 border: none;
                 text-align: left;
-                padding-left: 14px;
+                padding-left: 20px;
                 font-size: 14px;
-                
+                font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #2d6a3f;
+                background-color: #e0e0e0;
+            }
+            QPushButton:pressed {
+                background-color: #d0d0d0;
             }
         """)
         home_button.clicked.connect(self.show_home)
         sidebar_layout.addWidget(home_button)
         
-        # Add some spacing and other potential sidebar items
+        classes_button = QPushButton("Classes")
+        classes_button.setFixedHeight(50)
+        classes_button.setStyleSheet("""
+            QPushButton {
+                color: black;
+                border: none;
+                text-align: left;
+                padding-left: 20px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #e0e0e0;
+            }
+            QPushButton:pressed {
+                background-color: #d0d0d0;
+            }
+        """)
+        # You can connect this to show a classes overview if needed
+        # classes_button.clicked.connect(self.show_classes_overview)
+        sidebar_layout.addWidget(classes_button)
+        
         sidebar_layout.addStretch()
         
-        # Content area
+        # Main content area
+        shadow = QGraphicsDropShadowEffect(blurRadius=20, xOffset=0, yOffset=3, color=QColor(0, 0, 0, 40))
         content_widget = QWidget()
+        content_widget.setGraphicsEffect(shadow)
         content_layout = QVBoxLayout(content_widget)
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(0)
         
-        # Header (without Home button now)
-        header = QWidget()
-        header.setFixedHeight(60)
-        header.setStyleSheet("background-color: white; border-bottom: 1px solid #d0d0d0;")
-        header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(20, 0, 20, 0)
-        
-        header_title = QLabel("CLASSROOM")
-        header_title.setFont(QFont("Poppins", 14, QFont.Weight.DemiBold))
-        header_title.setStyleSheet("color: #1e5631;")
-        header_layout.addWidget(header_title)
-        header_layout.addStretch()
-        
-        content_layout.addWidget(header)
-        
         # Stacked widget for dynamic content
         self.stacked_widget = QStackedWidget()
-        self.stacked_widget.setStyleSheet("background-color: white")
+        self.stacked_widget.setStyleSheet("background-color: white;")
         
         # Initialize views
         self.classroom_controller = ClassroomController()
@@ -111,9 +151,12 @@ class ClassroomMain(QWidget):
         
         content_layout.addWidget(self.stacked_widget)
         
-        # Add sidebar and content to main layout
-        main_layout.addWidget(sidebar)
-        main_layout.addWidget(content_widget)
+        # Add sidebar and content to content area
+        content_area_layout.addWidget(sidebar)
+        content_area_layout.addWidget(content_widget)
+        
+        # Add content area to main layout
+        main_layout.addWidget(content_area)
         
         # Set initial view to home
         self.stacked_widget.setCurrentWidget(self.home_view)
