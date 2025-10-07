@@ -194,7 +194,7 @@ class TaggingMain(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    window = TaggingMain()
+    window = TaggingMain("username", "roles", "primary_role", "token")
     window.show()
     sys.exit(app.exec())
 

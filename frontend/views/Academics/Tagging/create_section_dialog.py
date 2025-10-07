@@ -115,6 +115,16 @@ class CreateSectionDialog(QDialog):
 
         main_layout.addLayout(grid_layout)
 
+        # Remarks label 
+        remarks_label = QLabel("Remarks")
+        self.remarks_combo = QComboBox()
+        self.remarks_combo.addItems([
+            "Regular", 
+            "Petition"
+        ])
+        main_layout.addWidget(remarks_label)
+        main_layout.addWidget(self.remarks_combo)
+
         # Buttons layout
         buttons_layout = QHBoxLayout()
         buttons_layout.addStretch()
@@ -144,7 +154,8 @@ class CreateSectionDialog(QDialog):
             "curriculum": self.curriculum_combo.currentText(),
             "year": self.year_combo.currentText(),
             "capacity": self.capacity_input.value(),
-            "type": self.type_combo.currentText()
+            "type": self.type_combo.currentText(),
+            "remarks": self.remarks_combo.currentText()
         }
 
 

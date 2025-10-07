@@ -1,98 +1,117 @@
-[{
-    "sections": [
+[
     {
-        "id": 1,
-        "section": "A",
-        "program": "BS Computer Science",
-        "curriculum": "BSIT 2023",
-        "year": "1",
-        "type": "Lecture",
-        "capacity": 45,
-        "remarks": "Regular"
+        "programs": [
+            {
+                "name": "BS Information Technology",
+                "curriculums": [
+                    "BSIT 2020", 
+                    "BSIT 2023"
+                ]
+            }, {
+                "name": "BS Data Science",
+                "curriculums": [
+                    "BSIS 2025"
+                ]
+            }, {
+                "name": "BS Information Systems",
+                "curriculums": [
+                    "BSIS 2025"
+                ]
+            }
+        ]
     },
     {
-        "id": 2,
-        "section": "B",
-        "program": "BS Information Technology",
-        "curriculum": "BSIT 2023",
-        "year": "2",
-        "type": "Lecture",
-        "capacity": 50,
-        "remarks": "Regular"
-    },
-    {
-        "id": 3,
-        "section": "C",
-        "program": "BS Computer Engineering",
-        "curriculum": "BSIT 2023",
-        "year": "3",
-        "type": "Laboratory",
-        "capacity": 30,
-        "remarks": "Special"
-    },
-    {
-        "id": 4,
-        "section": "D",
-        "program": "BS Information Systems",
-        "curriculum": "BSIT 2023",
-        "year": "1",
-        "type": "Lecture",
-        "capacity": 40,
-        "remarks": "Regular"
-    },
-    {
-        "id": 5,
-        "section": "A",
-        "program": "BS Software Engineering",
-        "curriculum": "BSIT 2023",
-        "year": "4",
-        "type": "Laboratory",
-        "capacity": 25,
-        "remarks": "Capstone"
-    },
-    {
-        "id": 6,
-        "section": "D",
-        "program": "BS Data Science",
-        "curriculum": "BSDS 2023",
-        "year": "1",
-        "type": "Lecture",
-        "capacity": 35,
-        "remarks": "Regular"
-    },
-    {
-        "id": 7,
-        "section": "C",
-        "program": "BS Cybersecurity",
-        "curriculum": "BSIT 2023",
-        "year": "1",
-        "type": "Laboratory",
-        "capacity": 28,
-        "remarks": "Special"
-    },
-    {
-        "id": 8,
-        "section": "B",
-        "program": "BS Game Development",
-        "curriculum": "BSIT 2023",
-        "year": "1",
-        "type": "Lecture",
-        "capacity": 32,
-        "remarks": "Regular"
-    },
-    {   "id": 9,
-        "section": "C",
-        "program": "BSIT",
-        "curriculum": "2021",
-        "year": "1",
-        "capacity": "",
-        "type": "Lecture",
-        "remarks": "Regular"
+        "sections": [
+            {
+                "id": 1,
+                "section": "A",
+                "program": "BS Computer Science",
+                "curriculum": "BSIT 2023",
+                "year": "1",
+                "type": "Lecture",
+                "capacity": 45,
+                "remarks": "Regular"
+            },
+            {
+                "id": 2,
+                "section": "B",
+                "program": "BS Information Technology",
+                "curriculum": "BSIT 2023",
+                "year": "2",
+                "type": "Lecture",
+                "capacity": 50,
+                "remarks": "Regular"
+            },
+            {
+                "id": 3,
+                "section": "C",
+                "program": "BS Computer Engineering",
+                "curriculum": "BSIT 2023",
+                "year": "3",
+                "type": "Laboratory",
+                "capacity": 30,
+                "remarks": "Special"
+            },
+            {
+                "id": 4,
+                "section": "D",
+                "program": "BS Information Systems",
+                "curriculum": "BSIT 2023",
+                "year": "1",
+                "type": "Lecture",
+                "capacity": 40,
+                "remarks": "Regular"
+            },
+            {
+                "id": 5,
+                "section": "A",
+                "program": "BS Software Engineering",
+                "curriculum": "BSIT 2023",
+                "year": "4",
+                "type": "Laboratory",
+                "capacity": 25,
+                "remarks": "Capstone"
+            },
+            {
+                "id": 6,
+                "section": "D",
+                "program": "BS Data Science",
+                "curriculum": "BSDS 2023",
+                "year": "1",
+                "type": "Lecture",
+                "capacity": 35,
+                "remarks": "Regular"
+            },
+            {
+                "id": 7,
+                "section": "C",
+                "program": "BS Cybersecurity",
+                "curriculum": "BSIT 2023",
+                "year": "1",
+                "type": "Laboratory",
+                "capacity": 28,
+                "remarks": "Special"
+            },
+            {
+                "id": 8,
+                "section": "B",
+                "program": "BS Game Development",
+                "curriculum": "BSIT 2023",
+                "year": "1",
+                "type": "Lecture",
+                "capacity": 32,
+                "remarks": "Regular"
+            },
+            {   "id": 9,
+                "section": "C",
+                "program": "BSIT",
+                "curriculum": "2021",
+                "year": "1",
+                "capacity": "",
+                "type": "Lecture",
+                "remarks": "Regular"
+            }
+        ]
     }
-    ]
-}, {
-    "classes": [
-        
-    ]
-} ]
+]
     

@@ -10,10 +10,22 @@ from PyQt6.QtWidgets import (QApplication,
 from PyQt6.QtGui import QFont
 from .sections_table_model import SectionsTableModel
 from .create_section_dialog import CreateSectionDialog
+from ....controller.Academics.Tagging.sections_controller import SectionController
 
 class SectionsPage(QWidget):
     def __init__(self):
         super().__init__()
+
+        data = [
+            {'no': 1, 'section': 'A', 'program': 'BS Computer Science', 
+             'year': 1, 'type': 'Lecture', 'capacity': 40, 'remarks': 'Regular'},
+            {'no': 2, 'section': 'B', 'program': 'BS Information Technology', 
+             'year': 2, 'type': 'Lecture', 'capacity': 50, 'remarks': 'Regular'}
+        ]
+
+        self.model = SectionsTableModel(data)
+        self.controller = SectionController(self, self.model) 
+        
         self.init_ui()
     
     def init_ui(self):
@@ -52,15 +64,10 @@ class SectionsPage(QWidget):
         self.table.setObjectName("sectionsTable")
         
         # Sample data
-        data = [
-            {'no': 1, 'section': 'A', 'program': 'BS Computer Science', 
-             'year': 1, 'type': 'Lecture', 'capacity': 40, 'remarks': 'Regular'},
-            {'no': 2, 'section': 'B', 'program': 'BS Information Technology', 
-             'year': 2, 'type': 'Lecture', 'capacity': 50, 'remarks': 'Regular'}
-        ]
         
-        model = SectionsTableModel(data)
-        self.table.setModel(model)
+        
+        
+        self.table.setModel(self.model)
         
         # Table styling
         self.table.setStyleSheet("""
@@ -110,4 +117,4 @@ class SectionsPage(QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
 
-        self.add_btn.clicked.connect(lambda: CreateSectionDialog(self).exec())
+        self.add_btn.clicked.connect(self.controller.open_dialog)

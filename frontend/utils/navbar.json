@@ -23,7 +23,7 @@
           "name": "Tagging",
           "function": "TaggingMain()",
           "path": "views.Academics.TaggingMain",
-          "access": ["admin"],
+          "access": ["admin", "student"],
           "modulars":[]
         }, 
         {

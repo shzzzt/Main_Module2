@@ -108,6 +108,7 @@ class UploadClassMaterialPanel(QFrame):
         
 
     def upload_file_section(self, layout):
+        # overall_frame = QFrame()
         upload_layout = QVBoxLayout()
         upload_layout.setSpacing(15)
         
@@ -188,9 +189,9 @@ class UploadClassMaterialPanel(QFrame):
         upload_content_layout.addWidget(or_label)
         upload_content_layout.addWidget(browse_btn)
 
-        upload_layout.addWidget(upload_content_layout)
+        upload_layout.addLayout(upload_content_layout)
 
-        layout.addWidget(upload_layout)
+        layout.addLayout(upload_layout)
         self.setup_upload_button(upload_layout)
 
     def setup_upload_button(self, upload_layout):

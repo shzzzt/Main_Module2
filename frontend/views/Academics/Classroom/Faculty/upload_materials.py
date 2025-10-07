@@ -3,6 +3,17 @@
 #Assessment creation interface
 
 import sys
+import os
+
+project_root = (os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+print(sys.path)
+
+#Material upload interface
+
+import sys
 from PyQt6.QtWidgets import (
     QApplication, 
     QMainWindow, 
@@ -23,7 +34,7 @@ from PyQt6.QtGui import QFont, QPalette, QColor, QCursor
 from frontend.widgets.labeled_section import LabeledSection
 from frontend.widgets.dropdown import DropdownMenu
 from frontend.widgets.upload_class_material_widget import UploadClassMaterialPanel
-
+from frontend.controller.Academics.class_material_controller import ClassMaterialController
 
 class MaterialForm(QMainWindow):
     def __init__(self):
@@ -32,8 +43,8 @@ class MaterialForm(QMainWindow):
         
     def initUI(self):
         self.setWindowTitle("Upload Material")
-        self.setGeometry(100, 100, 1400, 800)  # Increased window size
-        self.setMinimumSize(QSize(1200, 700))   # Set minimum size
+        self.setGeometry(100, 100, 1400, 800)
+        self.setMinimumSize(QSize(1200, 700))
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #f5f5f5;
@@ -44,27 +55,27 @@ class MaterialForm(QMainWindow):
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(10, 10, 10, 10)
 
-        
         header = self.create_header()
-        # Left panel
         left_panel = self.create_left_panel()
-        
-        # Right panel
         right_panel = self.create_right_panel()
 
-        self.upload_button = self.create_upload_button()
-        
         body = QFrame()
+        body.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)  # Allow body to expand
         body_layout = QHBoxLayout(body)
-        body_layout.addWidget(left_panel, 3)  # Give left panel more space ratio
+        body_layout.setSpacing(20)  
+        body_layout.setContentsMargins(0, 0, 0, 0)  
+        body_layout.addWidget(left_panel, 3)
         body_layout.addWidget(right_panel, 1)
 
         main_layout.addWidget(header)
-        main_layout.addWidget(body)
-        # main_layout.addWidget(self.upload_button)
+        main_layout.addWidget(body, 1)  # Give body stretch factor to fill remaining space
+
+        # Initialize and set the controller
+        self.controller = ClassMaterialController(left_panel)
+        left_panel.set_controller(self.controller)
 
     def create_header(self):
         frame = QFrame()
