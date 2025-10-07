@@ -150,13 +150,13 @@ class Ui_ClassroomStreamContent(object):
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.syllabussss)
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
         self.icon_label2 = QtWidgets.QLabel(parent=self.syllabussss)
-        self.icon_label2.setMaximumSize(QtCore.QSize(28, 28))
+        self.icon_label2.setMaximumSize(QtCore.QSize(20, 20))
         self.icon_label2.setStyleSheet("QLabel {\n"
 "    background-color: #084924;\n"
-"    border-radius: 20px;\n"
+"    border-radius: 10px;\n"
 "    border: 2px solid white;\n"
 "    color: white;\n"
-"    font-size: 18px;\n"
+"    font-size: 14px;\n"
 "}")
         self.icon_label2.setText("")
         self.icon_label2.setWordWrap(False)

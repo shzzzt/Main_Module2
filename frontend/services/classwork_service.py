@@ -40,92 +40,93 @@ class ClassworkService(BaseService):
         
         return filtered_items
     
-    def create_topic(self, class_id: int, title: str, type_: str) -> Optional[Dict]:
-        """Create a new topic with proper data handling."""
-        if not title or not class_id:
-            self.logger.error("Title and class_id are required")
-            return None
+    # COMMENT OUT - creation handled by forms
+    # def create_topic(self, class_id: int, title: str, type_: str) -> Optional[Dict]:
+    #     """Create a new topic with proper data handling."""
+    #     if not title or not class_id:
+    #         self.logger.error("Title and class_id are required")
+    #         return None
         
-        try:
-            topic_data = {
-                "id": self.generate_id("topics"),
-                "class_id": class_id,
-                "title": title,
-                "type": type_,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
+    #     try:
+    #         topic_data = {
+    #             "id": self.generate_id("topics"),
+    #             "class_id": class_id,
+    #             "title": title,
+    #             "type": type_,
+    #             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #         }
             
-            if "topics" not in self.data:
-                self.data["topics"] = []
+    #         if "topics" not in self.data:
+    #             self.data["topics"] = []
             
-            self.data["topics"].append(topic_data)
+    #         self.data["topics"].append(topic_data)
             
-            if self.save_data():
-                return topic_data
-            return None
+    #         if self.save_data():
+    #             return topic_data
+    #         return None
             
-        except Exception as e:
-            self.logger.error(f"Error creating topic: {e}")
-            return None
+    #     except Exception as e:
+    #         self.logger.error(f"Error creating topic: {e}")
+    #         return None
     
-    def create_post(self, class_id: int, title: str, content: str, type_: str, 
-                   topic_name: Optional[str] = None) -> Optional[Dict]:
-        """Create a new post with proper data handling."""
-        if not all([title, content, type_, class_id]):
-            self.logger.error("Title, content, type, and class_id are required")
-            return None
+    # def create_post(self, class_id: int, title: str, content: str, type_: str, 
+    #                topic_name: Optional[str] = None) -> Optional[Dict]:
+    #     """Create a new post with proper data handling."""
+    #     if not all([title, content, type_, class_id]):
+    #         self.logger.error("Title, content, type, and class_id are required")
+    #         return None
         
-        try:
-            # Find topic ID if topic_name is provided
-            topic_id = None
-            if topic_name and topic_name != "None":
-                topic = next((t for t in self.get_topics_by_class_id(class_id) 
-                            if t.get("title") == topic_name), None)
-                topic_id = topic["id"] if topic else None
+    #     try:
+    #         # Find topic ID if topic_name is provided
+    #         topic_id = None
+    #         if topic_name and topic_name != "None":
+    #             topic = next((t for t in self.get_topics_by_class_id(class_id) 
+    #                         if t.get("title") == topic_name), None)
+    #             topic_id = topic["id"] if topic else None
             
-            post_data = {
-                "id": self.generate_id("posts"),
-                "topic_id": topic_id,
-                "class_id": class_id,
-                "title": title,
-                "content": content,
-                "type": type_,
-                "attachment": None,
-                "score": None if type_ == "material" else 0,
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "author": "Current User"  # This should come from authentication
-            }
+    #         post_data = {
+    #             "id": self.generate_id("posts"),
+    #             "topic_id": topic_id,
+    #             "class_id": class_id,
+    #             "title": title,
+    #             "content": content,
+    #             "type": type_,
+    #             "attachment": None,
+    #             "score": None if type_ == "material" else 0,
+    #             "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    #             "author": "Current User"  # This should come from authentication
+    #         }
             
-            if "posts" not in self.data:
-                self.data["posts"] = []
+    #         if "posts" not in self.data:
+    #             self.data["posts"] = []
             
-            self.data["posts"].append(post_data)
+    #         self.data["posts"].append(post_data)
             
-            if self.save_data():
-                return post_data
-            return None
+    #         if self.save_data():
+    #             return post_data
+    #         return None
             
-        except Exception as e:
-            self.logger.error(f"Error creating post: {e}")
-            return None
+    #     except Exception as e:
+    #         self.logger.error(f"Error creating post: {e}")
+    #         return None
     
-    def update_post(self, post_id: int, updates: Dict) -> bool:
-        """Update an existing post."""
-        try:
-            for i, post in enumerate(self.data.get("posts", [])):
-                if post.get("id") == post_id:
-                    self.data["posts"][i].update(updates)
-                    return self.save_data()
-            return False
-        except Exception as e:
-            self.logger.error(f"Error updating post {post_id}: {e}")
-            return False
+    # def update_post(self, post_id: int, updates: Dict) -> bool:
+    #     """Update an existing post."""
+    #     try:
+    #         for i, post in enumerate(self.data.get("posts", [])):
+    #             if post.get("id") == post_id:
+    #                 self.data["posts"][i].update(updates)
+    #                 return self.save_data()
+    #         return False
+    #     except Exception as e:
+    #         self.logger.error(f"Error updating post {post_id}: {e}")
+    #         return False
     
-    def delete_post(self, post_id: int) -> bool:
-        """Delete a post."""
-        try:
-            self.data["posts"] = [p for p in self.data.get("posts", []) if p.get("id") != post_id]
-            return self.save_data()
-        except Exception as e:
-            self.logger.error(f"Error deleting post {post_id}: {e}")
-            return False
+    # def delete_post(self, post_id: int) -> bool:
+    #     """Delete a post."""
+    #     try:
+    #         self.data["posts"] = [p for p in self.data.get("posts", []) if p.get("id") != post_id]
+    #         return self.save_data()
+    #     except Exception as e:
+    #         self.logger.error(f"Error deleting post {post_id}: {e}")
+    #         return False

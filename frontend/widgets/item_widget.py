@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QMenu, QS
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
 
+# In item_widget.py - modify only the title_text line
 class ItemWidget(QWidget):
     def __init__(self, post, controller, user_role, parent=None):
         super().__init__(parent)
@@ -16,26 +17,23 @@ class ItemWidget(QWidget):
         layout.setSpacing(8)  # Reduced spacing to save horizontal space
         layout.setContentsMargins(10, 8, 10, 8)
 
-        # Icon Label (placeholder green circle)
+       # Icon Label (placeholder green circle)
         icon_label = QLabel(self)
         icon_label.setMinimumSize(32, 32)
-        icon_label.setMaximumSize(38, 38)
+        icon_label.setMaximumSize(32, 32)
         icon_label.setStyleSheet("""
             QLabel {
                 background-color: #084924;
-                border-radius: 19px;
+                border-radius: 16px;  /* Changed from 19px to 16px (half of minimum size) */
                 border: 2px solid white;
-                margin: 5px;           /* Added margin around the icon */
-                padding: 0px;          /* No padding inside the icon */
+                margin: 0px;
+                padding: 0px;
             }
         """)
-        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the icon if you add text/image later
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_label)
-
-        # Title Label
-        author = self.post.get("author", "")
-        type_ = self.post.get("type", "")
-        title_text = f"{author} posted new {type_}: {self.post.get('title', '')}" if author else self.post.get("title", "")
+        # Title Label - CHANGED: Only show title, no "User posted..." text
+        title_text = self.post.get("title", "")  # Simplified to just the title
         title_label = QLabel(title_text, self)
         title_label.setStyleSheet("""
             QLabel {
@@ -44,7 +42,7 @@ class ItemWidget(QWidget):
                 color: #24292f;
                 border: none;
                 background: transparent;
-                margin: 5px;           /* Added margin for consistency */
+                margin-left: 5px;           /* Added margin for consistency */
                 padding: 2px;          /* Added padding for text */
             }
         """)
@@ -91,6 +89,32 @@ class ItemWidget(QWidget):
             """)
             layout.addWidget(self.menu_button)
             self.menu_button.clicked.connect(self.show_menu)
+
+    def show_menu(self):
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 4px 0px;
+            }
+            QMenu::item {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            QMenu::item:selected {
+                background-color: #f5f5f5;
+            }
+        """)
+        edit_action = QAction("Edit", self)
+        delete_action = QAction("Delete", self)
+        edit_action.triggered.connect(lambda: self.controller.edit_post(self.post))
+        delete_action.triggered.connect(lambda: self.controller.delete_post(self.post))
+        menu.addAction(edit_action)
+        menu.addAction(delete_action)
+        button_pos = self.menu_button.mapToGlobal(self.menu_button.rect().bottomLeft())
+        menu.exec(button_pos)
 
     def show_menu(self):
         menu = QMenu(self)

@@ -104,75 +104,15 @@
         },
         {
             "id": 3,
-            "topic_id": null,
             "class_id": 1,
-            "title": "sds",
-            "content": "",
+            "topic_id": 2,
+            "title": "try1",
+            "content": "dsadsad",
             "type": "material",
+            "author": "Kim",
+            "date": "2025-10-06 01:47:29",
             "attachment": null,
-            "score": null,
-            "date": "2025-09-26 00:07:06",
-            "author": "Current User"
-        },
-        {
-            "id": 4,
-            "topic_id": null,
-            "class_id": 1,
-            "title": "sds",
-            "content": "",
-            "type": "material",
-            "attachment": null,
-            "score": null,
-            "date": "2025-09-26 00:07:09",
-            "author": "Current User"
-        },
-        {
-            "id": 5,
-            "topic_id": null,
-            "class_id": 1,
-            "title": "sasassas",
-            "content": "sasasas",
-            "type": "material",
-            "attachment": null,
-            "score": null,
-            "date": "2025-09-26 01:14:41",
-            "author": "Current User"
-        },
-        {
-            "id": 6,
-            "topic_id": 3,
-            "class_id": 1,
-            "title": "Chapter 1 - intro",
-            "content": "Hi guys welcome to my minecraft video",
-            "type": "material",
-            "attachment": null,
-            "score": null,
-            "date": "2025-09-26 08:40:31",
-            "author": "Current User"
-        },
-        {
-            "id": 7,
-            "topic_id": 3,
-            "class_id": 1,
-            "title": "sdfsdf",
-            "content": "sdfsdfdsfsdfds",
-            "type": "material",
-            "attachment": null,
-            "score": null,
-            "date": "2025-09-26 08:59:18",
-            "author": "Current User"
-        },
-        {
-            "id": 8,
-            "topic_id": 3,
-            "class_id": 1,
-            "title": "Test",
-            "content": "AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH",
-            "type": "material",
-            "attachment": null,
-            "score": null,
-            "date": "2025-10-01 21:04:14",
-            "author": "Current User"
+            "score": null
         }
     ]
 }

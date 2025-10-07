@@ -144,6 +144,7 @@ class ClassroomMain(QWidget):
         self.home_view = ClassroomHome(username, roles, primary_role, token)
         self.current_classroom_view = None
         self.current_post_view = None
+        self.current_form_view = None  # ADD: track current form
         
         # Add home view as default
         self.stacked_widget.addWidget(self.home_view)
@@ -171,8 +172,62 @@ class ClassroomMain(QWidget):
         self.current_classroom_view = ClassroomView(cls, self.username, self.roles, self.primary_role, self.token)
         self.current_classroom_view.back_clicked.connect(self.show_home)
         self.current_classroom_view.post_selected.connect(self.show_post)
+        self.current_classroom_view.navigate_to_form.connect(self.show_form)
         self.stacked_widget.addWidget(self.current_classroom_view)
         self.stacked_widget.setCurrentWidget(self.current_classroom_view)
+
+    def show_form(self, form_type, cls):
+        """NEW: Show material or assessment form"""
+        print(f"Showing {form_type} form for class: {cls['title']}")
+        
+        # Clean up any existing form
+        if self.current_form_view:
+            self.stacked_widget.removeWidget(self.current_form_view)
+            self.current_form_view.deleteLater()
+        
+        # Create the appropriate form
+        if form_type == "material":
+            from frontend.views.Academics.Classroom.Faculty.upload_materials import MaterialForm
+            self.current_form_view = MaterialForm(
+                cls=cls,
+                username=self.username,
+                roles=self.roles,
+                primary_role=self.primary_role,
+                token=self.token,
+                post_controller=self.current_classroom_view.classworks_view.post_controller if self.current_classroom_view else None
+            )
+        elif form_type == "assessment":
+            from frontend.views.Academics.Classroom.Faculty.create_assessment import AssessmentForm
+            self.current_form_view = AssessmentForm(
+                cls=cls,
+                username=self.username,
+                roles=self.roles,
+                primary_role=self.primary_role,
+                token=self.token,
+                post_controller=self.current_classroom_view.classworks_view.post_controller if self.current_classroom_view else None
+            )
+        else:
+            print(f"Unknown form type: {form_type}")
+            return
+        
+        # Connect back signal
+        self.current_form_view.back_clicked.connect(self.return_to_classroom_from_form)
+        
+        # Add to stacked widget and show
+        self.stacked_widget.addWidget(self.current_form_view)
+        self.stacked_widget.setCurrentWidget(self.current_form_view)
+
+    def return_to_classroom_from_form(self):
+        """NEW: Return from form back to classroom view"""
+        print("Returning to classroom from form")
+        if self.current_form_view:
+            self.stacked_widget.removeWidget(self.current_form_view)
+            self.current_form_view.deleteLater()
+            self.current_form_view = None
+        
+        # Return to the classroom view
+        if self.current_classroom_view:
+            self.stacked_widget.setCurrentWidget(self.current_classroom_view)
     
     def show_post(self, post):
         print(f"Showing post: {post['title']}")

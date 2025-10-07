@@ -5,12 +5,12 @@ from widgets.stream_post_ui import Ui_ClassroomStreamContent
 
 class ClassroomStream(QWidget):
     post_selected = pyqtSignal(dict)
+    post_created = pyqtSignal()  # Add this signal
 
-    def __init__(self, cls, username, roles, primary_role, token, controller, parent=None):
+    def __init__(self, cls, username, roles, primary_role, token, post_controller, parent=None):
         super().__init__(parent)
         self.cls = cls
-        self.controller = controller
-        self.controller.set_class(cls["id"])
+        self.post_controller = post_controller
         self.username = username
         self.roles = roles
         self.primary_role = primary_role
@@ -60,10 +60,11 @@ class ClassroomStream(QWidget):
             self.post_selected.emit(syllabus_posts[0])
 
     def load_posts(self):
-        posts = self.controller.get_posts()
+        # Use PostController to get posts (they're already sorted by the service)
+        posts = self.post_controller.get_stream_posts()
         print(f"Loading {len(posts)} posts in stream")
         
-        # Get the stream items layout - this is the correct layout from UI
+        # Get the stream items layout
         stream_layout = self.get_stream_layout()
         if not stream_layout:
             print("Error: Could not find stream layout!")
@@ -340,6 +341,22 @@ class ClassroomStream(QWidget):
             
         except Exception as e:
             print(f"Error creating simple post widget: {e}")
+
+        # In classroom_stream.py
+    def set_classworks_reference(self, classworks_view):
+        self.classworks_view = classworks_view
+
+        # Add this method to ensure proper refresh
+    def refresh_posts(self):
+        """Force refresh posts from controller"""
+        self.load_posts()
+
+    # Also update the set_classworks_reference method:
+    def set_classworks_reference(self, classworks_view):
+        self.classworks_view = classworks_view
+        # Also set up bidirectional reference
+        classworks_view.stream_view = self
+
 
     def format_date(self, date_str):
         """Format date string for display"""

@@ -1,18 +1,17 @@
+# ClassroomView.py - FIXED
 from PyQt6.QtWidgets import QWidget, QPushButton, QTabWidget, QVBoxLayout, QHBoxLayout,QButtonGroup,QMainWindow, QStackedWidget, QApplication
 from PyQt6.QtCore import pyqtSignal
 from frontend.views.Academics.Classroom.Shared.post_details import PostDetails
 from frontend.views.Academics.Classroom.Shared.classroom_stream import ClassroomStream
 from frontend.views.Academics.Classroom.Shared.classroom_classworks import ClassroomClassworks
-from frontend.services.classroom_service import ClassroomService
-from frontend.services.stream_service import StreamService
-from frontend.services.classwork_service import ClassworkService
-from frontend.controller.classroom_controller import ClassroomController
-from frontend.controller.stream_controller import StreamController
-from frontend.controller.classwork_controller import ClassworkController
+from frontend.services.post_service import PostService
+from frontend.services.topic_service import TopicService
+from frontend.controller.post_controller import PostController
 
 class ClassroomView(QWidget):
     back_clicked = pyqtSignal()
     post_selected = pyqtSignal(dict) #emits post data
+    navigate_to_form = pyqtSignal(str, object)  # ADD: pass through signal
 
     def __init__(self, cls, username, roles, primary_role, token, parent=None):
         super().__init__(parent)
@@ -22,8 +21,6 @@ class ClassroomView(QWidget):
         self.token = token
         self.cls = cls
         self.setup_ui()
-        
-
 
     def setup_ui(self):
         self.setStyleSheet("background-color: white;")
@@ -68,13 +65,33 @@ class ClassroomView(QWidget):
             }
         """)
         
-        stream_service = StreamService("data/classroom_data.json")
-        classwork_service = ClassworkService("data/classroom_data.json")
-        stream_controller = StreamController(stream_service)
-        classwork_controller = ClassworkController(classwork_service)
+        # Create services and controller
+        post_service = PostService("data/classroom_data.json")
+        topic_service = TopicService("data/classroom_data.json")
         
-        self.stream_view = ClassroomStream(self.cls, self.username, self.roles, self.primary_role, self.token, stream_controller)
-        self.classworks_view = ClassroomClassworks(self.cls, self.username, self.roles, self.primary_role, self.token, classwork_controller)
+        # Create post controller with both services
+        post_controller = PostController(
+            post_service=post_service,
+            topic_service=topic_service
+        )
+        post_controller.set_class(self.cls["id"])
+        
+        self.stream_view = ClassroomStream(
+            self.cls, self.username, self.roles, self.primary_role, 
+            self.token, post_controller
+        )
+        self.classworks_view = ClassroomClassworks(
+            self.cls, self.username, self.roles, self.primary_role, 
+            self.token, post_controller  # Pass the same controller
+        )
+        
+        # Connect signals
+        self.stream_view.post_selected.connect(self.post_selected)
+        self.classworks_view.post_selected.connect(self.post_selected)
+        
+        # Connect refresh signals
+        self.classworks_view.post_created.connect(self.stream_view.refresh_posts)
+        self.stream_view.post_created.connect(self.classworks_view.refresh_posts)
         students_view = QWidget()
         attendance_view = QWidget()
         grades_view = QWidget()
@@ -91,6 +108,8 @@ class ClassroomView(QWidget):
         
         layout.addWidget(tabs)
 
+        # FIXED: Connect form navigation to pass through to ClassroomMain
+        self.classworks_view.navigate_to_form.connect(self.navigate_to_form.emit)
 
         # # Select dashboard based on primary_role
         # if primary_role == "student":
@@ -107,10 +126,33 @@ class ClassroomView(QWidget):
         #         "Invalid Role", f"No dashboard available for role: {primary_role}"
         #         )
 
+    # REMOVE: Delete these methods - ClassroomMain handles form navigation
+    # def handle_form_navigation(self, form_widget):
+    #     """Handle navigation to material/assessment forms using stacked widget"""
+    #     print(f"Navigating to form in stacked widget")
+    #     
+    #     # Store reference to current form
+    #     self.current_form = form_widget
+    #     
+    #     # Connect the form's back signal to return to classworks
+    #     form_widget.back_clicked.connect(self.return_to_classworks)
+    #     
+    #     # Add to stacked widget and show
+    #     self.stacked_widget.addWidget(form_widget)
+    #     self.stacked_widget.setCurrentWidget(form_widget)
+    #
+    # def return_to_classworks(self):
+    #     """Return from form back to classworks view"""
+    #     print("Returning to classworks from form")
+    #     if hasattr(self, 'current_form') and self.current_form:
+    #         self.stacked_widget.removeWidget(self.current_form)
+    #         self.current_form.deleteLater()
+    #         self.current_form = None
+    #     # The classworks view should already be in the stacked widget
+
     def clear(self):
         self.stream_view.clear()
         self.classworks_view.clear()
-        
             
     # def _create_default_widget(self, title, desc):
     #     """Create a fallback widget for invalid roles."""

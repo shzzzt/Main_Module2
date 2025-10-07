@@ -6,10 +6,35 @@ from widgets.classroom_classworks_content_ui import Ui_ClassroomClassworksConten
 from widgets.topic_widget import TopicWidget
 import os
 
+try:
+    # CHANGED: Fix import paths to match your file structure
+    from frontend.views.Academics.Classroom.Faculty.upload_materials import MaterialForm
+    from frontend.views.Academics.Classroom.Faculty.create_assessment import AssessmentForm
+except ImportError:
+    # Fallback import path
+    try:
+        from upload_materials import MaterialForm
+        from create_assessment import AssessmentForm
+    except ImportError:
+        # Final fallback - create placeholder classes
+        class MaterialForm(QWidget):
+            def __init__(self, cls=None, username=None, roles=None, primary_role=None, token=None, post_controller=None, parent=None):
+                super().__init__(parent)
+                layout = QVBoxLayout(self)
+                layout.addWidget(QLabel(f"Material Form for {cls.get('title', 'Unknown Class') if cls else 'Unknown Class'}"))
+                
+        class AssessmentForm(QWidget):
+            def __init__(self, cls=None, username=None, roles=None, primary_role=None, token=None, post_controller=None, parent=None):
+                super().__init__(parent)
+                layout = QVBoxLayout(self)
+                layout.addWidget(QLabel(f"Assessment Form for {cls.get('title', 'Unknown Class') if cls else 'Unknown Class'}"))
+                
 class ClassroomClassworks(QWidget):
     post_selected = pyqtSignal(dict)
+    post_created = pyqtSignal() 
+    navigate_to_form = pyqtSignal(str, object)  # signal for form navigation
 
-    def __init__(self, cls, username, roles, primary_role, token, controller, parent=None):
+    def __init__(self, cls, username, roles, primary_role, token, post_controller, parent=None):
         super().__init__(parent)
         self.setStyleSheet("""
             ClassroomClassworks {
@@ -26,8 +51,8 @@ class ClassroomClassworks(QWidget):
         self.ui = Ui_ClassroomClassworksContent()
         self.ui.setupUi(self)
         self.cls = cls
-        self.controller = controller
-        self.controller.set_class(cls["id"])
+        self.post_controller = post_controller
+        self.post_controller.set_class(cls["id"])  # Set class context
         self.topic_widgets = []
         self.untitled_frames = []
         
@@ -102,18 +127,18 @@ class ClassroomClassworks(QWidget):
         self.ui.createButton.clicked.connect(self.show_create_menu)
 
     def setup_filter(self):
-        """Setup filter combo box without duplicates"""
+        """Setup filter combo box using PostController"""
         self.ui.filterComboBox.clear()
         self.ui.filterComboBox.addItem("All")
         self.ui.filterComboBox.addItem("Material")
         self.ui.filterComboBox.addItem("Assessment")
         
-        # Get unique topics
-        topics = self.controller.get_available_topics()
-        unique_topics = sorted(list(set(topics)))  # Remove duplicates
+        # Get unique topics from PostController
+        topics = self.post_controller.get_available_topics()  # Fixed: use post_controller
+        unique_topics = sorted(list(set(topics)))
         
         for topic in unique_topics:
-            if topic:  # Skip empty topics
+            if topic:
                 self.ui.filterComboBox.addItem(topic)
 
     def show_create_menu(self):
@@ -154,7 +179,19 @@ class ClassroomClassworks(QWidget):
         if item_type == "topic":
             self.create_topic()
         else:
-            self.show_create_dialog(item_type)
+            # CHANGED: Navigate to proper forms instead of showing simple dialog
+            self.navigate_to_create_form(item_type)
+
+    def navigate_to_create_form(self, form_type):
+        """Navigate to the appropriate creation form"""
+        # CHANGED: Just emit the form type and classroom data, let ClassroomMain handle the form creation
+        self.navigate_to_form.emit(form_type, self.cls)
+        print(f"Requesting {form_type} form for class: {self.cls.get('title', 'Unknown')}")
+
+    def handle_form_back(self):
+        """Handle back navigation from forms"""
+        # This will be handled by the parent ClassroomView
+        pass
 
     def create_topic(self):
         dialog = QDialog(self)
@@ -188,67 +225,85 @@ class ClassroomClassworks(QWidget):
             print("Topic title is required")
             return
         
-        if self.controller.create_topic(title, type_):
+        # Use PostController to create topic
+        if self.post_controller.create_topic(title, type_):  # Fixed: use post_controller
             print("Topic created successfully")
             self.setup_filter()  # Refresh filter options
             self.load_posts()    # Reload posts
             dialog.accept()
         else:
             print("Failed to create topic")
+            
+    # def show_create_dialog(self, item_type):
+    #     dialog = QDialog(self)
+    #     dialog.setWindowTitle(f"Create {item_type.capitalize()}")
+    #     dialog.setStyleSheet("background-color: white;")
+    #     dialog.setModal(True)
+        
+    #     layout = QVBoxLayout(dialog)
+        
+    #     title_label = QLabel("Title:")
+    #     title_input = QLineEdit()
+    #     layout.addWidget(title_label)
+    #     layout.addWidget(title_input)
+        
+    #     content_label = QLabel("Content:")
+    #     content_input = QTextEdit()
+    #     layout.addWidget(content_label)
+    #     layout.addWidget(content_input)
+        
+    #     topic_label = QLabel("Topic:")
+    #     topic_combo = QComboBox()
+    #     topic_combo.addItem("None")
+        
+    #     # Get topics from PostController
+    #     for topic in self.post_controller.get_available_topics():
+    #         if topic:
+    #             topic_combo.addItem(topic)
+                
+    #     layout.addWidget(topic_label)
+    #     layout.addWidget(topic_combo)
+        
+    #     create_btn = QPushButton("Create")
+    #     create_btn.clicked.connect(lambda: self.handle_create_content(
+    #         title_input.text(),
+    #         content_input.toPlainText(),
+    #         item_type,
+    #         topic_combo.currentText() if topic_combo.currentText() != "None" else None,
+    #         dialog
+    #     ))
+    #     layout.addWidget(create_btn)
+        
+    #     dialog.exec()
 
-    def show_create_dialog(self, item_type):
-        dialog = QDialog(self)
-        dialog.setWindowTitle(f"Create {item_type.capitalize()}")
-        dialog.setStyleSheet("background-color: white;")
-        dialog.setModal(True)
-        
-        layout = QVBoxLayout(dialog)
-        
-        title_label = QLabel("Title:")
-        title_input = QLineEdit()
-        layout.addWidget(title_label)
-        layout.addWidget(title_input)
-        
-        content_label = QLabel("Content:")
-        content_input = QTextEdit()
-        layout.addWidget(content_label)
-        layout.addWidget(content_input)
-        
-        topic_label = QLabel("Topic:")
-        topic_combo = QComboBox()
-        topic_combo.addItem("None")
-        for topic in self.controller.get_available_topics():
-            if topic:
-                topic_combo.addItem(topic)
-        layout.addWidget(topic_label)
-        layout.addWidget(topic_combo)
-        
-        create_btn = QPushButton("Create")
-        create_btn.clicked.connect(lambda: self.handle_create_content(
-            title_input.text(),
-            content_input.toPlainText(),
-            item_type,
-            topic_combo.currentText() if topic_combo.currentText() != "None" else None,
-            dialog
-        ))
-        layout.addWidget(create_btn)
-        
-        dialog.exec()
+    def set_stream_reference(self, stream_view):
+        self.stream_view = stream_view
 
+    # In the handle_create_content method, update the refresh logic:
     def handle_create_content(self, title, content, type_, topic_name, dialog):
         if not title or not content:
             print("Title and content are required")
             return
         
-        if self.controller.create_post(title, content, type_, topic_name):
+        # Use current user as author
+        author = self.username  # or get from your auth system
+        
+        # Use PostController to create post
+        if self.post_controller.create_post(title, content, type_, author, topic_name):
             print(f"{type_.capitalize()} created successfully")
             self.load_posts(self.ui.filterComboBox.currentText())
+            self.post_created.emit()  # Notify other views
             dialog.accept()
         else:
             print(f"Failed to create {type_}")
+    
+    def refresh_posts(self):
+        """Refresh posts when new ones are created"""
+        self.load_posts(self.ui.filterComboBox.currentText())
+
 
     def load_posts(self, filter_topic=None):
-        """Load posts using refactored MVC pattern."""
+        """Load posts using PostController"""
         # Determine filter parameters
         filter_type = None
         topic_name = None
@@ -259,15 +314,14 @@ class ClassroomClassworks(QWidget):
         elif filter_topic not in ["All", "Material", "Assessment"]:
             topic_name = filter_topic
         
-        # Use refactored controller method
-        self.controller.set_filter(filter_type=filter_type, topic_name=topic_name)
-        posts = self.controller.get_classwork_items()
+        # Use post_controller with filters
+        self.post_controller.set_filters(filter_type=filter_type, topic_name=topic_name)  # Fixed: use post_controller
+        posts = self.post_controller.get_classwork_posts()  # Fixed: use post_controller
         
-        # Sort posts: latest first (assuming posts have a timestamp field like 'created_at')
+        # Sort posts: latest first
         try:
-            posts.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+            posts.sort(key=lambda x: x.get('date', ''), reverse=True)
         except:
-            # If sorting fails, keep the original order (assuming it's already newest first)
             pass
         
         # Get the layout
@@ -288,12 +342,19 @@ class ClassroomClassworks(QWidget):
         if posts:
             grouped = {}
             for post in posts:
-                topic_title = post.get("topic", "Untitled")
+                # Get topic title from topic_id
+                topic_title = "Untitled"
+                if post.get("topic_id"):
+                    # You might need to implement a method to get topic by ID
+                    topic = self.post_controller.get_topic_by_id(post["topic_id"])
+                    if topic:
+                        topic_title = topic.get("title", "Untitled")
+                
                 grouped.setdefault(topic_title, []).append(post)
             
             # Sort posts within each group by date (latest first)
             for topic_title in grouped:
-                grouped[topic_title].sort(key=lambda x: x.get('created_at', ''), reverse=True)
+                grouped[topic_title].sort(key=lambda x: x.get('date', ''), reverse=True)
             
             # Put Untitled group first, then alphabetical order for others
             sorted_groups = sorted(grouped.items(), 
@@ -301,16 +362,17 @@ class ClassroomClassworks(QWidget):
             
             for topic_title, topic_posts in sorted_groups:
                 if topic_title == "Untitled":
-                    # Add untitled posts directly without TopicWidget container
+                    # Add untitled posts directly
                     for post in topic_posts:
                         from frontend.widgets.topic_frame import TopicFrame
-                        frame = TopicFrame(post, self.controller, self.primary_role)
+                        frame = TopicFrame(post, self.post_controller, self.primary_role)  # Fixed: use post_controller
                         frame.post_clicked.connect(self.post_selected.emit)
                         layout.addWidget(frame)
                         self.untitled_frames.append(frame)
                 else:
                     # Use TopicWidget for posts with topics
-                    topic_widget = TopicWidget(topic_title, topic_posts, self.controller, self.primary_role)
+                    from frontend.widgets.topic_widget import TopicWidget
+                    topic_widget = TopicWidget(topic_title, topic_posts, self.post_controller, self.primary_role)  # Fixed: use post_controller
                     
                     # Connect post selection signal
                     for frame in topic_widget.frames:

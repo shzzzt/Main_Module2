@@ -1,5 +1,4 @@
-#Assessment creation interface
-
+# create_assessment.py - UPDATED WITH RESPONSIVE LAYOUT
 import os, sys
 
 project_root = (os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
@@ -19,63 +18,91 @@ from PyQt6.QtWidgets import (
     QPushButton, 
     QFrame, 
     QSpacerItem, 
-    QSizePolicy, QGridLayout)
+    QSizePolicy, 
+    QGridLayout,
+    QScrollArea  # ADD: Scroll area for responsiveness
+)
 
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtGui import QFont, QPalette, QColor, QCursor
 from frontend.widgets.labeled_section import LabeledSection
 from frontend.widgets.dropdown import DropdownMenu
 from frontend.widgets.upload_class_material_widget import UploadClassMaterialPanel
 
 
-class AssessmentForm(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class AssessmentForm(QWidget):
+    back_clicked = pyqtSignal()
+
+    def __init__(self, cls=None, username=None, roles=None, primary_role=None, token=None, post_controller=None, parent=None):
+        super().__init__(parent)
+        self.cls = cls
+        self.username = username
+        self.roles = roles
+        self.primary_role = primary_role
+        self.token = token
+        self.post_controller = post_controller
         self.initUI()
         
     def initUI(self):
-        self.setWindowTitle("Assessment")
-        self.setGeometry(100, 100, 1400, 800)  # Increased window size
-        self.setMinimumSize(QSize(1200, 700))   # Set minimum size
         self.setStyleSheet("""
-            QMainWindow {
+            QWidget {
                 background-color: #f5f5f5;
+            }
+            QScrollArea {
+                border: none;
+                background-color: transparent;
             }
         """)
         
-        # Main widget and layout
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        main_layout = QVBoxLayout(main_widget)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-
+        # Main layout with scroll area
+        main_layout = QVBoxLayout(self)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         
+        # Create scroll area for responsiveness
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setStyleSheet("QScrollArea {\n"
+"       border: none;\n"
+"       background-color: transparent;\n"
+"   }\n"
+"   QScrollBar:vertical {\n"
+"       border: none;\n"
+"       background: #F1F1F1;\n"
+"       width: 8px;\n"
+"       border-radius: 4px;\n"
+"   }\n"
+"   QScrollBar::handle:vertical {\n"
+"       background: #C1C1C1;\n"
+"       border-radius: 4px;\n"
+"       min-height: 20px;\n"
+"   }")
+        
+        # Main content widget
+        content_widget = QWidget()
+        content_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setSpacing(20)
+        content_layout.setContentsMargins(20, 20, 20, 20)
         
         header = self.create_header()
-        # Left panel
-        left_panel = self.create_left_panel()
+        body = self.create_body()
         
-        # Right panel
-        right_panel = self.create_right_panel()
-
-        self.upload_button = self.create_upload_button()
+        content_layout.addWidget(header)
+        content_layout.addWidget(body, 1)  # Give body stretch factor
         
-        body = QFrame()
-        body_layout = QHBoxLayout(body)
-        body_layout.addWidget(left_panel, 3)  # Give left panel more space ratio
-        body_layout.addWidget(right_panel, 1)
-
-        main_layout.addWidget(header)
-        main_layout.addWidget(body)
-        # main_layout.addWidget(self.upload_button)
+        scroll_area.setWidget(content_widget)
+        main_layout.addWidget(scroll_area)
 
     def create_header(self):
         frame = QFrame()
         header_layout = QHBoxLayout(frame)
+        header_layout.setContentsMargins(0, 0, 0, 0)
 
         back_button = QPushButton("<")
-        back_button.setFixedSize(40, 40)  # Fixed size for back button
+        back_button.setFixedSize(40, 40)
         back_button.setStyleSheet("""
             QPushButton {
                 background-color: #FFFFFF;
@@ -93,11 +120,12 @@ class AssessmentForm(QMainWindow):
             }
         """)
         back_button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        back_button.clicked.connect(self.back_clicked)
 
         back_label = QLabel("Assessment")
         back_label.setStyleSheet("""
             QLabel {
-                font-size: 24px;  /* Increased font size */
+                font-size: 24px;
                 font-weight: bold;
                 color: #333;
                 border: none;
@@ -107,15 +135,49 @@ class AssessmentForm(QMainWindow):
 
         header_layout.addWidget(back_button)
         header_layout.addWidget(back_label)
+        header_layout.addStretch()
 
         return frame
-
+    
+    def create_body(self):
+        """Create responsive body with left and right panels"""
+        body_widget = QWidget()
+        body_layout = QHBoxLayout(body_widget)
+        body_layout.setSpacing(20)
+        body_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Left panel (main content) - responsive
+        left_panel = self.create_left_panel()
+        left_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        
+        # Right panel (sidebar) - fixed minimum width but can grow
+        right_panel = self.create_right_panel()
+        right_panel.setMinimumWidth(280)  # Minimum width for sidebar
+        right_panel.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
+        
+        body_layout.addWidget(left_panel, 3)  # Left panel gets more space
+        body_layout.addWidget(right_panel, 1)  # Right panel gets less space
+        
+        return body_widget
+    
     def create_left_panel(self):
-        return UploadClassMaterialPanel()
+        """Create responsive left panel"""
+        left_widget = QWidget()
+        left_layout = QVBoxLayout(left_widget)
+        left_layout.setSpacing(0)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Use the existing UploadClassMaterialPanel but make it responsive
+        upload_panel = UploadClassMaterialPanel()
+        upload_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        
+        left_layout.addWidget(upload_panel)
+        return left_widget
     
     def create_right_panel(self):
         right_frame = QFrame()
-        right_frame.setMinimumWidth(300)
+        right_frame.setMinimumWidth(280)
+        right_frame.setMaximumWidth(400)  # Prevent it from getting too wide
         right_frame.setStyleSheet("""
             QFrame {
                 background-color: white;
@@ -135,7 +197,7 @@ class AssessmentForm(QMainWindow):
         category_dropdown = DropdownMenu(items=["Laboratory"])
         layout.addWidget(LabeledSection("Category", category_dropdown))
 
-        # Grade and Points section
+        # Grade and Points section - make it responsive
         grade_points = QWidget()
         grade_points_layout = QHBoxLayout(grade_points)
         grade_points_layout.setSpacing(10)
@@ -170,26 +232,6 @@ class AssessmentForm(QMainWindow):
 
         layout.addStretch()
         return right_frame
-    
-    def create_upload_button(self):
-        # Upload button
-        upload_btn = QPushButton("Upload Now")
-        upload_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 15px 24px;
-                font-size: 14px;
-                font-weight: 500;
-                min-height: 20px;
-            }
-            QPushButton:hover { background-color: #218838; }
-            QPushButton:pressed { background-color: #1e7e34; }
-        """)
-        upload_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        return upload_btn
     
 def main():
     app = QApplication(sys.argv)
