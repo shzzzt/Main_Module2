@@ -2,12 +2,13 @@
 Grading System Dialog Module
 Handles the configuration of grading rubrics.
 Integrated with the new table model architecture.
+FIXED: Proper sizing and scrollable components
 """
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QHeaderView, QWidget,
-    QMessageBox, QLineEdit, QAbstractItemView
+    QMessageBox, QLineEdit, QAbstractItemView, QScrollArea
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
 from PyQt6.QtGui import QColor, QFont
@@ -121,62 +122,12 @@ class GradingSystemModel(QObject):
         }
 
 
-# class GradingSystemController(QObject):
-#     """Controller for grading system operations"""
-#     validation_error = pyqtSignal(str)
-#     save_success = pyqtSignal()
-    
-#     def __init__(self, model: GradingSystemModel):
-#         super().__init__()
-#         self.model = model
-    
-#     def add_component(self, term: str, name: str, percentage: int):
-#         rubric = self.model.get_rubric(term)
-#         if rubric:
-#             rubric.add_component(ComponentItem(name, percentage))
-#             self.model.data_changed.emit()
-#             return True
-#         return False
-    
-#     def remove_component(self, term: str, index: int):
-#         rubric = self.model.get_rubric(term)
-#         if rubric:
-#             rubric.remove_component(index)
-#             self.model.data_changed.emit()
-#             return True
-#         return False
-    
-#     def update_component(self, term: str, index: int, name: str, percentage: int):
-#         rubric = self.model.get_rubric(term)
-#         if rubric:
-#             rubric.update_component(index, name, percentage)
-#             self.model.data_changed.emit()
-#             return True
-#         return False
-    
-#     def validate_and_save(self):
-#         if not self.model.validate_all():
-#             errors = []
-#             if not self.model.midterm_rubric.is_valid():
-#                 total = self.model.midterm_rubric.get_total_percentage()
-#                 errors.append(f"Midterm components total {total}% (must be 100%)")
-#             if not self.model.final_rubric.is_valid():
-#                 total = self.model.final_rubric.get_total_percentage()
-#                 errors.append(f"Final components total {total}% (must be 100%)")
-            
-#             self.validation_error.emit("\n".join(errors))
-#             return False
-        
-#         self.save_success.emit()
-#         return True
-
-
 # ============================================================================
 # VIEW LAYER - COMPONENTS
 # ============================================================================
 
 class TermRubricWidget(QWidget):
-    """Widget displaying rubric table for a single term"""
+    """Widget displaying rubric table for a single term - FIXED: Better sizing"""
     
     def __init__(self, term_name: str, term_percentage: int, 
                  controller: GradingSystemController, parent=None):
@@ -188,8 +139,8 @@ class TermRubricWidget(QWidget):
     
     def setup_ui(self):
         layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 20)
-        layout.setSpacing(10)
+        layout.setContentsMargins(0, 0, 0, 15)
+        layout.setSpacing(8)
         
         # Term header
         term_header = QLabel(f"{self.term_name}: {self.term_percentage}%")
@@ -203,10 +154,12 @@ class TermRubricWidget(QWidget):
         """)
         layout.addWidget(term_header)
         
-        # Components table
+        # Components table - FIXED: Set proper height
         self.table = QTableWidget()
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["No", "Component", "Percentage"])
+        self.table.setMinimumHeight(150)  # FIXED: Minimum height
+        self.table.setMaximumHeight(200)  # FIXED: Maximum height
         
         self.table.setStyleSheet("""
             QTableWidget {
@@ -411,11 +364,11 @@ class TermRubricWidget(QWidget):
 
 
 # ============================================================================
-# MAIN DIALOG
+# MAIN DIALOG - FIXED SIZING
 # ============================================================================
 
 class GradingSystemDialog(QDialog):
-    """Main dialog for configuring the grading system"""
+    """Main dialog for configuring the grading system - FIXED: Proper sizing and scrolling"""
     rubric_saved = pyqtSignal(dict)
     
     def __init__(self, parent=None):
@@ -429,12 +382,18 @@ class GradingSystemDialog(QDialog):
     def setup_ui(self):
         self.setWindowTitle("Grading System")
         self.setModal(True)
-        self.setFixedSize(500, 650)
         
-        layout = QVBoxLayout()
-        layout.setContentsMargins(30, 30, 30, 30)
-        layout.setSpacing(20)
+        # FIXED: Better sizing that works with parent window
+        self.setMinimumSize(600, 600)
+        self.setMaximumSize(800, 900)
+        self.resize(650, 700)
         
+        # Main layout
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(25, 25, 25, 25)
+        main_layout.setSpacing(15)
+        
+        # Header
         header = QLabel("Grading System")
         header.setStyleSheet("""
             QLabel {
@@ -444,20 +403,61 @@ class GradingSystemDialog(QDialog):
                 padding-bottom: 10px;
             }
         """)
-        layout.addWidget(header)
+        main_layout.addWidget(header)
         
+        # FIXED: Create scrollable area for content
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                background-color: white;
+                border: none;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #F0F0F0;
+                width: 10px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #BDBDBD;
+                min-height: 20px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #9E9E9E;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)
+        
+        # Content widget inside scroll area
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(5, 5, 5, 5)
+        content_layout.setSpacing(20)
+        
+        # Add rubric widgets to content
         self.midterm_widget = TermRubricWidget("Midterm", 33, self.controller)
-        layout.addWidget(self.midterm_widget)
+        content_layout.addWidget(self.midterm_widget)
         
         self.final_widget = TermRubricWidget("Final", 67, self.controller)
-        layout.addWidget(self.final_widget)
+        content_layout.addWidget(self.final_widget)
         
-        layout.addStretch()
+        content_layout.addStretch()
         
+        # Set content widget to scroll area
+        scroll_area.setWidget(content_widget)
+        main_layout.addWidget(scroll_area)
+        
+        # Button layout at bottom (fixed, not scrolling)
         button_layout = QHBoxLayout()
         button_layout.setSpacing(15)
         
         self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.setFixedHeight(40)
         self.cancel_button.setStyleSheet("""
             QPushButton {
                 background-color: white;
@@ -475,6 +475,7 @@ class GradingSystemDialog(QDialog):
         self.cancel_button.clicked.connect(self.reject)
         
         self.save_button = QPushButton("Save")
+        self.save_button.setFixedHeight(40)
         self.save_button.setStyleSheet("""
             QPushButton {
                 background-color: #084924;
@@ -495,8 +496,8 @@ class GradingSystemDialog(QDialog):
         button_layout.addWidget(self.cancel_button)
         button_layout.addWidget(self.save_button)
         
-        layout.addLayout(button_layout)
-        self.setLayout(layout)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
         
         self.setStyleSheet("""
             QDialog {

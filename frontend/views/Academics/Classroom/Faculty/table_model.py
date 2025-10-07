@@ -1,6 +1,6 @@
 """
 Custom QAbstractTableModel implementation with:
-- Bulk input support in headers
+- Bulk input support in headers (TRULY FIXED: uses viewport as parent)
 - Draft/upload status for grades with three-dot menu in cells
 - Expandable column headers with dynamic colors
 - Component aggregation display
@@ -32,7 +32,7 @@ class BulkInputHeaderView(QHeaderView):
     """
     Custom header with:
     - Expandable indicators (right arrow collapsed, down arrow expanded)
-    - Bulk input widgets
+    - Bulk input widgets (parented to viewport for proper scrolling)
     - Draft/upload options menu
     - Dynamic colors based on expand state
     """
@@ -40,6 +40,7 @@ class BulkInputHeaderView(QHeaderView):
     section_expand_clicked = pyqtSignal(int, dict)  # section, column_info
     bulk_input_changed = pyqtSignal(int, str)  # column, value
     upload_column_clicked = pyqtSignal(int)  # column
+    draft_column_clicked = pyqtSignal(int)  # column
     
     def __init__(self, orientation, parent=None):
         super().__init__(orientation, parent)
@@ -49,6 +50,9 @@ class BulkInputHeaderView(QHeaderView):
         self.sectionClicked.connect(self._on_section_clicked)
         self.expanded_main_column = None  # Track which main column is expanded
         self.expanded_states = {}  # Track all expansion states
+        
+        # CRITICAL: Connect to geometry changes
+        self.sectionResized.connect(self._on_section_resized)
         
     def set_expanded_states(self, expanded_main, all_states):
         """Set expanded states for dynamic coloring"""
@@ -67,6 +71,11 @@ class BulkInputHeaderView(QHeaderView):
         
         if col_info and col_info.get('type') in ['expandable_main', 'expandable_component']:
             self.section_expand_clicked.emit(logical_index, col_info)
+    
+    def _on_section_resized(self, logicalIndex, oldSize, newSize):
+        """Handle section resize - reposition widget if it exists"""
+        if logicalIndex in self.bulk_widgets:
+            self._position_bulk_widget(logicalIndex)
     
     def _is_expanded(self, col_info):
         """Check if a column is expanded"""
@@ -89,18 +98,15 @@ class BulkInputHeaderView(QHeaderView):
     
     def _get_header_color(self, col_info, col_type):
         """Get header background color based on expand state"""
-        # Check if this column belongs to an expanded main column
         if self.expanded_main_column:
             col_term = col_info.get('term', '')
             col_target = col_info.get('target', '')
             
-            # If this IS the expanded main column or belongs to it
             if (col_target == self.expanded_main_column or 
                 col_term == self.expanded_main_column):
-                return QColor("#036800")  # Darker green for expanded group
+                return QColor("#036800")
         
-        # Default color
-        return QColor("#084924")  # Standard green
+        return QColor("#084924")
     
     def _get_text_color(self, col_info, col_type):
         """Get text color based on column type and expand state"""
@@ -108,19 +114,16 @@ class BulkInputHeaderView(QHeaderView):
             col_term = col_info.get('term', '')
             col_target = col_info.get('target', '')
             
-            # Main column (expanded) - white text
             if col_type == 'expandable_main' and col_target == self.expanded_main_column:
                 return QColor("white")
             
-            # Component headers under expanded section - gold text
             if col_type == 'expandable_component' and col_term == self.expanded_main_column:
                 return QColor("#FFC000")
             
-            # Grade input columns under expanded section - gold text
             if col_type == 'grade_input' and col_term == self.expanded_main_column:
                 return QColor("#FFC000")
         
-        return QColor("white")  # Default white
+        return QColor("white")
     
     def paintSection(self, painter, rect, logicalIndex):
         """Custom paint for header sections with dynamic colors"""
@@ -183,14 +186,13 @@ class BulkInputHeaderView(QHeaderView):
             str(text) if text else ""
         )
         
-        # Draw Expand Indicator (smaller, proper arrows)
+        # Draw Expand Indicator
         if col_type in ['expandable_main', 'expandable_component']:
             painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
             indicator_rect = rect.adjusted(rect.width() - 20, 0, -5, 0)
             
-            # Check if expanded
             is_expanded = self._is_expanded(col_info)
-            arrow = "▼" if is_expanded else "▶"  # Down if expanded, right if collapsed
+            arrow = "▼" if is_expanded else "▶"
             
             painter.drawText(
                 indicator_rect,
@@ -199,8 +201,9 @@ class BulkInputHeaderView(QHeaderView):
             )
     
     def create_bulk_widget(self, column, max_score=40):
-        """Create bulk input widget for a grade column"""
-        container = QWidget(self)
+        """Create bulk input widget for a grade column - parented to viewport()"""
+        # CRITICAL: Parent to viewport(), not self
+        container = QWidget(self.viewport())
         layout = QHBoxLayout(container)
         layout.setContentsMargins(4, 2, 4, 2)
         layout.setSpacing(4)
@@ -265,6 +268,8 @@ class BulkInputHeaderView(QHeaderView):
         """)
         
         draft_action = menu.addAction("Keep as Draft")
+        draft_action.triggered.connect(lambda col=column: self.draft_column_clicked.emit(col))
+        
         upload_action = menu.addAction("Upload All")
         upload_action.triggered.connect(lambda col=column: self.upload_column_clicked.emit(col))
         
@@ -277,6 +282,29 @@ class BulkInputHeaderView(QHeaderView):
         layout.addWidget(options_btn)
         
         return container
+    
+    def _position_bulk_widget(self, column):
+        """Position a single bulk widget - uses sectionViewportPosition for viewport parent"""
+        if column not in self.bulk_widgets:
+            return
+        
+        widget = self.bulk_widgets[column]
+        
+        # CRITICAL: Use sectionViewportPosition since widget is parented to viewport
+        x_pos = self.sectionViewportPosition(column)
+        width = self.sectionSize(column)
+        
+        widget.setGeometry(
+            x_pos,
+            self.height() - 28,
+            width,
+            25
+        )
+    
+    def reposition_all_bulk_widgets(self):
+        """Reposition all bulk widgets"""
+        for column in self.bulk_widgets.keys():
+            self._position_bulk_widget(column)
     
     def _on_bulk_input_changed(self, column, text, max_score):
         """Handle bulk input change"""
@@ -354,13 +382,11 @@ class GradeInputDelegate(QStyledItemDelegate):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.option_widgets = {}  # Track widgets by index
+        self.option_widgets = {}
     
     def paint(self, painter, option, index):
         """Custom paint to show cell with options button"""
         super().paint(painter, option, index)
-        
-        # The options widget will be created by the view
     
     def createEditor(self, parent, option, index):
         editor = QLineEdit(parent)
@@ -380,6 +406,7 @@ class GradeInputDelegate(QStyledItemDelegate):
 class EnhancedGradesTableView(QTableView):
     """
     Main table view with all features integrated
+    ULTIMATE FIX: Bulk widgets parented to header viewport for automatic scroll handling
     """
     
     def __init__(self, data_model, controller, parent=None):
@@ -387,7 +414,7 @@ class EnhancedGradesTableView(QTableView):
         
         self.data_model = data_model
         self.controller = controller
-        self.cell_option_widgets = {}  # {(row, col): widget}
+        self.cell_option_widgets = {}
         
         # Setup model
         self.table_model = GradesTableModel(data_model, controller)
@@ -405,6 +432,7 @@ class EnhancedGradesTableView(QTableView):
         self.custom_header.section_expand_clicked.connect(self._on_header_expand)
         self.custom_header.bulk_input_changed.connect(self._on_bulk_input)
         self.custom_header.upload_column_clicked.connect(self._on_upload_column)
+        self.custom_header.draft_column_clicked.connect(self._on_draft_column)
         self.data_model.columns_changed.connect(self._update_header_colors)
         self.table_model.dataChanged.connect(self._on_data_changed)
         
@@ -458,22 +486,16 @@ class EnhancedGradesTableView(QTableView):
         elif self.data_model.get_column_state('finalterm_expanded'):
             expanded_main = 'finalterm'
         
-        # Get all expansion states
         all_states = dict(self.data_model.column_states)
-        
         self.custom_header.set_expanded_states(expanded_main, all_states)
-        
-        # Recreate option widgets
         self._create_all_option_widgets()
     
     def _create_all_option_widgets(self):
         """Create option widgets for all grade input cells"""
-        # Clear existing widgets
         for widget in self.cell_option_widgets.values():
             widget.deleteLater()
         self.cell_option_widgets = {}
         
-        # Create new widgets for grade input columns
         for row in range(self.table_model.rowCount()):
             for col in range(self.table_model.columnCount()):
                 col_info = self.table_model.columns[col]
@@ -490,7 +512,6 @@ class EnhancedGradesTableView(QTableView):
             lambda r=row, c=col: self._on_keep_draft_single(r, c)
         )
         
-        # Position widget
         self._position_option_widget(row, col, widget)
         widget.show()
         
@@ -508,7 +529,6 @@ class EnhancedGradesTableView(QTableView):
     
     def _on_data_changed(self, top_left, bottom_right):
         """Handle data changes and update widgets"""
-        # Reposition affected widgets
         for row in range(top_left.row(), bottom_right.row() + 1):
             for col in range(top_left.column(), bottom_right.column() + 1):
                 if (row, col) in self.cell_option_widgets:
@@ -524,7 +544,6 @@ class EnhancedGradesTableView(QTableView):
             widget.deleteLater()
         self.custom_header.bulk_widgets = {}
         
-        # Update header colors
         self._update_header_colors()
         
         # Set column widths and add bulk widgets
@@ -543,14 +562,6 @@ class EnhancedGradesTableView(QTableView):
             elif col_type == 'grade_input':
                 max_score = col_info.get('max_score', 40)
                 widget = self.custom_header.create_bulk_widget(i, max_score)
-                
-                header_rect = self.custom_header.sectionViewportPosition(i)
-                widget.setGeometry(
-                    header_rect,
-                    self.custom_header.height() - 28,
-                    width,
-                    25
-                )
                 widget.show()
                 self.custom_header.bulk_widgets[i] = widget
             
@@ -561,6 +572,9 @@ class EnhancedGradesTableView(QTableView):
             
             elif col_type == 'calculated':
                 self.setColumnWidth(i, 110)
+        
+        # Position all bulk widgets
+        self.custom_header.reposition_all_bulk_widgets()
         
         # Create option widgets for all grade cells
         self._create_all_option_widgets()
@@ -575,7 +589,20 @@ class EnhancedGradesTableView(QTableView):
     
     def _on_upload_column(self, column):
         """Handle upload column grades"""
+        print(f"[DEBUG] Upload All clicked for column {column}")
         self.table_model.upload_column_grades(column)
+    
+    def _on_draft_column(self, column):
+        """Handle keep as draft for column"""
+        print(f"[DEBUG] Keep as Draft clicked for column {column}")
+        col_info = self.table_model.columns[column]
+        if col_info.get('type') == 'grade_input':
+            component_key = col_info.get('component_key', '')
+            for student_id in self.data_model.grades.keys():
+                if component_key in self.data_model.grades[student_id]:
+                    grade_item = self.data_model.grades[student_id][component_key]
+                    if grade_item.value:
+                        self.data_model.set_grade(student_id, component_key, grade_item.value, is_draft=True)
     
     def _on_upload_single(self, row, col):
         """Handle upload single grade"""
@@ -583,7 +610,6 @@ class EnhancedGradesTableView(QTableView):
     
     def _on_keep_draft_single(self, row, col):
         """Handle keep as draft for single grade"""
-        # Grade is already draft by default, just ensure it stays that way
         col_info = self.table_model.columns[col]
         if col_info.get('type') == 'grade_input':
             component_key = col_info.get('component_key', '')
@@ -595,25 +621,17 @@ class EnhancedGradesTableView(QTableView):
     def resizeEvent(self, event):
         """Reposition widgets on resize"""
         super().resizeEvent(event)
+        self.custom_header.reposition_all_bulk_widgets()
         
-        # Reposition bulk widgets
-        for col, widget in self.custom_header.bulk_widgets.items():
-            header_pos = self.custom_header.sectionViewportPosition(col)
-            width = self.columnWidth(col)
-            widget.setGeometry(
-                header_pos,
-                self.custom_header.height() - 28,
-                width,
-                25
-            )
-        
-        # Reposition option widgets
         for (row, col), widget in self.cell_option_widgets.items():
             self._position_option_widget(row, col, widget)
     
     def scrollContentsBy(self, dx, dy):
-        """Reposition widgets on scroll"""
+        """Reposition widgets on scroll - bulk widgets auto-handled by viewport parent"""
         super().scrollContentsBy(dx, dy)
+        
+        # CRITICAL: Reposition bulk widgets on ANY scroll
+        self.custom_header.reposition_all_bulk_widgets()
         
         # Reposition option widgets
         for (row, col), widget in self.cell_option_widgets.items():
