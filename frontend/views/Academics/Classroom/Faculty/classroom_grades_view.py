@@ -1,6 +1,7 @@
 """
 Faculty Grades View - Full grade management interface
 Features: bulk input, draft/upload status, expandable columns, grading system management
+UPDATED: Correct exam handling (1 for midterm, 2 for final)
 """
 import os
 import sys
@@ -194,7 +195,8 @@ class FacultyGradesView(QWidget):
                 
                 state_key = f'{comp_key}_midterm_expanded'
                 if self.grade_model.get_column_state(state_key):
-                    type_key = self.grade_model.get_component_type_key(comp_name)
+                    # Get the correct type key based on component name and term
+                    type_key = self.grade_model.get_component_type_key(comp_name, 'midterm')
                     sub_items = self.grade_model.get_component_items_with_scores(type_key)
                     
                     for item in sub_items:
@@ -233,7 +235,8 @@ class FacultyGradesView(QWidget):
                 
                 state_key = f'{comp_key}_finalterm_expanded'
                 if self.grade_model.get_column_state(state_key):
-                    type_key = self.grade_model.get_component_type_key(comp_name)
+                    # Get the correct type key based on component name and term
+                    type_key = self.grade_model.get_component_type_key(comp_name, 'finalterm')
                     sub_items = self.grade_model.get_component_items_with_scores(type_key)
                     
                     for item in sub_items:

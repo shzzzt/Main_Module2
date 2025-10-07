@@ -48,6 +48,38 @@ class GradeController(QObject):
             current_state = self.model.get_column_state(key)
             self.model.set_column_state(key, not current_state)
 
+    def calculate_component_average(self, student_id, component_name, term):
+        """Calculate average for a specific component (e.g., Performance Task)"""
+        type_key = self.model.get_component_type_key(component_name, term)
+        sub_components = self.model.components.get(type_key, [])
+        
+        total_score = 0
+        total_max = 0
+        count = 0
+        
+        for sub_comp in sub_components:
+            component_key = f"{sub_comp.lower().replace(' ', '')}_{term}"
+            grade_item = self.model.get_grade(student_id, component_key)
+            
+            if not grade_item.value:
+                continue
+            
+            # Parse the score
+            if '/' in grade_item.value:
+                parts = grade_item.value.split('/')
+                try:
+                    score = float(parts[0])
+                    max_score = float(parts[1])
+                    total_score += score
+                    total_max += max_score
+                    count += 1
+                except (ValueError, IndexError):
+                    continue
+        
+        if count > 0 and total_max > 0:
+            return f"{total_score:.1f}/{total_max:.1f}"
+        return ""
+
     def calculate_grades_for_student(self, student_id):
         """Calculate weighted grades for a student"""
         midterm_component_scores = {}
@@ -59,7 +91,7 @@ class GradeController(QObject):
             component_scores = midterm_component_scores if term == 'midterm' else finalterm_component_scores
             
             for comp_name in self.model.rubric_config[term_key]['components'].keys():
-                type_key = self.model.get_component_type_key(comp_name)
+                type_key = self.model.get_component_type_key(comp_name, term)
                 sub_components = self.model.components.get(type_key, [])
                 
                 total_score = 0

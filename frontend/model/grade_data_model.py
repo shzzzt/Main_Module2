@@ -15,17 +15,20 @@ class GradeDataModel(QObject):
         self.students = []
         
         # Component types with sub-items
+        # UPDATED: Midterm exam has only 1 exam, Final term has 2 exams
         self.components = {
             'performance_tasks': ['PT1', 'PT2', 'PT3'],
             'quizzes': ['Quiz 1', 'Quiz 2', 'Quiz 3', 'Quiz 4'],
-            'exams': ['Prelim Exam', 'Final Exam']
+            'exams_midterm': ['Midterm Exam'],  # Only 1 exam for midterm
+            'exams_final': ['Final Exam', 'Removal Exam']  # 2 exams for final term
         }
         
         # Max scores for each component type
         self.component_max_scores = {
             'performance_tasks': 50,
             'quizzes': 40,
-            'exams': 100
+            'exams_midterm': 100,
+            'exams_final': 100
         }
         
         # Rubric configuration
@@ -52,7 +55,7 @@ class GradeDataModel(QObject):
         self.component_type_mapping = {
             'performance task': 'performance_tasks',
             'quiz': 'quizzes',
-            'exam': 'exams'
+            'exam': 'exams'  # Will be determined by term
         }
         
         # Column expansion states
@@ -127,9 +130,18 @@ class GradeDataModel(QObject):
                 self.grades[student_id][component_key].is_draft = False
         self.data_updated.emit()
 
-    def get_component_type_key(self, component_name):
+    def get_component_type_key(self, component_name, term=None):
         """Get the component type key for a component name"""
         comp_name_lower = component_name.lower()
+        
+        # Special handling for exams based on term
+        if 'exam' in comp_name_lower:
+            if term == 'midterm':
+                return 'exams_midterm'
+            elif term == 'finalterm' or term == 'final':
+                return 'exams_final'
+            return 'exams_midterm'  # Default
+        
         return self.component_type_mapping.get(comp_name_lower, 'performance_tasks')
 
     def get_rubric_components(self, term):

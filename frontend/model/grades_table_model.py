@@ -1,4 +1,3 @@
-
 from PyQt6.QtCore import (
     Qt, QAbstractTableModel, QModelIndex, QVariant
 )
@@ -7,6 +6,7 @@ from PyQt6.QtGui import QColor, QFont, QBrush
 class GradesTableModel(QAbstractTableModel):
     """
     Table model for grades with draft/upload status support.
+    UPDATED: Better color differentiation and percentage display
     """
     
     # Custom roles
@@ -67,23 +67,48 @@ class GradesTableModel(QAbstractTableModel):
                 return grade_item.value
             elif role == self.IsDraftRole:
                 return grade_item.is_draft
+            elif role == self.ComponentKeyRole:
+                return component_key
             elif role == Qt.ItemDataRole.BackgroundRole:
-                if grade_item.is_draft and grade_item.value:
-                    return QBrush(QColor("#FFF9E6"))  # Yellow for draft
-                elif grade_item.value:
-                    return QBrush(QColor("#E8F5E9"))  # Green for uploaded
-                return QBrush(QColor("#FFFFFF"))  # White for empty
+                # Three distinct colors for empty, draft, and uploaded
+                if not grade_item.value:
+                    return QBrush(QColor("#FFFFFF"))  # White for empty
+                elif grade_item.is_draft:
+                    return QBrush(QColor("#FFF4E6"))  # Light orange for draft
+                else:
+                    return QBrush(QColor("#D1F2EB"))  # Light teal for uploaded
             elif role == Qt.ItemDataRole.TextAlignmentRole:
                 return Qt.AlignmentFlag.AlignCenter
         
-        # Calculated columns (averages, final grade)
-        elif col_type in ['calculated', 'expandable_main', 'expandable_component']:
+        # Expandable component columns (show aggregated scores)
+        elif col_type == 'expandable_component':
+            if role == Qt.ItemDataRole.DisplayRole:
+                component = col_info.get('component')
+                term = col_info.get('term')
+                if component and term:
+                    # Get component name from the component key
+                    comp_name = component.replace('_', ' ')
+                    avg = self.controller.calculate_component_average(
+                        student['id'], comp_name, term
+                    )
+                    return avg if avg else ""
+            elif role == Qt.ItemDataRole.TextAlignmentRole:
+                return Qt.AlignmentFlag.AlignCenter
+            elif role == Qt.ItemDataRole.BackgroundRole:
+                return QBrush(QColor("#E8F5E9"))  # Light green background
+            elif role == Qt.ItemDataRole.FontRole:
+                font = QFont()
+                font.setBold(True)
+                return font
+        
+        # Calculated columns (main term averages with /100, final grade)
+        elif col_type in ['calculated', 'expandable_main']:
             if role == Qt.ItemDataRole.DisplayRole:
                 return self._calculate_display_value(row, col_info)
             elif role == Qt.ItemDataRole.TextAlignmentRole:
                 return Qt.AlignmentFlag.AlignCenter
             elif role == Qt.ItemDataRole.BackgroundRole:
-                return QBrush(QColor("#F8F9FA"))
+                return QBrush(QColor("#E3F2FD"))  # Light blue background
             elif role == Qt.ItemDataRole.FontRole:
                 font = QFont()
                 font.setBold(True)
@@ -138,16 +163,19 @@ class GradesTableModel(QAbstractTableModel):
         return QVariant()
     
     def _calculate_display_value(self, row, col_info):
-        """Calculate display value for calculated columns"""
+        """Calculate display value for calculated columns with /100 for term grades"""
         col_name = col_info.get('name', '')
         student_id = self.data_model.students[row]['id']
         calculated = self.controller.calculate_grades_for_student(student_id)
         
         if 'Midterm Grade' in col_name:
-            return calculated['midterm_avg']
+            # Show as percentage out of 100
+            return f"{calculated['midterm_avg']}/100"
         elif 'Final Term Grade' in col_name:
-            return calculated['finalterm_avg']
+            # Show as percentage out of 100
+            return f"{calculated['finalterm_avg']}/100"
         elif 'Final Grade' in col_name:
+            # Final grade shows just the percentage
             return calculated['final_grade']
         
         return "0.00"
@@ -190,3 +218,20 @@ class GradesTableModel(QAbstractTableModel):
         top_left = self.index(0, col)
         bottom_right = self.index(self.rowCount() - 1, col)
         self.dataChanged.emit(top_left, bottom_right)
+    
+    def upload_single_grade(self, row, col):
+        """Mark a single grade as uploaded"""
+        col_info = self.columns[col]
+        if col_info.get('type') != 'grade_input':
+            return False
+        
+        component_key = col_info.get('component_key', '')
+        student_id = self.data_model.students[row]['id']
+        
+        grade_item = self.data_model.get_grade(student_id, component_key)
+        if grade_item.value:
+            self.data_model.set_grade(student_id, component_key, grade_item.value, is_draft=False)
+            index = self.index(row, col)
+            self.dataChanged.emit(index, index)
+            return True
+        return False
