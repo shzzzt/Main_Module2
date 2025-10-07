@@ -16,14 +16,9 @@ class SectionsPage(QWidget):
     def __init__(self):
         super().__init__()
 
-        data = [
-            {'no': 1, 'section': 'A', 'program': 'BS Computer Science', 
-             'year': 1, 'type': 'Lecture', 'capacity': 40, 'remarks': 'Regular'},
-            {'no': 2, 'section': 'B', 'program': 'BS Information Technology', 
-             'year': 2, 'type': 'Lecture', 'capacity': 50, 'remarks': 'Regular'}
-        ]
+        
 
-        self.model = SectionsTableModel(data)
+        self.model = SectionsTableModel()
         self.controller = SectionController(self, self.model) 
         
         self.init_ui()
