@@ -10,6 +10,7 @@ class ClassroomService:
             self.data = json.load(f)
 
     def load_classes(self):
+        self.load_data()
         return self.data["classes"]
 
     def load_topics(self, class_id):

@@ -1,11 +1,13 @@
-import sys
+import sys, os
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, 
                              QHBoxLayout, QPushButton, QLabel, QTableView,
                              QStackedWidget, QComboBox, QHeaderView)
 from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QFont, QIcon, QColor
 from .Tagging.classes_page import ClassesPage
-from .Tagging.sections_page import SectionsPage 
+from .Tagging.sections_page import SectionsPage
+
+
 
 class TaggingMain(QWidget):
     def __init__(self, username, roles, primary_role, token):

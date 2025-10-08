@@ -22,10 +22,10 @@
           "id": 2,
           "name": "Tagging",
           "function": "TaggingMain()",
-          "path": "views.Academics.TaggingMain",
-          "access": ["admin", "student"],
+          "path": "views.Academics.TaggingWrapper",
+          "access": ["admin"],
           "modulars":[]
-        }, 
+        },
         {
           "id": 3,
           "name": "Classes",

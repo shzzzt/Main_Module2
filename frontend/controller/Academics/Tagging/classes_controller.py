@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
 from frontend.model.Academics.Tagging.classes_table_model import ClassesTableModel
@@ -10,8 +11,13 @@ from frontend.views.Academics.Tagging.create_class_dialog import CreateClassDial
 
 logger = logging.getLogger(__name__)
 
-class ClassesController:
+class ClassesController(QObject):
+    class_created = pyqtSignal(dict)
+    class_updated = pyqtSignal(dict)
+    class_deleted = pyqtSignal(int)
+
     def __init__(self, parent_widget: Optional[QWidget] = None):
+        super().__init__()
         self.parent = parent_widget
         self.service = ClassService()
         self.section_service = SectionService()
@@ -57,6 +63,8 @@ class ClassesController:
             # some kind of validation here before proceeding to next line
             created_class = self.service.create(class_data)
             self.model.add_class(created_class)
+
+            self.class_created.emit(class_data)
             return True
 
         except Exception as e:

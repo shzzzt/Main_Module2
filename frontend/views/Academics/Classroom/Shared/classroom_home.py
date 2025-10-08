@@ -2,6 +2,10 @@ from PyQt6 import QtWidgets, QtCore
 from widgets.classroom_home_ui import Ui_ClassCard
 from controller.classroom_controller import ClassroomController
 
+from frontend.controller.Academics.Tagging.classes_controller import ClassesController
+from frontend.controller.Academics.controller_manager import ControllerManager
+
+
 class ClassroomHome(QtWidgets.QWidget):
     class_selected = QtCore.pyqtSignal(dict)  # Signal to emit when a class is clicked
 
@@ -12,7 +16,21 @@ class ClassroomHome(QtWidgets.QWidget):
         self.primary_role = primary_role
         self.token = token
         self.controller = ClassroomController()
+
+        manager = ControllerManager()
+        controller = manager.get_classes_controller()
+        # connect signals to automatically update home if Admin modifies classes in Tagging
+        controller.class_created.connect(self.on_class_changed)
+
         self.setup_ui()
+        self.load_classes()
+
+    def on_class_changed(self, data=None):
+        """
+        Called when admin creates/updates/deletes a class.
+        Auto-refreshes the classroom home view.
+        """
+        print(f"[ClassroomHome] Detected class change, refreshing...")
         self.load_classes()
 
     def setup_ui(self):
@@ -48,6 +66,7 @@ class ClassroomHome(QtWidgets.QWidget):
 
     def load_classes(self):
         classes = self.controller.get_classes()
+        print(f"[ClassroomHome] Classes loaded: {classes}")
         row, col = 0, 0
         max_columns = 3
 

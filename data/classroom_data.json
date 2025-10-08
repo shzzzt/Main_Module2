@@ -26,6 +26,174 @@
             "section": "BSIT-3C",
             "schedule": "FRIDAY - 8:00 - 10:00 AM",
             "date_created": "2025-08-18"
+        },
+        {
+            "code": "ITSD83",
+            "title": "Mobile Application Development 1",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "CISC Laboratory 24",
+            "instructor": "Juan Dela Cruz",
+            "type": "Regular",
+            "id": 2,
+            "section_name": "3A",
+            "created_at": "2025-10-08T18:57:12.159138",
+            "updated_at": "2025-10-08T18:57:12.159138",
+            "instructor_id": "faculty_2"
+        },
+        {
+            "code": "IT61",
+            "title": "Software Engineering",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "CISC Lab1",
+            "instructor": "Donah Verula",
+            "type": "Regular",
+            "id": 3,
+            "section_name": "4A",
+            "created_at": "2025-10-08T20:28:14.300158",
+            "updated_at": "2025-10-08T20:28:14.300158",
+            "instructor_id": "faculty_3"
+        },
+        {
+            "code": "IT56",
+            "title": "DBMS",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "R3",
+            "instructor": "Michaela",
+            "type": "Regular",
+            "id": 4,
+            "section_name": "3C",
+            "created_at": "2025-10-08T21:23:16.448786",
+            "updated_at": "2025-10-08T21:23:16.448786",
+            "instructor_id": "faculty_4"
+        },
+        {
+            "code": "TEST",
+            "title": "Test",
+            "units": 3,
+            "section_id": 2,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "Test",
+            "instructor": "Test",
+            "type": "Regular",
+            "id": 5,
+            "section_name": "4",
+            "created_at": "2025-10-08T21:37:38.776582",
+            "updated_at": "2025-10-08T21:37:38.776582",
+            "instructor_id": "faculty_5"
+        },
+        {
+            "code": "HELLO",
+            "title": "Hello",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "Hello",
+            "instructor": "Hello",
+            "type": "Regular",
+            "id": 6,
+            "section_name": "3C",
+            "created_at": "2025-10-08T21:41:35.617913",
+            "updated_at": "2025-10-08T21:41:35.617913",
+            "instructor_id": "faculty_6"
+        },
+        {
+            "code": "PLS",
+            "title": "PLs",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "PLs",
+            "instructor": "PLs",
+            "type": "Regular",
+            "id": 7,
+            "section_name": "3C",
+            "created_at": "2025-10-08T21:44:05.520309",
+            "updated_at": "2025-10-08T21:44:05.520309",
+            "instructor_id": "faculty_7"
+        },
+        {
+            "code": "KH",
+            "title": "jbhb",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "jhbhb jh",
+            "instructor": "h",
+            "type": "Regular",
+            "id": 8,
+            "section_name": "3C",
+            "created_at": "2025-10-08T21:47:55.346385",
+            "updated_at": "2025-10-08T21:47:55.346385",
+            "instructor_id": "faculty_8"
+        },
+        {
+            "code": "CLASS",
+            "title": "Class",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "Class",
+            "instructor": "Class",
+            "type": "Regular",
+            "id": 9,
+            "section_name": "3C",
+            "created_at": "2025-10-08T21:50:14.494463",
+            "updated_at": "2025-10-08T21:50:14.494463",
+            "instructor_id": "faculty_9"
         }
     ],
     "topics": [
@@ -174,5 +342,32 @@
             "date": "2025-10-01 21:04:14",
             "author": "Current User"
         }
-    ]
+    ],
+    "sections": [
+        {
+            "section": "3C",
+            "program": "BS Computer Science",
+            "curriculum": "2023-2024",
+            "year": "3rd",
+            "capacity": 25,
+            "type": "Laboratory",
+            "remarks": "Regular",
+            "id": 1,
+            "created_at": "2025-10-08T21:13:33.717558",
+            "updated_at": "2025-10-08T21:13:33.717558"
+        },
+        {
+            "section": "4",
+            "program": "BS Computer Science",
+            "curriculum": "2023-2024",
+            "year": "1st",
+            "capacity": 1,
+            "type": "Lecture",
+            "remarks": "Regular",
+            "id": 2,
+            "created_at": "2025-10-08T21:15:30.827471",
+            "updated_at": "2025-10-08T21:15:30.827471"
+        }
+    ],
+    "enrollments": []
 }

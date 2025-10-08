@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex
 from PyQt6.QtGui import QFont, QIcon, QColor
 
 from frontend.controller.Academics.Tagging.classes_controller import ClassesController
+from frontend.controller.Academics.controller_manager import ControllerManager
 from frontend.services.Academics.Tagging.section_service import SectionService
 from frontend.model.Academics.Tagging.classes_table_model import ClassesTableModel
 from .create_class_dialog import CreateClassDialog
@@ -19,7 +20,10 @@ class ClassesPage(QWidget):
         super().__init__()
 
         self.section_service = SectionService()
-        self.controller = ClassesController()
+        # self.controller = ClassesController()
+        manager = ControllerManager()
+        self.controller = manager.get_classes_controller()
+
         self.model = ClassesTableModel()
         self.controller.set_model(self.model)
 
