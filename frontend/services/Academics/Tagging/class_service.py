@@ -98,7 +98,7 @@ class ClassService:
         
         # Import here to avoid circular dependency
         if section_service is None:
-            from services.section_service import SectionService
+            from frontend.services.Academics.Tagging.section_service import SectionService
             self.section_service = SectionService()
         else:
             self.section_service = section_service

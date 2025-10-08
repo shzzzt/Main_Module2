@@ -13,15 +13,20 @@ from frontend.views.Academics.Tagging.create_section_dialog import CreateSection
 from frontend.controller.Academics.Tagging.sections_controller import SectionsController
 
 class SectionsPage(QWidget):
+    """
+    Complete sections management page with full CRUD functionality.
+
+    Flow:
+    User interacts with this page
+        → Page calls Controller methods
+        → Controller calls Service methods
+        → Controller updates Model
+        → Model notifies View (automatic Qt signals)
+        → View refreshes display
+    """
+
     def __init__(self):
         super().__init__()
-
-        data = [
-            {'no': 1, 'section': 'A', 'program': 'BS Computer Science', 
-             'year': 1, 'type': 'Lecture', 'capacity': 40, 'remarks': 'Regular'},
-            {'no': 2, 'section': 'B', 'program': 'BS Information Technology', 
-             'year': 2, 'type': 'Lecture', 'capacity': 50, 'remarks': 'Regular'}
-        ]
 
         self.controller = SectionsController(parent_widget=self) 
         self.model = SectionTableModel()
@@ -167,17 +172,28 @@ class SectionsPage(QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
 
-        # button signals slot connections
-        self.add_btn.clicked.connect(self.handle_create)
+        # connect signals to slots
+        self._connect_signals()
+
+    def _connect_signals(self) -> None:
+        """
+        Connect page signals to its appropriate slots.
+        """
+        self.add_btn.clicked.connect(self.handle_add)
+        self.edit_btn.clicked.connect(self.handle_edit)
+        self.delete_btn.clicked.connect(self.handle_delete)
+        self.refresh_btn.clicked.connect(self.handle_refresh)
 
     def load_sections(self):
         pass 
 
-    ### CRUD OPERATIONS ### 
+    # =========================================================================
+    # CRUD OPERATIONS  
+    # =========================================================================
 
-    def handle_create(self):
+    def handle_add(self) -> None:
         """
-        Handle create button click.
+        Handle add button click.
         
         Data Flow:
         1. Open CreateSectionDialog

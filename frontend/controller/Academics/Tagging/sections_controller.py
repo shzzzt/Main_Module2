@@ -3,6 +3,7 @@ from typing import Optional, Dict, List
 from PyQt6.QtWidgets import QWidget
 
 from frontend.services.Academics.Tagging.section_service import SectionService
+from frontend.views.Academics.Classroom.Registrar.example import SectionsTableModel
 from frontend.views.Academics.Tagging.create_section_dialog import CreateSectionDialog
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class SectionsController:
 
         logger.info("SectionsController initialized")
 
-    def set_model(self, model) -> None:
+    def set_model(self, model: SectionsTableModel) -> None:
         """
         Set the table model for updating display.
         
@@ -42,7 +43,7 @@ class SectionsController:
         """
         
         self.model = model 
-        logger.debug(f"Entered set_model method. model = {self.model}")
+        logger.info(f"Entered set_model method. model = {self.model}")
 
     def load_sections(self) -> bool:
         """
@@ -52,12 +53,12 @@ class SectionsController:
             sections = self.service.get_all()
             if self.model:
                 self.model.set_sections(sections)
-            
-            return True
-            
+                return True
+
         except Exception as e:
             logger.exception(f"{e}")
-            return False
+
+        return False
 
     # ================================================= 
     # CREATE OPERATION
@@ -80,8 +81,7 @@ class SectionsController:
             if self._validate_unique_section_data(section_data):
                 created_section = self.service.create(section_data)
 
-                # update the table model 
-                # if self.model:
+                # update the table model
                 logger.info(f"Before self.model add_section method")
                 self.model.add_section(created_section) 
                 logger.info(f"After self.model add_section method")
@@ -93,7 +93,7 @@ class SectionsController:
             logger.exception(f"An error occured while creating a section: {e}")
             return False 
         
-        logger.debug(f"Unable to create section. Check whether duplicate section already exists or SectionController.model has been set.")
+        logger.info(f"Unable to create section. Check whether duplicate section already exists or SectionController.model has been set.")
         return False 
 
 

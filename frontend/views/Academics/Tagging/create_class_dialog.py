@@ -1,175 +1,431 @@
-from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, 
-                             QPushButton, QGridLayout, QLineEdit, QTimeEdit)
+from PyQt6.QtWidgets import (
+    QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
+    QLineEdit, QSpinBox, QComboBox, QPushButton,
+    QTextEdit, QLabel, QGroupBox, QScrollArea,
+    QWidget, QTimeEdit, QFrame
+)
 from PyQt6.QtCore import Qt, QTime
-from PyQt6.QtGui import QFont
+from typing import Dict, List, Optional
+import logging
 
-class CreateClassDialog(QDialog):
-    def __init__(self, parent=None):
+logger = logging.getLogger(__name__)
+
+
+class ScheduleWidget(QWidget):
+    """
+    Widget for a single schedule entry.
+    
+    Contains day, start time, end time, and remove button.
+    """
+    
+    DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    
+    def __init__(self, parent=None, on_remove=None):
+        """
+        Initialize schedule widget.
+        
+        Args:
+            parent: Parent widget
+            on_remove: Callback function when remove button clicked
+        """
         super().__init__(parent)
-        self.setWindowTitle("Create Class")
-        self.setStyleSheet("""
-            QLabel {
-                color: #2d2d2d;
-                font-size: 14px;
-            }
-            QLineEdit, QComboBox, QTimeEdit {
-                border: 1px solid #cccccc;
-                border-radius: 5px;
-                padding: 10px;
-                background-color: #f9f9f9;
-                min-width: 140px;
-                font-size: 13px;
-            }
-            QComboBox::drop-down {
-                border: none;
-                width: 20px;
-            }
+        self.on_remove = on_remove
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Set up the UI for this schedule entry."""
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 5, 0, 5)
+        
+        # Day selector
+        self.day_combo = QComboBox()
+        self.day_combo.addItems(self.DAYS)
+        self.day_combo.setMinimumWidth(120)
+        layout.addWidget(self.day_combo)
+        
+        # Start time
+        self.start_time = QTimeEdit()
+        self.start_time.setDisplayFormat("hh:mm AP")
+        self.start_time.setTime(QTime(9, 0))  # Default 9:00 AM
+        self.start_time.setMinimumWidth(100)
+        layout.addWidget(QLabel("from"))
+        layout.addWidget(self.start_time)
+        
+        # End time
+        self.end_time = QTimeEdit()
+        self.end_time.setDisplayFormat("hh:mm AP")
+        self.end_time.setTime(QTime(10, 30))  # Default 10:30 AM
+        self.end_time.setMinimumWidth(100)
+        layout.addWidget(QLabel("to"))
+        layout.addWidget(self.end_time)
+        
+        # Remove button
+        self.remove_btn = QPushButton("✕")
+        self.remove_btn.setFixedSize(30, 30)
+        self.remove_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1e5631;
+                background-color: #f44336;
                 color: white;
-                padding: 8px 15px;
-                border-radius: 5px;
-                font-weight: bold;
-                font-size: 13px;
                 border: none;
-                min-width: 80px;
+                font-weight: bold;
+                font-size: 10px;
             }
             QPushButton:hover {
-                background-color: #2d5a3d;
+                background-color: #da190b;
             }
         """)
-
-        # Main layout as an instance variable
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(25, 25, 25, 25)
-        self.main_layout.setSpacing(5)
-
-        # Title
-        title = QLabel("Create Class")
-        title.setFont(QFont("Segoe UI", 40, QFont.Weight.Bold))
-        title.setStyleSheet("color: #1e5631;")
-        self.main_layout.addWidget(title)
-
-        # Section dropdown
-        section_label = QLabel("Section")
-        self.section_combo = QComboBox()
-        self.section_combo.addItems(["1A", "1B", "2A", "2B", "3A", "3B"])
-        self.main_layout.addWidget(section_label)
-        self.main_layout.addWidget(self.section_combo)
-
-        # Code dropdown
-        code_label = QLabel("Code")
-        self.code_combo = QComboBox()
-        self.code_combo.addItems(["CS101", "IT57", "SE201", "CS202"])
-        self.main_layout.addWidget(code_label)
-        self.main_layout.addWidget(self.code_combo)
-
-        # Schedule section with Add button
-        schedule_layout = QHBoxLayout()
-        schedule_label = QLabel("Schedule")
-        self.add_schedule_btn = QPushButton("+ Add")
-        self.add_schedule_btn.setStyleSheet("min-width: 60px;")
-        self.add_schedule_btn.clicked.connect(self.add_new_schedule)
-        schedule_layout.addWidget(schedule_label)
-        schedule_layout.addWidget(self.add_schedule_btn)
-        self.main_layout.addLayout(schedule_layout)
-
-        # List to store schedule grids
-        self.schedule_grids = []
-        # Add initial schedule grid after layout is set
-        self.setLayout(self.main_layout)  # Set layout before adding initial schedule
-        self.add_new_schedule()
-
-        # Grid layout for Room and Instructor
-        grid_layout = QGridLayout()
-        grid_layout.setHorizontalSpacing(20)
-        grid_layout.setVerticalSpacing(15)
-
-        room_label = QLabel("Room")
-        self.room_input = QLineEdit()
-        grid_layout.addWidget(room_label, 0, 0)
-        grid_layout.addWidget(self.room_input, 1, 0)
-
-        instructor_label = QLabel("Instructor")
-        self.instructor_input = QLineEdit()
-        grid_layout.addWidget(instructor_label, 0, 1)
-        grid_layout.addWidget(self.instructor_input, 1, 1)
-
-        self.main_layout.addLayout(grid_layout)
-
-        # Buttons layout
-        buttons_layout = QHBoxLayout()
-        buttons_layout.addStretch()
-        cancel_btn = QPushButton("Cancel")
-        create_btn = QPushButton("Create")
-        buttons_layout.addWidget(cancel_btn)
-        buttons_layout.addWidget(create_btn)
-        self.main_layout.addLayout(buttons_layout)
-
-        # Connect signals
-        cancel_btn.clicked.connect(self.reject)
-        create_btn.clicked.connect(self.accept)
-
-    def add_new_schedule(self):
-        # Create a new QGridLayout for the schedule
-        new_grid = QGridLayout()
-        new_grid.setHorizontalSpacing(20)
-        new_grid.setVerticalSpacing(5)
-
-        # Day selection
-        day_label = QLabel("Day")
-        day_combo = QComboBox()
-        day_combo.addItems(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
-        new_grid.addWidget(day_label, 0, 0)
-        new_grid.addWidget(day_combo, 1, 0)
-
-        # Start Time
-        start_time_label = QLabel("Start Time")
-        start_time_edit = QTimeEdit(QTime(21, 20))  # 09:20 PM PST on Sep 30, 2025
-        start_time_edit.setDisplayFormat("hh:mm AP")  # e.g., "09:20 PM"
-        new_grid.addWidget(start_time_label, 0, 1)
-        new_grid.addWidget(start_time_edit, 1, 1)
-
-        # End Time
-        end_time_label = QLabel("End Time")
-        end_time_edit = QTimeEdit(QTime(21, 20).addSecs(3600))  # 10:20 PM
-        end_time_edit.setDisplayFormat("hh:mm AP")  # e.g., "10:20 PM"
-        new_grid.addWidget(end_time_label, 0, 2)
-        new_grid.addWidget(end_time_edit, 1, 2)
-
-        if self.main_layout.count() == 6: 
-            # Add the new grid to the main layout
-            self.main_layout.insertLayout(self.main_layout.count(), new_grid)  # Insert before buttons
-        else: 
-             self.main_layout.insertLayout(self.main_layout.count() - 2, new_grid)
-
+        self.remove_btn.clicked.connect(self.remove_clicked)
+        layout.addWidget(self.remove_btn)
         
-        # Store the grid and its widgets for potential removal or data access
-        self.schedule_grids.append({
-            "grid": new_grid,
-            "day_combo": day_combo,
-            "start_time_edit": start_time_edit,
-            "end_time_edit": end_time_edit
-        })
+        layout.addStretch()
+        self.setLayout(layout)
+    
+    def remove_clicked(self):
+        """Handle remove button click."""
+        if self.on_remove:
+            self.on_remove(self)
+    
+    def get_schedule_data(self) -> Dict:
+        """
+        Get schedule data from this widget.
+        
+        Returns:
+            Dict: Schedule data with day, start_time, end_time
+        """
+        start = self.start_time.time()
+        end = self.end_time.time()
+        
+        return {
+            'day': self.day_combo.currentText(),
+            'start_time': start.toString("hh:mm AP"),
+            'end_time': end.toString("hh:mm AP")
+        }
+    
+    def set_schedule_data(self, schedule: Dict):
+        """
+        Set schedule data in this widget.
+        
+        Args:
+            schedule: Schedule dictionary to populate
+        """
+        # Set day
+        day_index = self.day_combo.findText(schedule.get('day', 'Monday'))
+        if day_index >= 0:
+            self.day_combo.setCurrentIndex(day_index)
+        
+        # Set times
+        start_str = schedule.get('start_time', '09:00 AM')
+        start_time = QTime.fromString(start_str, "hh:mm AP")
+        if start_time.isValid():
+            self.start_time.setTime(start_time)
+        
+        end_str = schedule.get('end_time', '10:30 AM')
+        end_time = QTime.fromString(end_str, "hh:mm AP")
+        if end_time.isValid():
+            self.end_time.setTime(end_time)
 
-        # Disable Add button if maximum schedules reached (e.g., 5)
-        if len(self.schedule_grids) >= 5:
-            self.add_schedule_btn.setEnabled(False)
 
-    def get_schedule_data(self):
-        # Method to retrieve data from all schedules (for use in accept slot if needed)
+class CreateClassDialog(QDialog):
+    """
+    Dialog for creating a new class.
+    
+    Supports multiple schedules with dynamic add/remove functionality.
+    
+    Attributes:
+        code_edit: Class code input
+        title_edit: Class title input
+        units_spin: Units selection
+        section_combo: Section selection
+        schedules_container: Container for schedule widgets
+        schedule_widgets: List of ScheduleWidget instances
+        room_edit: Room input
+        instructor_edit: Instructor input
+        type_combo: Class type selection
+    """
+    
+    TYPES = ['Regular', 'Petition']
+    
+    def __init__(self, parent=None, sections: Optional[List[Dict]] = None):
+        """
+        Initialize the create class dialog.
+        
+        Args:
+            parent: Parent widget
+            sections: List of available sections for selection
+        """
+        super().__init__(parent)
+        self.sections = sections or []
+        self.schedule_widgets: List[ScheduleWidget] = []
+        
+        self.setWindowTitle("Create Class")
+        self.setMinimumWidth(700)
+        self.setMinimumHeight(600)
+        self.setup_ui()
+        
+        # Add initial schedule
+        self.add_schedule()
+        
+        logger.debug("CreateClassDialog initialized")
+    
+    def setup_ui(self):
+        """Set up the user interface."""
+        main_layout = QVBoxLayout()
+        
+        # Title
+        title_label = QLabel("Create New Class")
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        main_layout.addWidget(title_label)
+        
+        # Scrollable area for form
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        
+        scroll_widget = QWidget()
+        scroll_layout = QVBoxLayout(scroll_widget)
+        
+        # Basic Information Group
+        basic_group = QGroupBox("Basic Information")
+        basic_layout = QFormLayout()
+        
+        self.code_edit = QLineEdit()
+        self.code_edit.setPlaceholderText("e.g., IT57, CS101")
+        self.code_edit.setMaxLength(10)
+        basic_layout.addRow("Class Code*:", self.code_edit)
+        
+        self.title_edit = QLineEdit()
+        self.title_edit.setPlaceholderText("e.g., Database Management Systems")
+        basic_layout.addRow("Class Title*:", self.title_edit)
+        
+        self.units_spin = QSpinBox()
+        self.units_spin.setRange(1, 6)
+        self.units_spin.setValue(3)
+        self.units_spin.setSuffix(" units")
+        basic_layout.addRow("Units*:", self.units_spin)
+        
+        self.section_combo = QComboBox()
+        self.populate_sections()
+        basic_layout.addRow("Section*:", self.section_combo)
+        
+        basic_group.setLayout(basic_layout)
+        scroll_layout.addWidget(basic_group)
+        
+        # Schedule Group
+        schedule_group = QGroupBox("Schedule")
+        schedule_layout = QVBoxLayout()
+        
+        schedule_header = QHBoxLayout()
+        schedule_label = QLabel("Class Schedule (add multiple time slots)")
+        schedule_label.setStyleSheet("font-weight: bold;")
+        schedule_header.addWidget(schedule_label)
+        schedule_header.addStretch()
+        
+        self.add_schedule_btn = QPushButton("+ Add Schedule")
+        self.add_schedule_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                padding: 5px 15px;
+                border: none;
+                border-radius: 3px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        self.add_schedule_btn.clicked.connect(self.add_schedule)
+        schedule_header.addWidget(self.add_schedule_btn)
+        
+        schedule_layout.addLayout(schedule_header)
+        
+        # Container for schedule widgets
+        self.schedules_container = QVBoxLayout()
+        schedule_layout.addLayout(self.schedules_container)
+        
+        schedule_group.setLayout(schedule_layout)
+        scroll_layout.addWidget(schedule_group)
+        
+        # Location & Instructor Group
+        location_group = QGroupBox("Location & Instructor")
+        location_layout = QFormLayout()
+        
+        self.room_edit = QLineEdit()
+        self.room_edit.setPlaceholderText("e.g., CISC Lab 1, Room 301")
+        location_layout.addRow("Room*:", self.room_edit)
+        
+        self.instructor_edit = QLineEdit()
+        self.instructor_edit.setPlaceholderText("e.g., Juan Dela Cruz")
+        location_layout.addRow("Instructor*:", self.instructor_edit)
+        
+        self.type_combo = QComboBox()
+        self.type_combo.addItems(self.TYPES)
+        location_layout.addRow("Type*:", self.type_combo)
+        
+        location_group.setLayout(location_layout)
+        scroll_layout.addWidget(location_group)
+        
+        scroll_layout.addStretch()
+        scroll.setWidget(scroll_widget)
+        main_layout.addWidget(scroll)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        
+        self.create_btn = QPushButton("Create Class")
+        self.create_btn.setDefault(True)
+        self.create_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                padding: 8px 20px;
+                border: none;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.setStyleSheet("""
+            QPushButton {
+                padding: 8px 20px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #f0f0f0;
+            }
+        """)
+        
+        button_layout.addWidget(self.cancel_btn)
+        button_layout.addWidget(self.create_btn)
+        
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+        
+        # Connect signals
+        self.create_btn.clicked.connect(self.validate_and_accept)
+        self.cancel_btn.clicked.connect(self.reject)
+    
+    def populate_sections(self):
+        """Populate section dropdown with available sections."""
+        self.section_combo.clear()
+        
+        if not self.sections:
+            self.section_combo.addItem("No sections available")
+            self.section_combo.setEnabled(False)
+            return
+        
+        for section in self.sections:
+            display_text = f"{section['section']} - {section['program']} ({section['year']})"
+            self.section_combo.addItem(display_text, section['id'])
+    
+    def add_schedule(self):
+        """Add a new schedule widget to the form."""
+        schedule_widget = ScheduleWidget(
+            parent=self,
+            on_remove=self.remove_schedule
+        )
+        
+        self.schedule_widgets.append(schedule_widget)
+        self.schedules_container.addWidget(schedule_widget)
+        
+        logger.debug(f"Added schedule widget (total: {len(self.schedule_widgets)})")
+    
+    def remove_schedule(self, widget: ScheduleWidget):
+        """
+        Remove a schedule widget from the form.
+        
+        Args:
+            widget: ScheduleWidget to remove
+        """
+        if len(self.schedule_widgets) <= 1:
+            # Don't allow removing the last schedule
+            logger.warning("Cannot remove last schedule")
+            return
+        
+        if widget in self.schedule_widgets:
+            self.schedule_widgets.remove(widget)
+            self.schedules_container.removeWidget(widget)
+            widget.deleteLater()
+            
+            logger.debug(f"Removed schedule widget (remaining: {len(self.schedule_widgets)})")
+    
+    def validate_and_accept(self):
+        """Validate input and accept dialog if valid."""
+        # Check required fields
+        if not self.code_edit.text().strip():
+            self.code_edit.setFocus()
+            self.code_edit.setStyleSheet("border: 2px solid red;")
+            return
+        
+        if not self.title_edit.text().strip():
+            self.title_edit.setFocus()
+            self.title_edit.setStyleSheet("border: 2px solid red;")
+            return
+        
+        if not self.room_edit.text().strip():
+            self.room_edit.setFocus()
+            self.room_edit.setStyleSheet("border: 2px solid red;")
+            return
+        
+        if not self.instructor_edit.text().strip():
+            self.instructor_edit.setFocus()
+            self.instructor_edit.setStyleSheet("border: 2px solid red;")
+            return
+        
+        if not self.sections:
+            logger.warning("No sections available. Please create a section first.")
+            return
+        
+        # Reset styling
+        self.code_edit.setStyleSheet("")
+        self.title_edit.setStyleSheet("")
+        self.room_edit.setStyleSheet("")
+        self.instructor_edit.setStyleSheet("")
+        
+        self.accept()
+    
+    def get_data(self) -> Dict:
+        """
+        Get class data from form including all schedules.
+        
+        Returns:
+            Dict: Complete class data with schedules list
+        """
+        # Get selected section ID
+        section_id = self.section_combo.currentData()
+        if section_id is None:
+            section_id = -1  # Fallback
+        
+        # Collect all schedules
         schedules = []
-        for schedule in self.schedule_grids:
-            day = schedule["day_combo"].currentText()
-            start_time = schedule["start_time_edit"].time().toString("hh:mm AP")
-            end_time = schedule["end_time_edit"].time().toString("hh:mm AP")
-            schedules.append(f"{day} {start_time} - {end_time}")
-        return schedules
-
-if __name__ == "__main__":
-    from PyQt6.QtWidgets import QApplication
-    import sys
-    app = QApplication(sys.argv)
-    dialog = CreateClassDialog()
-    dialog.exec()
-    sys.exit(app.exec())
+        for widget in self.schedule_widgets:
+            schedules.append(widget.get_schedule_data())
+        
+        data = {
+            'code': self.code_edit.text().strip().upper(),
+            'title': self.title_edit.text().strip(),
+            'units': self.units_spin.value(),
+            'section_id': section_id,
+            'schedules': schedules,
+            'room': self.room_edit.text().strip(),
+            'instructor': self.instructor_edit.text().strip(),
+            'type': self.type_combo.currentText()
+        }
+        
+        logger.debug(f"Class data collected: {data['code']} with {len(schedules)} schedules")
+        return data
+    
+    def set_sections(self, sections: List[Dict]):
+        """
+        Update available sections.
+        
+        Args:
+            sections: List of section dictionaries
+        """
+        self.sections = sections
+        self.populate_sections()
