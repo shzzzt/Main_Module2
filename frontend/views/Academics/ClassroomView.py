@@ -105,8 +105,8 @@ class ClassroomView(QWidget):
         
         # === SERVICE LAYER SETUP ===
         # Create data services and controller for shared data access
-        post_service = PostService("data/classroom_data.json")      # 📊 Handles post CRUD operations
-        topic_service = TopicService("data/classroom_data.json")    # 📂 Handles topic management
+        post_service = PostService("data/classroom_data.json")      # Handles post CRUD operations
+        topic_service = TopicService("data/classroom_data.json")    # Handles topic management
         
         # Create post controller that coordinates between services and views
         post_controller = PostController(
@@ -128,21 +128,21 @@ class ClassroomView(QWidget):
         
         # === SIGNAL CONNECTIONS: POST SELECTION ===
         # When post is clicked in either Stream or Classworks, bubble up to ClassroomMain
-        # 📡 Stream → ClassroomView → ClassroomMain
+        # Stream → ClassroomView → ClassroomMain
         self.stream_view.post_selected.connect(self.post_selected)
-        # 📡 Classworks → ClassroomView → ClassroomMain  
+        # Classworks → ClassroomView → ClassroomMain  
         self.classworks_view.post_selected.connect(self.post_selected)
         
         # === SIGNAL CONNECTIONS: CROSS-VIEW REFRESH ===
         # When new content is created in one view, refresh the other view
-        # 🔄 Classworks → Stream: New post created in Classworks, refresh Stream
+        # Classworks → Stream: New post created in Classworks, refresh Stream
         self.classworks_view.post_created.connect(self.stream_view.refresh_posts)
-        # 🔄 Stream → Classworks: New post created in Stream, refresh Classworks  
+        # Stream → Classworks: New post created in Stream, refresh Classworks  
         self.stream_view.post_created.connect(self.classworks_view.refresh_posts)
         
         # Create placeholder views for other tabs (to be implemented)
-        students_view = QWidget()      # 👥 Students management (future)
-        attendance_view = QWidget()    # ✅ Attendance tracking (future)
+        students_view = QWidget()      # Students management (future)
+        attendance_view = QWidget()    # Attendance tracking (future)
         
         # === GRADES VIEW SETUP (Role-based) ===
         # Faculty sees grading interface, students see their grades
@@ -153,7 +153,7 @@ class ClassroomView(QWidget):
                 )
             except ImportError as e:
                 # Fallback if FacultyGradesView is not available
-                print(f"❌ FacultyGradesView not available: {e}, using placeholder")
+                print(f"FacultyGradesView not available: {e}, using placeholder")
                 self.grades_view = self._create_placeholder_view("Faculty Grades View - Not Available")
         else:
             try:
@@ -161,16 +161,16 @@ class ClassroomView(QWidget):
                     self.cls, self.username, self.roles, self.primary_role, self.token
                 )
             except ImportError as e:
-                print(f"❌ StudentGradesView not available: {e}, using placeholder")
+                print(f"StudentGradesView not available: {e}, using placeholder")
                 self.grades_view = self._create_placeholder_view("Student Grades View - Not Available")
             
         # === TAB POPULATION ===
         # Add all views to the tab widget
-        tabs.addTab(self.stream_view, "STREAM")           # 📰 Post stream and announcements
-        tabs.addTab(self.classworks_view, "CLASSWORKS")   # 📚 Materials and assessments
-        tabs.addTab(students_view, "STUDENTS")            # 👥 Student roster (placeholder)
-        tabs.addTab(attendance_view, "ATTENDANCE")        # ✅ Attendance (placeholder)
-        tabs.addTab(self.grades_view, "GRADES")           # 📊 Grades management
+        tabs.addTab(self.stream_view, "STREAM")           # Post stream and announcements
+        tabs.addTab(self.classworks_view, "CLASSWORKS")   # Materials and assessments
+        tabs.addTab(students_view, "STUDENTS")            # Student roster (placeholder)
+        tabs.addTab(attendance_view, "ATTENDANCE")        # Attendance (placeholder)
+        tabs.addTab(self.grades_view, "GRADES")           # Grades management
         
         # === SIGNAL CONNECTION: FORM NAVIGATION ===
         # When Classworks requests form creation, pass it up to ClassroomMain

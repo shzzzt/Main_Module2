@@ -25,8 +25,10 @@ except ImportError:
 class ClassroomMain(QWidget):
     """
     MAIN CLASSROOM CONTAINER - Central navigation hub for all classroom views
+    - only one who uses stack widget
+    - switches widgets with the help of signals
     
-     NAVIGATION FLOW:
+     NAVIGATION FLOW: 
     1. Home View (ClassroomHome) - shows class cards
        ↓ class_selected signal
     2. Classroom View (ClassroomView) - shows tabs (Stream, Classworks, etc.)
@@ -176,7 +178,8 @@ class ClassroomMain(QWidget):
         
         # Set initial view to home
         self.stacked_widget.setCurrentWidget(self.home_view)
-    
+
+    #methods for switching stack widget
     def show_classroom(self, cls):
         """
         NAVIGATION: Home → Classroom
@@ -240,7 +243,7 @@ class ClassroomMain(QWidget):
                 post_controller=self.current_classroom_view.classworks_view.post_controller if self.current_classroom_view else None
             )
         else:
-            print(f"❌ Unknown form type: {form_type}")
+            print(f"Unknown form type: {form_type}")
             return
         
         # SIGNAL CONNECTION: Form → Classroom
@@ -273,7 +276,7 @@ class ClassroomMain(QWidget):
         DATA FLOW: post data (dict) passed to post details view
         TRIGGER: User clicks on any post in Stream or Classworks view
         """
-        print(f"📄 NAVIGATION: Classroom → Post Details ({post['title']})")
+        print(f"NAVIGATION: Classroom → Post Details ({post['title']})")
         
         # Clean up previous post view
         if self.current_post_view:
@@ -311,7 +314,7 @@ class ClassroomMain(QWidget):
         SIGNAL: Various views.back_clicked → ClassroomMain.show_home
         TRIGGER: User clicks back button in classroom view or sidebar home button
         """
-        print("🏠 NAVIGATION: Any → Home (Global back)")
+        print("NAVIGATION: Any → Home (Global back)")
         
         # Clean up classroom view if it exists
         if self.current_classroom_view:
