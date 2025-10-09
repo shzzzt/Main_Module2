@@ -179,7 +179,7 @@ class SectionsPage(QWidget):
                 background-color: #ffcd38;
             }
         """)
-        edit_btn.clicked.connect(lambda checked, r=row: self.handle_edit(r))
+        edit_btn.clicked.connect(lambda checked, btn=edit_btn: self._handle_edit_clicked(btn))
 
         # Delete button
         delete_btn = QPushButton("Delete")
@@ -196,13 +196,43 @@ class SectionsPage(QWidget):
                 background-color: #c82333;
             }
         """)
-        delete_btn.clicked.connect(lambda checked, r=row: self.handle_delete(r))
+        delete_btn.clicked.connect(lambda checked, btn=delete_btn: self._handle_delete_clicked(btn))
 
         button_layout.addWidget(edit_btn)
         button_layout.addWidget(delete_btn)
         button_layout.addStretch()
 
         return button_widget
+
+    def _handle_edit_clicked(self, button: QPushButton) -> None:
+        """
+        Handle edit button click by finding the row from the button's position.
+
+        Args:
+            button: The edit button that was clicked
+        """
+        # Find which row this button belongs to
+        for row in range(self.model.rowCount()):
+            index = self.model.index(row, 7)
+            widget = self.table.indexWidget(index)
+            if widget and button in widget.findChildren(QPushButton):
+                self.handle_edit(row)
+                return
+
+    def _handle_delete_clicked(self, button: QPushButton) -> None:
+        """
+        Handle delete button click by finding the row from the button's position.
+
+        Args:
+            button: The delete button that was clicked
+        """
+        # Find which row this button belongs to
+        for row in range(self.model.rowCount()):
+            index = self.model.index(row, 7)
+            widget = self.table.indexWidget(index)
+            if widget and button in widget.findChildren(QPushButton):
+                self.handle_delete(row)
+                return
 
     def _on_rows_changed(self):
         """
@@ -280,7 +310,6 @@ class SectionsPage(QWidget):
         except Exception as e:
             logger.exception(f"Error editing section at row {row}: {e}")
 
-    # REPLACE the handle_delete method with:
     def handle_delete(self, row: int) -> None:
         """
         Handle delete button click for a specific row.
@@ -315,7 +344,7 @@ class SectionsPage(QWidget):
                     QMessageBox.warning(
                         self,
                         "Delete Failed",
-                        "Failed to delete the section. Please try again."
+                        "Failed to delete the section. Section has associated classes."
                     )
 
         except Exception as e:

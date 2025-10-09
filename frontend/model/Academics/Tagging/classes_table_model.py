@@ -1,12 +1,45 @@
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex
+from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QColor
 
 logger = logging.getLogger(__name__)
 
+
+def parse_schedules(schedules: List[Dict]) -> str:
+    """
+    Parse class schedules into a formatted string representation.
+
+    Args:
+        schedules: List of schedule dictionaries, each containing:
+                  - day: Day of the week (e.g., "Monday")
+                  - start_time: Start time (e.g., "09:00 AM")
+                  - end_time: End time (e.g., "10:30 AM")
+
+    Returns:
+        String representation of schedules with each on a new line.
+        Format: "Day Start - End"
+        Example: "Monday 09:00 AM - 10:30 AM\nWednesday 02:00 PM - 03:30 PM"
+    """
+    if not schedules or not isinstance(schedules, list):
+        return ""
+
+    formatted_schedules = []
+    for schedule in schedules:
+        if isinstance(schedule, dict):
+            day = schedule.get('day', '')
+            start_time = schedule.get('start_time', '')
+            end_time = schedule.get('end_time', '')
+
+            if day and start_time and end_time:
+                formatted_schedules.append(f"{day} {start_time} - {end_time}")
+
+    return "\n".join(formatted_schedules)
+
 class ClassesTableModel(QAbstractTableModel):
+    dataLoaded = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._classes: List[Dict] = []
@@ -19,7 +52,9 @@ class ClassesTableModel(QAbstractTableModel):
             "Schedule",
             "Room",
             "Instructor",
-            "Type"]
+            "Type",
+            "Actions"]
+
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._classes)
@@ -39,7 +74,10 @@ class ClassesTableModel(QAbstractTableModel):
 
         # Display role
         if role == Qt.ItemDataRole.DisplayRole:
-            if col == 0:  # No.
+            # Actions column (index 9) contains widgets, not data
+            if col == 9:
+                return None
+            elif col == 0:  # No.
                 return str(index.row() + 1)  # Auto-number rows
             elif col == 1:  # Code
                 return class_obj.get('code', '')
@@ -50,7 +88,7 @@ class ClassesTableModel(QAbstractTableModel):
             elif col == 4:  # Section
                 return class_obj.get('section_name', '')
             elif col == 5:  # Schedule
-                return class_obj.get('schedules', [])
+                return parse_schedules(class_obj.get('schedules', []))
             elif col == 6:  # Room
                 return class_obj.get('room', '')
             elif col == 7:  # Instructor
@@ -101,7 +139,87 @@ class ClassesTableModel(QAbstractTableModel):
         self._classes.append(class_data)
         self.endInsertRows()
 
-    def set_classes(self, classes: Dict) -> None:
+    def set_classes(self, classes: List[Dict]) -> None:
         self.beginResetModel()
         self._classes = classes.copy() if classes else []
         self.endResetModel()
+        self.dataLoaded.emit()
+        logger.info(f"Set {len(self._classes)} classes and emitted dataLoaded signal")
+
+    def get_class_id(self, row: int) -> Optional[int]:
+        """
+        Get the class ID for a given row.
+
+        Args:
+            row: Row index in the table
+
+        Returns:
+            Class ID or None if row is invalid
+        """
+        if 0 <= row < len(self._classes):
+            return self._classes[row].get('id')
+        logger.warning(f"Invalid row index: {row}")
+        return None
+
+    def update_class(self, class_id: int, class_data: Dict) -> bool:
+        """
+        Update a class in the model.
+
+        Args:
+            class_id: ID of the class to update
+            class_data: Updated class data
+
+        Returns:
+            bool: True if update successful, False otherwise
+        """
+        for row, class_obj in enumerate(self._classes):
+            if class_obj.get('id') == class_id:
+                # Notify view before update
+                self.beginResetModel()
+                self._classes[row] = class_data
+                self.endResetModel()
+
+                logger.info(f"Updated class ID {class_id} at row {row}")
+                return True
+
+        logger.warning(f"Class ID {class_id} not found for update")
+        return False
+
+    def remove_class(self, class_id: int) -> bool:
+        """
+        Remove a class from the model.
+
+        Args:
+            class_id: ID of the class to remove
+
+        Returns:
+            bool: True if removal successful, False otherwise
+        """
+        for row, class_obj in enumerate(self._classes):
+            if class_obj.get('id') == class_id:
+                # Notify view of row removal
+                self.beginRemoveRows(QModelIndex(), row, row)
+                self._classes.pop(row)
+                self.endRemoveRows()
+
+                logger.info(f"Removed class ID {class_id} from row {row}")
+                return True
+
+        logger.warning(f"Class ID {class_id} not found for removal")
+        return False
+
+    def get_class_data(self, row: int) -> Optional[Dict]:
+        """
+        Get complete class data for a given row.
+
+        Args:
+            row: Row index in the table
+
+        Returns:
+            Class data dictionary or None if row is invalid
+        """
+        if 0 <= row < len(self._classes):
+            return self._classes[row].copy()
+        logger.warning(f"Invalid row index: {row}")
+        return None
+

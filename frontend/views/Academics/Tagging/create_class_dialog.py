@@ -143,27 +143,40 @@ class CreateClassDialog(QDialog):
         type_combo: Class type selection
     """
     
-    TYPES = ['Regular', 'Petition']
+    TYPES = ['Lecture', 'Laboratory']
     
-    def __init__(self, parent=None, sections: Optional[List[Dict]] = None):
+    def __init__(self, parent=None, sections: Optional[List[Dict]] = None, class_data: Optional[Dict] = None):
         """
         Initialize the create class dialog.
         
         Args:
             parent: Parent widget
             sections: List of available sections for selection
+            class_data: Existing class data for editing (None for create mode)
         """
         super().__init__(parent)
         self.sections = sections or []
         self.schedule_widgets: List[ScheduleWidget] = []
+
+        # Store whether we're in edit mode
+        self.is_edit_mode = class_data is not None
+        self.class_data = class_data
+
+        # Set window title based on mode
+        title_text = "Edit Class" if self.is_edit_mode else "Create Class"
+        self.setWindowTitle(title_text)
         
         self.setWindowTitle("Create Class")
         self.setMinimumWidth(700)
         self.setMinimumHeight(600)
         self.setup_ui()
-        
-        # Add initial schedule
-        self.add_schedule()
+
+        # Add initial schedule or populate from existing data
+        if self.is_edit_mode and class_data:
+            self._populate_fields(class_data)
+        else:
+            # Add initial empty schedule for create mode
+            self.add_schedule()
         
         logger.debug("CreateClassDialog initialized")
     
@@ -171,9 +184,9 @@ class CreateClassDialog(QDialog):
         """Set up the user interface."""
         main_layout = QVBoxLayout()
         
-        # Title
-        title_label = QLabel("Create New Class")
-        title_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        # Title - dynamic based on mode
+        title_text = "Edit Class" if self.is_edit_mode else "Create New Class"
+        title_label = QLabel(title_text)
         main_layout.addWidget(title_label)
         
         # Scrollable area for form
@@ -271,8 +284,9 @@ class CreateClassDialog(QDialog):
         # Buttons
         button_layout = QHBoxLayout()
         button_layout.addStretch()
-        
-        self.create_btn = QPushButton("Create Class")
+
+        button_text = "Update Class" if self.is_edit_mode else "Create Class"
+        self.create_btn = QPushButton(button_text)
         self.create_btn.setDefault(True)
         self.create_btn.setStyleSheet("""
             QPushButton {
@@ -372,6 +386,69 @@ class CreateClassDialog(QDialog):
             
             logger.debug(f"Removed schedule widget (remaining: {len(self.schedule_widgets)})")
 
+    def _populate_fields(self, class_data: Dict) -> None:
+        """
+        Populate form fields with existing class data for editing.
+
+        Args:
+            class_data: Dictionary containing class information
+        """
+        try:
+            # Populate basic information
+            if 'code' in class_data:
+                self.code_edit.setText(str(class_data['code']))
+
+            if 'title' in class_data:
+                self.title_edit.setText(str(class_data['title']))
+
+            if 'units' in class_data:
+                self.units_spin.setValue(int(class_data['units']))
+
+            # Populate section
+            if 'section_id' in class_data:
+                section_id = class_data['section_id']
+                for i in range(self.section_combo.count()):
+                    if self.section_combo.itemData(i) == section_id:
+                        self.section_combo.setCurrentIndex(i)
+                        break
+
+            # Populate schedules
+            if 'schedules' in class_data and class_data['schedules']:
+                schedules = class_data['schedules']
+
+                # Add schedule widgets for each schedule in data
+                for schedule in schedules:
+                    schedule_widget = ScheduleWidget(
+                        parent=self,
+                        on_remove=self.remove_schedule
+                    )
+                    schedule_widget.set_schedule_data(schedule)
+
+                    self.schedule_widgets.append(schedule_widget)
+                    self.schedules_container.addWidget(schedule_widget)
+
+                logger.debug(f"Populated {len(schedules)} schedule(s)")
+            else:
+                # No schedules in data, add one empty schedule
+                self.add_schedule()
+
+            # Populate location & instructor
+            if 'room' in class_data:
+                self.room_edit.setText(str(class_data['room']))
+
+            if 'instructor' in class_data:
+                self.instructor_edit.setText(str(class_data['instructor']))
+
+            if 'type' in class_data:
+                index = self.type_combo.findText(class_data['type'])
+                if index >= 0:
+                    self.type_combo.setCurrentIndex(index)
+
+            logger.info(f"Populated form fields for class: {class_data.get('code', 'Unknown')}")
+
+        except Exception as e:
+            logger.exception(f"Error populating class fields: {e}")
+
     def handle_draft(self):
         """Handle draft button clicked."""
         pass
@@ -438,6 +515,10 @@ class CreateClassDialog(QDialog):
             'instructor': self.instructor_edit.text().strip(),
             'type': self.type_combo.currentText()
         }
+
+        # If editing, preserve the class ID
+        if self.is_edit_mode and self.class_data and 'id' in self.class_data:
+            data['id'] = self.class_data['id']
         
         logger.debug(f"Class data collected: {data['code']} with {len(schedules)} schedules")
         return data

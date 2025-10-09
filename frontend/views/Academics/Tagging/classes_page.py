@@ -29,6 +29,9 @@ class ClassesPage(QWidget):
 
         self.init_ui()
         self.controller.load_classes()
+
+        # Refresh buttons after data is loaded
+        self._refresh_all_buttons()
     
     def init_ui(self):
         layout = QVBoxLayout()
@@ -155,27 +158,10 @@ class ClassesPage(QWidget):
         self.table.setColumnWidth(6, 60) # Room
         self.table.setColumnWidth(7, 150) # Instructor
         self.table.setColumnWidth(8, 80) # Type
-        self.table.setColumnWidth(9, 80)  # Edit button
-        
-        # Add Edit buttons to last column
-        for row in range(self.model.rowCount()):
-            edit_btn = QPushButton("Edit")
-            edit_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #ffc107;
-                    color: #2d2d2d;
-                    padding: 4px 16px;
-                    border-radius: 4px;
-                    font-weight: bold;
-                    font-size: 12px;
-                    border: none;
-                }
-                QPushButton:hover {
-                    background-color: #ffcd38;
-                }
-            """)
-            self.table.setIndexWidget(self.model.index(row, 9), edit_btn)
-        
+        self.table.setColumnWidth(9, 150)  # Actions
+
+        self.table.verticalHeader().setDefaultSectionSize(60)
+
         layout.addWidget(self.table)
         self.setLayout(layout)
 
@@ -186,6 +172,112 @@ class ClassesPage(QWidget):
         Connect page signals to its appropriate slots.
         """
         self.add_btn.clicked.connect(self.handle_add)
+
+        # Connect model signals to refresh action buttons
+        self.model.rowsInserted.connect(self._on_rows_changed)
+        self.model.modelReset.connect(self._refresh_all_buttons)
+
+    def _create_action_buttons(self, row: int) -> QWidget:
+        """
+        Create action buttons widget for a specific row.
+
+        Args:
+            row: Row index to create buttons for
+
+        Returns:
+            QWidget containing edit and delete buttons
+        """
+        button_widget = QWidget()
+        button_layout = QHBoxLayout(button_widget)
+        button_layout.setContentsMargins(4, 4, 4, 4)
+        button_layout.setSpacing(4)
+
+        # Edit button
+        edit_btn = QPushButton("Edit")
+        edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #ffc107;
+                color: #2d2d2d;
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 12px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #ffcd38;
+            }
+        """)
+        edit_btn.clicked.connect(lambda checked, btn=edit_btn: self._handle_edit_clicked(btn))
+
+        # Delete button
+        delete_btn = QPushButton("Delete")
+        delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #dc3545;
+                color: white;
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 12px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #c82333;
+            }
+        """)
+        delete_btn.clicked.connect(lambda checked, btn=delete_btn: self._handle_delete_clicked(btn))
+
+        button_layout.addWidget(edit_btn)
+        button_layout.addWidget(delete_btn)
+        button_layout.addStretch()
+
+        return button_widget
+
+    def _handle_edit_clicked(self, button: QPushButton) -> None:
+        """
+        Handle edit button click by finding the row from the button's position.
+
+        Args:
+            button: The edit button that was clicked
+        """
+        # Find which row this button belongs to
+        for row in range(self.model.rowCount()):
+            index = self.model.index(row, 9)
+            widget = self.table.indexWidget(index)
+            if widget and button in widget.findChildren(QPushButton):
+                self.handle_edit(row)
+                return
+
+    def _handle_delete_clicked(self, button: QPushButton) -> None:
+        """
+        Handle delete button click by finding the row from the button's position.
+
+        Args:
+            button: The delete button that was clicked
+        """
+        # Find which row this button belongs to
+        for row in range(self.model.rowCount()):
+            index = self.model.index(row, 9)
+            widget = self.table.indexWidget(index)
+            if widget and button in widget.findChildren(QPushButton):
+                self.handle_delete(row)
+                return
+
+    def _on_rows_changed(self):
+        """
+        Called when rows are inserted into the model.
+        Refreshes action buttons for all rows.
+        """
+        self._refresh_all_buttons()
+
+    def _refresh_all_buttons(self):
+        """
+        Refresh action buttons for all rows in the table.
+        """
+        for row in range(self.model.rowCount()):
+            button_widget = self._create_action_buttons(row)
+            self.table.setIndexWidget(self.model.index(row, 9), button_widget)
 
     # =========================================================================
     # CRUD OPERATIONS
@@ -216,4 +308,83 @@ class ClassesPage(QWidget):
 
         except Exception as e:
             logger.exception(f"An error occured while creating a class: {e}")
+
+    def handle_edit(self, row: int) -> None:
+        """
+        Handle edit button click for a specific row.
+
+        Args:
+            row: Row index in the table
+        """
+        try:
+            class_id = self.model.get_class_id(row)
+            class_data = self.controller.get_class_by_id(class_id)
+
+            if not class_data:
+                logger.error(f"Class data not found for row {row}")
+                return
+
+            sections = self.section_service.get_all()
+            dialog = CreateClassDialog(self, sections, class_data)
+            dialog.setWindowTitle("Edit Class")
+
+            if dialog.exec():
+                updated_data = dialog.get_data()
+                success = self.controller.handle_update_class(class_id, updated_data)
+
+                if success:
+                    self._refresh_row_buttons(row)
+
+        except Exception as e:
+            logger.exception(f"Error editing class at row {row}: {e}")
+
+    def handle_delete(self, row: int) -> None:
+        """
+        Handle delete button click for a specific row.
+
+        Args:
+            row: Row index in the table
+        """
+        try:
+            from PyQt6.QtWidgets import QMessageBox
+
+            class_id = self.model.get_class_id(row)
+            class_data = self.controller.get_class_by_id(class_id)
+
+            if not class_data:
+                logger.error(f"Class data not found for row {row}")
+                return
+
+            # Confirmation dialog
+            reply = QMessageBox.question(
+                self,
+                "Confirm Delete",
+                f"Are you sure you want to delete class '{class_data['code']} - {class_data['title']}'?\n"
+                f"This action cannot be undone.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+
+            if reply == QMessageBox.StandardButton.Yes:
+                success = self.controller.handle_delete_class(class_id)
+
+                if not success:
+                    QMessageBox.warning(
+                        self,
+                        "Delete Failed",
+                        "Failed to delete the class. Please try again."
+                    )
+
+        except Exception as e:
+            logger.exception(f"Error deleting class at row {row}: {e}")
+
+    def _refresh_row_buttons(self, row: int) -> None:
+        """
+        Refresh the action buttons for a specific row after update.
+
+        Args:
+            row: Row index to refresh
+        """
+        button_widget = self._create_action_buttons(row)
+        self.table.setIndexWidget(self.model.index(row, 9), button_widget)
 

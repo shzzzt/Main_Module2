@@ -52,7 +52,7 @@ class ClassesController(QObject):
         return False
 
     # =========================================================================
-    # CRUD OPERATIONS
+    # CREATE OPERATIONS
     # =========================================================================
 
     def handle_create_class(self, dialog: CreateClassDialog) -> bool:
@@ -71,5 +71,86 @@ class ClassesController(QObject):
             logger.exception(f"{e}")
 
         return False
+
+    # =========================================================================
+    # UPDATE OPERATION
+    # =========================================================================
+
+    def get_class_by_id(self, class_id: int) -> Optional[dict]:
+        """
+        Get a class by its ID.
+
+        Args:
+            class_id: ID of the class to retrieve
+
+        Returns:
+            Class data dictionary or None if not found
+        """
+        try:
+            return self.service.get_by_id(class_id)
+        except Exception as e:
+            logger.exception(f"Error retrieving class {class_id}: {e}")
+            return None
+
+    def handle_update_class(self, class_id: int, class_data: dict) -> bool:
+        """
+        Handle class update from dialog.
+
+        Args:
+            class_id: ID of class to update
+            class_data: Updated class data
+
+        Returns:
+            bool: True if update successful, False otherwise
+        """
+        try:
+            logger.info(f"Attempting to update class ID {class_id}")
+
+            updated_class = self.service.update(class_id, class_data)
+
+            # Update the table model
+            self.model.update_class(class_id, updated_class)
+
+            self.class_updated.emit(updated_class)
+            logger.info(f"Successfully updated class ID {class_id}")
+            return True
+
+        except Exception as e:
+            logger.exception(f"Error updating class {class_id}: {e}")
+            return False
+
+    # =========================================================================
+    # DELETE OPERATION
+    # =========================================================================
+
+    def handle_delete_class(self, class_id: int) -> bool:
+        """
+        Handle class deletion.
+
+        Args:
+            class_id: ID of class to delete
+
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        try:
+            logger.info(f"Attempting to delete class ID {class_id}")
+
+            success = self.service.delete(class_id)
+
+            if success:
+                # Update the table model
+                self.model.remove_class(class_id)
+
+                self.class_deleted.emit(class_id)
+                logger.info(f"Successfully deleted class ID {class_id}")
+                return True
+            else:
+                logger.warning(f"Class ID {class_id} not found for deletion")
+                return False
+
+        except Exception as e:
+            logger.exception(f"Error deleting class {class_id}: {e}")
+            return False
 
 

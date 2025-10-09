@@ -21,9 +21,20 @@
             "id": 1,
             "code": "ITSD81",
             "title": "DESKTOP APPLICATION DEVELOPMENT LECTURE",
+            "units": 3,
+            "section_id": 1,
+            "schedules": [
+                {
+                    "day": "Monday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
+                }
+            ],
+            "room": "CISC Laboratory 24",
             "name": "Desktop Application Development Lecture",
             "instructor": "Kim",
-            "section": "BSIT-3C",
+            "type": "Lecture",
+            "section_name": "BSCS-3C",
             "schedule": "FRIDAY - 8:00 - 10:00 AM",
             "date_created": "2025-08-18"
         },
@@ -41,9 +52,9 @@
             ],
             "room": "CISC Laboratory 24",
             "instructor": "Juan Dela Cruz",
-            "type": "Regular",
+            "type": "Lecture",
             "id": 2,
-            "section_name": "3A",
+            "section_name": "BSCS-3C",
             "created_at": "2025-10-08T18:57:12.159138",
             "updated_at": "2025-10-08T18:57:12.159138",
             "instructor_id": "faculty_2"
@@ -61,12 +72,12 @@
                 }
             ],
             "room": "CISC Lab1",
-            "instructor": "Donah Verula",
-            "type": "Regular",
+            "instructor": "Donah Rae Verula",
+            "type": "Lecture",
             "id": 3,
-            "section_name": "4A",
+            "section_name": "BSCS-3C",
             "created_at": "2025-10-08T20:28:14.300158",
-            "updated_at": "2025-10-08T20:28:14.300158",
+            "updated_at": "2025-10-10T07:06:10.050958",
             "instructor_id": "faculty_3"
         },
         {
@@ -83,117 +94,38 @@
             ],
             "room": "R3",
             "instructor": "Michaela",
-            "type": "Regular",
+            "type": "Laboratory",
             "id": 4,
-            "section_name": "3C",
+            "section_name": "BSCS-3C",
             "created_at": "2025-10-08T21:23:16.448786",
             "updated_at": "2025-10-08T21:23:16.448786",
             "instructor_id": "faculty_4"
         },
         {
-            "code": "TEST",
-            "title": "Test",
+            "code": "CS101",
+            "title": "Mobile App Dev",
             "units": 3,
-            "section_id": 2,
+            "section_id": 1,
             "schedules": [
                 {
                     "day": "Monday",
                     "start_time": "09:00 AM",
                     "end_time": "10:30 AM"
+                },
+                {
+                    "day": "Tuesday",
+                    "start_time": "09:00 AM",
+                    "end_time": "10:30 AM"
                 }
             ],
-            "room": "Test",
-            "instructor": "Test",
-            "type": "Regular",
+            "room": "Room 2",
+            "instructor": "Mindell Aguirre",
+            "type": "Lecture",
             "id": 5,
-            "section_name": "4",
-            "created_at": "2025-10-08T21:37:38.776582",
-            "updated_at": "2025-10-08T21:37:38.776582",
+            "section_name": "BSCS-3C",
+            "created_at": "2025-10-10T07:02:16.953824",
+            "updated_at": "2025-10-10T07:02:31.256566",
             "instructor_id": "faculty_5"
-        },
-        {
-            "code": "HELLO",
-            "title": "Hello",
-            "units": 3,
-            "section_id": 1,
-            "schedules": [
-                {
-                    "day": "Monday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "Hello",
-            "instructor": "Hello",
-            "type": "Regular",
-            "id": 6,
-            "section_name": "3C",
-            "created_at": "2025-10-08T21:41:35.617913",
-            "updated_at": "2025-10-08T21:41:35.617913",
-            "instructor_id": "faculty_6"
-        },
-        {
-            "code": "PLS",
-            "title": "PLs",
-            "units": 3,
-            "section_id": 1,
-            "schedules": [
-                {
-                    "day": "Monday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "PLs",
-            "instructor": "PLs",
-            "type": "Regular",
-            "id": 7,
-            "section_name": "3C",
-            "created_at": "2025-10-08T21:44:05.520309",
-            "updated_at": "2025-10-08T21:44:05.520309",
-            "instructor_id": "faculty_7"
-        },
-        {
-            "code": "KH",
-            "title": "jbhb",
-            "units": 3,
-            "section_id": 1,
-            "schedules": [
-                {
-                    "day": "Monday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "jhbhb jh",
-            "instructor": "h",
-            "type": "Regular",
-            "id": 8,
-            "section_name": "3C",
-            "created_at": "2025-10-08T21:47:55.346385",
-            "updated_at": "2025-10-08T21:47:55.346385",
-            "instructor_id": "faculty_8"
-        },
-        {
-            "code": "CLASS",
-            "title": "Class",
-            "units": 3,
-            "section_id": 1,
-            "schedules": [
-                {
-                    "day": "Monday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "Class",
-            "instructor": "Class",
-            "type": "Regular",
-            "id": 9,
-            "section_name": "3C",
-            "created_at": "2025-10-08T21:50:14.494463",
-            "updated_at": "2025-10-08T21:50:14.494463",
-            "instructor_id": "faculty_9"
         }
     ],
     "topics": [
@@ -296,11 +228,26 @@
             "score": null,
             "date": "2025-10-10T01:35:06",
             "author": "admin"
+        },
+        {
+            "id": 2,
+            "topic_id": 4,
+            "class_id": 2,
+            "title": "Chapter 1: Introduction",
+            "content": "Please read and study.",
+            "type": "material",
+            "attachment": {
+                "name": "requirements.txt",
+                "type": "FILE"
+            },
+            "score": null,
+            "date": "2025-10-10T07:34:38",
+            "author": "admin"
         }
     ],
     "sections": [
         {
-            "section": "4C",
+            "section": "C",
             "program": "BS Computer Science",
             "curriculum": "2023-2024",
             "year": "3rd",
@@ -312,7 +259,7 @@
             "updated_at": "2025-10-10T05:38:55.053344"
         },
         {
-            "section": "4",
+            "section": "C",
             "program": "BS Computer Science",
             "curriculum": "2023-2024",
             "year": "1st",

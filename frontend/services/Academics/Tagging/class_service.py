@@ -13,6 +13,60 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def generate_section_name(section: Dict) -> str:
+    """
+    Generate formatted section name from section data.
+
+    Args:
+        section: Section dictionary containing:
+                - program: Full program name (e.g., "BS Computer Science")
+                - year: Year level (e.g., "3rd")
+                - section: Section letter (e.g., "C")
+
+    Returns:
+        Formatted section name (e.g., "BSCS-3C")
+
+    Example:
+        >>> section = {"program": "BS Computer Science", "year": "3rd", "section": "C"}
+        >>> generate_section_name(section)
+        'BSCS-3C'
+    """
+    if not section:
+        return "Unknown"
+
+    # Extract program acronym from full program name
+    program = section.get('program', '')
+    year = section.get('year', '')
+    section_letter = section.get('section', '')
+
+    # Generate program acronym (e.g., "BS Computer Science" -> "BSCS")
+    program_acronym = ''
+    if program:
+        # Take all capital letters and first letters of words
+        words = program.split()
+        for word in words:
+            # If word is all caps (like "BS", "IT"), take the whole thing
+            if word.isupper():
+                program_acronym += word
+            else:
+                # Otherwise take first letter if it's uppercase
+                if word and word[0].isupper():
+                    program_acronym += word[0]
+
+    # Extract year number (e.g., "3rd" -> "3")
+    year_num = ''
+    if year:
+        year_num = ''.join(filter(str.isdigit, year))
+
+    # Combine: PROGRAM-YEARSECTION (e.g., "BSCS-3C")
+    if program_acronym and year_num and section_letter:
+        return f"{program_acronym}-{year_num}{section_letter}"
+    elif section_letter:
+        return section_letter
+    else:
+        return "Unknown"
+
+
 class ClassServiceError(Exception):
     """Base exception for class service errors."""
     pass
@@ -68,7 +122,7 @@ class ClassService:
         'Monday', 'Tuesday', 'Wednesday', 'Thursday',
         'Friday', 'Saturday', 'Sunday'
     }
-    VALID_CLASS_TYPES = {'Regular', 'Special', 'Makeup', 'Online'}
+    VALID_CLASS_TYPES = {'Lecture', 'Laboratory'}
 
     def __init__(
             self,
@@ -422,7 +476,7 @@ class ClassService:
                     )
 
             section = self.section_service.get_by_id(class_data['section_id'])
-            section_name = section['section'] if section else 'Unknown'
+            section_name = generate_section_name(section) if section else 'Unknown'
 
             data = self._load_data()
 
@@ -489,7 +543,7 @@ class ClassService:
 
             if 'section_id' in class_data:
                 section = self.section_service.get_by_id(class_data['section_id'])
-                class_data['section_name'] = section['section'] if section else 'Unknown'
+                class_data['section_name'] = generate_section_name(section) if section else 'Unknown'
 
             existing_class.update(class_data)
             existing_class['updated_at'] = datetime.now().isoformat()
