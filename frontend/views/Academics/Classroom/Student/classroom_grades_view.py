@@ -4,21 +4,29 @@ Student Grades View - Read-only view showing student's own grades
 
 import os
 import sys
-
-# Navigate 5 levels up to get to the project's root directory
-# i dont know unsaon pagpa work using frontend....... dili ga work sa akoa basin naa lang ems mali na type
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
-
-# Add the project root to the system path
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-from frontend.model.grade_data_model import GradeDataModel      # noqa: E402
-from frontend.controller.grade_controller import GradeController  # noqa: E402
     
 from PyQt6.QtWidgets import ( QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QFrame ) # noqa: E402
 from PyQt6.QtCore import Qt # noqa: E402
 from PyQt6.QtGui import QColor, QPalette, QFont # noqa: E402
+# Navigate 5 levels up to get to the project's root directory
+# i dont know unsaon pagpa work using frontend....... dili ga work sa akoa basin naa lang ems mali na type
+# project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
+
+# # Add the project root to the system path
+# if project_root not in sys.path:
+#     sys.path.insert(0, project_root)
+
+# from frontend.model.grade_data_model import GradeDataModel      # noqa: E402
+# from frontend.controller.grade_controller import GradeController  # noqa: E402
+
+try:
+    from frontend.model.grade_data_model import GradeDataModel
+    from frontend.controller.grade_controller import GradeController
+except ImportError:
+    # Fallback for development
+    from ....model.grade_data_model import GradeDataModel
+    from ....controller.grade_controller import GradeController
+
 
 
 class ExpandableGradeRow(QWidget):
@@ -178,6 +186,7 @@ class StudentGradesView(QWidget):
         self.load_student_grades()
     
     def setup_ui(self):
+        self.setMinimumSize(300,300)
         # White background
         self.setAutoFillBackground(True)
         pal = self.palette()
@@ -258,7 +267,7 @@ class StudentGradesView(QWidget):
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # Student name
-        name_label = QLabel(self._get_student_name())
+        name_label = QLabel(self.username)
         name_label.setStyleSheet("""
             QLabel {
                 font-size: 14px;

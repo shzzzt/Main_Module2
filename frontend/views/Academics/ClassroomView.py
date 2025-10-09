@@ -1,9 +1,11 @@
 # ClassroomView.py - FIXED
-from PyQt6.QtWidgets import QWidget, QPushButton, QTabWidget, QVBoxLayout, QHBoxLayout,QButtonGroup,QMainWindow, QStackedWidget, QApplication
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QWidget, QPushButton, QTabWidget, QVBoxLayout, QHBoxLayout, QButtonGroup, QMainWindow, QStackedWidget, QApplication, QLabel
+from PyQt6.QtCore import pyqtSignal, Qt
 from frontend.views.Academics.Classroom.Shared.post_details import PostDetails
 from frontend.views.Academics.Classroom.Shared.classroom_stream import ClassroomStream
 from frontend.views.Academics.Classroom.Shared.classroom_classworks import ClassroomClassworks
+from frontend.views.Academics.Classroom.Faculty.classroom_grades_view import FacultyGradesView
+from frontend.views.Academics.Classroom.Student.classroom_grades_view import StudentGradesView
 from frontend.services.post_service import PostService
 from frontend.services.topic_service import TopicService
 from frontend.controller.post_controller import PostController
@@ -92,15 +94,48 @@ class ClassroomView(QWidget):
         # Connect refresh signals
         self.classworks_view.post_created.connect(self.stream_view.refresh_posts)
         self.stream_view.post_created.connect(self.classworks_view.refresh_posts)
+        
+        # Create views for other tabs
         students_view = QWidget()
         attendance_view = QWidget()
-        grades_view = QWidget()
         
+        # Create grades view - Faculty gets FacultyGradesView, others get placeholder
+        if self.primary_role == "faculty":
+            try:
+                self.grades_view = FacultyGradesView(
+                    self.cls, self.username, self.roles, self.primary_role, self.token
+                )
+            except ImportError as e:
+                # Fallback if FacultyGradesView is not available
+                print(f"FacultyGradesView not available: {e}, using placeholder")
+                self.grades_view = QWidget()
+                self.grades_view.setStyleSheet("background-color: white;")
+                student_layout = QVBoxLayout(self.grades_view)
+                student_label = QLabel("Faculty Grades View - Not Available")
+                student_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                student_label.setStyleSheet("font-size: 16px; color: #666; padding: 50px;")
+                student_layout.addWidget(student_label)
+        else:
+            try:
+                self.grades_view = StudentGradesView(
+                    self.cls, self.username, self.roles, self.primary_role, self.token
+                )
+            except ImportError as e:
+                # Fallback if FacultyGradesView is not available
+                print(f"FacultyGradesView not available: {e}, using placeholder")
+                self.grades_view = QWidget()
+                self.grades_view.setStyleSheet("background-color: white;")
+                student_layout = QVBoxLayout(self.grades_view)
+                student_label = QLabel("Student Grades View - Not Available")
+                student_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                student_label.setStyleSheet("font-size: 16px; color: #666; padding: 50px;")
+                student_layout.addWidget(student_label)
+            
         tabs.addTab(self.stream_view, "STREAM")
         tabs.addTab(self.classworks_view, "CLASSWORKS")
         tabs.addTab(students_view, "STUDENTS")
         tabs.addTab(attendance_view, "ATTENDANCE")
-        tabs.addTab(grades_view, "GRADES")
+        tabs.addTab(self.grades_view, "GRADES")
         
         # FIX: Connect the signals properly - remove .emit from the connection
         self.stream_view.post_selected.connect(self.post_selected)

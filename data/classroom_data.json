@@ -22,7 +22,7 @@
             "code": "ITSD81",
             "title": "DESKTOP APPLICATION DEVELOPMENT LECTURE",
             "name": "Desktop Application Development Lecture",
-            "instructor": "Carlos Fidel G. Castro",
+            "instructor": "Kim",
             "section": "BSIT-3C",
             "schedule": "FRIDAY - 8:00 - 10:00 AM",
             "date_created": "2025-08-18"
@@ -85,7 +85,7 @@
             },
             "score": null,
             "date": "2025-08-18 12:00:00",
-            "author": "Carlos Fidel G. Castro"
+            "author": "Kim"
         },
         {
             "id": 2,
@@ -100,7 +100,7 @@
             },
             "score": 10,
             "date": "2025-08-19 09:00:00",
-            "author": "Carlos Fidel G. Castro"
+            "author": "Kim"
         },
         {
             "id": 3,
