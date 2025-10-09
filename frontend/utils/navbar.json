@@ -22,7 +22,7 @@
           "id": 2,
           "name": "Tagging",
           "function": "TaggingMain()",
-          "path": "views.Academics.TaggingMain",
+          "path": "views.Academics.TaggingWrapper",
           "access": ["admin", "student", "staff"],
           "modulars":[]
         }, 
