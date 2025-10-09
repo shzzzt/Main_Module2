@@ -114,5 +114,15 @@
             "attachment": null,
             "score": null
         }
+    ],
+    "syllabus": [
+        {
+            "id": 1,
+            "class_id": 1,
+            "title": "Syllabus",
+            "content": "The ",
+            "author": "Kim",
+            "date": "2025-10-10 01:47:57"
+        }
     ]
 }

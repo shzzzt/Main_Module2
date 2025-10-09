@@ -11,6 +11,36 @@ class PostController:
         self.topic_service = topic_service or TopicService("data/classroom_data.json")
         self.current_class_id = None
         self.current_filters = {"filter_type": None, "topic_name": None}
+
+    # ADD THESE SYLLABUS METHODS
+    def create_syllabus(self, title: str, content: str, author: str) -> bool:
+        """Create a syllabus (separate from posts)"""
+        if not all([title, content, author]) or self.current_class_id is None:
+            return False
+        
+        result = self.post_service.create_syllabus(
+            class_id=self.current_class_id,  # Use current_class_id from controller
+            title=title,
+            content=content,
+            author=author
+        )
+        return result is not None
+    
+    def get_syllabus(self) -> Optional[Dict]:
+        """Get syllabus for current class"""
+        if self.current_class_id is None:
+            return None
+        return self.post_service.get_syllabus_by_class_id(self.current_class_id)
+    
+    def update_syllabus(self, updates: Dict) -> bool:
+        """Update syllabus for current class"""
+        if self.current_class_id is None:
+            return False
+        return self.post_service.update_syllabus(self.current_class_id, updates)
+    
+    def syllabus_exists(self) -> bool:
+        """Check if syllabus exists for current class"""
+        return self.get_syllabus() is not None
     
     def set_class(self, class_id: int) -> None:
         """Set the current class context"""
