@@ -5,14 +5,6 @@ UPDATED: Correct exam handling (1 for midterm, 2 for final)
 """
 import os
 import sys
-
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-from frontend.model.grade_data_model import GradeDataModel      # noqa: E402
-from frontend.controller.grade_controller import GradeController  # noqa: E402
-    
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QComboBox, 
     QLabel, QPushButton, QSpacerItem, QSizePolicy
@@ -20,16 +12,42 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt # noqa: E402
 from PyQt6.QtGui import QColor, QPalette # noqa: E402
 
-from table_model import EnhancedGradesTableView # noqa: E402
+# project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
+# if project_root not in sys.path:
+#     sys.path.insert(0, project_root)
+
+# from frontend.model.grade_data_model import GradeDataModel      # noqa: E402
+# from frontend.controller.grade_controller import GradeController  # noqa: E402
+    
+
+
+# from table_model import EnhancedGradesTableView # noqa: E402
+
+# # Import grading dialog if available
+# try:
+#     from grading_system_dialog import connect_grading_button
+# except ImportError:
+#     def connect_grading_button(window, label):
+#         label.setEnabled(False)
+#         print("Warning: grading_system_dialog.py not found")
+# Import local modules with proper error handling
+try:
+    from frontend.model.grade_data_model import GradeDataModel
+    from frontend.controller.grade_controller import GradeController
+    from frontend.views.Academics.Classroom.Faculty.table_model import EnhancedGradesTableView
+except ImportError:
+    # Fallback for development
+    from ....model.grade_data_model import GradeDataModel
+    from ....controller.grade_controller import GradeController
+    from .table_model import EnhancedGradesTableView
 
 # Import grading dialog if available
 try:
-    from grading_system_dialog import connect_grading_button
+    from frontend.views.Academics.Classroom.Faculty.grading_system_dialog import connect_grading_button
 except ImportError:
     def connect_grading_button(window, label):
         label.setEnabled(False)
         print("Warning: grading_system_dialog.py not found")
-
 
 class FacultyGradesView(QWidget):
     
