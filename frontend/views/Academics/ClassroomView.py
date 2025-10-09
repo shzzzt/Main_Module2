@@ -100,7 +100,7 @@ class ClassroomView(QWidget):
         attendance_view = QWidget()
         
         # Create grades view - Faculty gets FacultyGradesView, others get placeholder
-        if self.primary_role == "faculty":
+        if self.primary_role == "faculty" or "admin":
             try:
                 self.grades_view = FacultyGradesView(
                     self.cls, self.username, self.roles, self.primary_role, self.token
