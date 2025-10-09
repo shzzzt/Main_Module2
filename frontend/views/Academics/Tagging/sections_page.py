@@ -1,4 +1,6 @@
-from PyQt6.QtWidgets import (QApplication, 
+import logging
+
+from PyQt6.QtWidgets import (QApplication,
                              QMainWindow, 
                              QWidget, 
                              QVBoxLayout, 
@@ -8,9 +10,11 @@ from PyQt6.QtWidgets import (QApplication,
                              QTableView,
                              QHeaderView)
 from PyQt6.QtGui import QFont
-from frontend.model.Academics.Tagging.section_table_model import SectionTableModel
+from frontend.model.Academics.Tagging.section_table_model import SectionsTableModel
 from frontend.views.Academics.Tagging.create_section_dialog import CreateSectionDialog
 from frontend.controller.Academics.Tagging.sections_controller import SectionsController
+
+logger = logging.getLogger(__name__)
 
 class SectionsPage(QWidget):
     """
@@ -29,17 +33,21 @@ class SectionsPage(QWidget):
         super().__init__()
 
         self.controller = SectionsController(parent_widget=self) 
-        self.model = SectionTableModel()
+        self.model = SectionsTableModel()
         self.controller.set_model(self.model)
         
         self.init_ui()
         self.controller.load_sections()
+
+        self._refresh_all_buttons()
+
+
     
     def init_ui(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(30, 30, 30, 30)
         layout.setSpacing(20)
-        
+
         # Header with title and add button
         header_layout = QHBoxLayout()
         title = QLabel("Sections")
@@ -47,7 +55,7 @@ class SectionsPage(QWidget):
         title.setStyleSheet("color: #2d2d2d;")
         header_layout.addWidget(title)
         header_layout.addStretch()
-        
+
         self.add_btn = QPushButton("Add Section")
         self.add_btn.setFixedHeight(40)
         self.add_btn.setStyleSheet("""
@@ -64,67 +72,16 @@ class SectionsPage(QWidget):
             }
         """)
 
-        self.edit_btn = QPushButton("Edit Section")
-        self.edit_btn.setFixedHeight(40)
-        self.edit_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e5631;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-size: 13px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #2d5a3d;
-            }
-        """)
-
-        self.delete_btn = QPushButton("Delete Section")
-        self.delete_btn.setFixedHeight(40)
-        self.delete_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e5631;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-size: 13px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #2d5a3d;
-            }
-        """)
-
-        self.refresh_btn = QPushButton("Refresh")
-        self.refresh_btn.setFixedHeight(40)
-        self.refresh_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e5631;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-size: 13px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #2d5a3d;
-            }
-        """)
-
         header_layout.addWidget(self.add_btn)
-        header_layout.addWidget(self.edit_btn)
-        header_layout.addWidget(self.delete_btn)
-        header_layout.addWidget(self.refresh_btn)
         layout.addLayout(header_layout)
-        
+
         # Table
         self.table = QTableView()
         self.table.setObjectName("sectionsTable")
-        
-        # Sample data
+
+        # Set model
         self.table.setModel(self.model)
-        
+
         # Table styling
         self.table.setStyleSheet("""
             QTableView {
@@ -150,25 +107,29 @@ class SectionsPage(QWidget):
                 font-size: 13px;
             }
         """)
-        
+
         self.table.setAlternatingRowColors(True)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.table.horizontalHeader().setMinimumSectionSize(100)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.verticalHeader().setVisible(False)
 
-        
+
         # Set reasonable column widths
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(0, 60)  # No.
-        self.table.setColumnWidth(1, 80)  # Section
-        self.table.setColumnWidth(2, 200) # Program
-        self.table.setColumnWidth(3, 60)  # Year
-        self.table.setColumnWidth(4, 100) # Type
-        self.table.setColumnWidth(5, 80)  # Capacity
-        
+        header.setSectionResizeMode(7, QHeaderView.ResizeMode.Fixed)  # Actions column (now index 7)
+        self.table.setColumnWidth(7, 150)  # Actions
+        self.table.setColumnWidth(0, 60)   # No.
+        self.table.setColumnWidth(1, 80)   # Section
+        self.table.setColumnWidth(2, 200)  # Program
+        self.table.setColumnWidth(3, 60)   # Year
+        self.table.setColumnWidth(4, 100)  # Type
+        self.table.setColumnWidth(5, 80)   # Capacity
+
+        self.table.verticalHeader().setDefaultSectionSize(60)
+
         layout.addWidget(self.table)
         self.setLayout(layout)
 
@@ -180,9 +141,83 @@ class SectionsPage(QWidget):
         Connect page signals to its appropriate slots.
         """
         self.add_btn.clicked.connect(self.handle_add)
-        self.edit_btn.clicked.connect(self.handle_edit)
-        self.delete_btn.clicked.connect(self.handle_delete)
-        self.refresh_btn.clicked.connect(self.handle_refresh)
+
+        # Connect model signals to refresh action buttons
+        self.model.rowsInserted.connect(self._on_rows_changed)
+        self.model.modelReset.connect(self._refresh_all_buttons)
+        self.model.rowsRemoved.connect(self._refresh_all_buttons)
+        self.model.dataLoaded.connect(self._refresh_all_buttons)
+
+
+    def _create_action_buttons(self, row: int) -> QWidget:
+        """
+        Create action buttons widget for a specific row.
+
+        Args:
+            row: Row index to create buttons for
+
+        Returns:
+            QWidget containing edit and delete buttons
+        """
+        button_widget = QWidget()
+        button_layout = QHBoxLayout(button_widget)
+        button_layout.setContentsMargins(4, 4, 4, 4)
+        button_layout.setSpacing(4)
+
+        # Edit button
+        edit_btn = QPushButton("Edit")
+        edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #ffc107;
+                color: #2d2d2d;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 12px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #ffcd38;
+            }
+        """)
+        edit_btn.clicked.connect(lambda checked, r=row: self.handle_edit(r))
+
+        # Delete button
+        delete_btn = QPushButton("Delete")
+        delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #dc3545;
+                color: white;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 12px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #c82333;
+            }
+        """)
+        delete_btn.clicked.connect(lambda checked, r=row: self.handle_delete(r))
+
+        button_layout.addWidget(edit_btn)
+        button_layout.addWidget(delete_btn)
+        button_layout.addStretch()
+
+        return button_widget
+
+    def _on_rows_changed(self):
+        """
+        Called when rows are inserted into the model.
+        Refreshes action buttons for all rows.
+        """
+        self._refresh_all_buttons()
+
+    def _refresh_all_buttons(self):
+        """
+        Refresh action buttons for all rows in the table.
+        """
+        for row in range(self.model.rowCount()):
+            button_widget = self._create_action_buttons(row)
+            self.table.setIndexWidget(self.model.index(row, 7), button_widget)
 
     def load_sections(self):
         pass 
@@ -216,13 +251,85 @@ class SectionsPage(QWidget):
                 # if last_row >= 0:
                 #     self.table.selectRow(last_row)
 
+    def handle_edit(self, row: int) -> None:
+        """
+        Handle edit button click for a specific row.
 
+        Args:
+            row: Row index in the table
+        """
+        try:
+            section_id = self.model.get_section_id(row)
+            section_data = self.controller.get_section_by_id(section_id)
 
-    def handle_edit(self):
-        pass 
+            if not section_data:
+                logger.error(f"Section data not found for row {row}")
+                return
 
-    def handle_delete(self):
-        pass
+            dialog = CreateSectionDialog(self, section_data)
+            dialog.setWindowTitle("Edit Section")
+
+            if dialog.exec():
+                updated_data = dialog.get_data()
+                success = self.controller.handle_update_section(section_id, updated_data)
+
+                if success:
+                    # Refresh the row buttons
+                    self._refresh_row_buttons(row)
+
+        except Exception as e:
+            logger.exception(f"Error editing section at row {row}: {e}")
+
+    # REPLACE the handle_delete method with:
+    def handle_delete(self, row: int) -> None:
+        """
+        Handle delete button click for a specific row.
+
+        Args:
+            row: Row index in the table
+        """
+        try:
+            from PyQt6.QtWidgets import QMessageBox
+
+            section_id = self.model.get_section_id(row)
+            section_data = self.controller.get_section_by_id(section_id)
+
+            if not section_data:
+                logger.error(f"Section data not found for row {row}")
+                return
+
+            # Confirmation dialog
+            reply = QMessageBox.question(
+                self,
+                "Confirm Delete",
+                f"Are you sure you want to delete section '{section_data['section']}'?\n"
+                f"This action cannot be undone.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+
+            if reply == QMessageBox.StandardButton.Yes:
+                success = self.controller.handle_delete_section(section_id)
+
+                if not success:
+                    QMessageBox.warning(
+                        self,
+                        "Delete Failed",
+                        "Failed to delete the section. Please try again."
+                    )
+
+        except Exception as e:
+            logger.exception(f"Error deleting section at row {row}: {e}")
+
+    def _refresh_row_buttons(self, row: int) -> None:
+        """
+        Refresh the action buttons for a specific row after update.
+
+        Args:
+            row: Row index to refresh
+        """
+        button_widget = self._create_action_buttons(row)
+        self.table.setIndexWidget(self.model.index(row, 7), button_widget)
 
     def handle_refresh(self):
         pass 

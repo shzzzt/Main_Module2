@@ -13,9 +13,24 @@ logger = logging.getLogger(__name__)
 
 
 class CreateSectionDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, section_data: Dict = None):
+        """
+            Initialize the Create/Edit Section dialog.
+
+            Args:
+                parent: Parent widget
+                section_data: Existing section data for editing (None for create mode)
+        """
         super().__init__(parent)
-        self.setWindowTitle("Create Section")
+
+        # Store whether we're in edit mode
+        self.is_edit_mode = section_data is not None
+        self.section_data = section_data
+
+        # Set window title based on mode
+        title_text = "Edit Section" if self.is_edit_mode else "Create Section"
+        self.setWindowTitle(title_text)
+
         # self.setFixedSize(480, 400)  # Larger height to avoid overlap
         self.setStyleSheet("""
             QLabel {
@@ -78,7 +93,8 @@ class CreateSectionDialog(QDialog):
         self.program_combo.addItems([
             "BS Computer Science",
             "BS Information Technology",
-            "BS Software Engineering"
+            "BS Data Science"
+            "BS Information Systems"
         ])
         main_layout.addWidget(program_label)
         main_layout.addWidget(self.program_combo)
@@ -134,22 +150,82 @@ class CreateSectionDialog(QDialog):
         buttons_layout = QHBoxLayout()
         buttons_layout.addStretch()
         cancel_btn = QPushButton("Cancel")
-        create_btn = QPushButton("Create")
+        draft_btn = QPushButton("Draft")
+
+        # Change button text based on mode
+        action_btn = QPushButton("Update" if self.is_edit_mode else "Create")
+
         buttons_layout.addWidget(cancel_btn)
-        buttons_layout.addWidget(create_btn)
+        buttons_layout.addWidget(draft_btn)
+        buttons_layout.addWidget(action_btn)
         main_layout.addLayout(buttons_layout)
 
         self.setLayout(main_layout)
 
+        # Populate fields if in edit mode
+        if self.is_edit_mode and section_data:
+            self._populate_fields(section_data)
+
         # Connect signals
         cancel_btn.clicked.connect(self.reject)
-        create_btn.clicked.connect(self.accept)
+        action_btn.clicked.connect(self.accept)
+        draft_btn.clicked.connect(self.handle_draft)
+
+    def _populate_fields(self, section_data: Dict) -> None:
+        """
+        Populate form fields with existing section data for editing.
+
+        Args:
+            section_data: Dictionary containing section information
+        """
+        try:
+            # Populate text fields
+            if 'section' in section_data:
+                self.section_input.setText(str(section_data['section']))
+
+            # Populate combo boxes by finding and setting the index
+            if 'program' in section_data:
+                index = self.program_combo.findText(section_data['program'])
+                if index >= 0:
+                    self.program_combo.setCurrentIndex(index)
+
+            if 'curriculum' in section_data:
+                index = self.curriculum_combo.findText(section_data['curriculum'])
+                if index >= 0:
+                    self.curriculum_combo.setCurrentIndex(index)
+
+            if 'year' in section_data:
+                index = self.year_combo.findText(section_data['year'])
+                if index >= 0:
+                    self.year_combo.setCurrentIndex(index)
+
+            if 'capacity' in section_data:
+                self.capacity_input.setValue(int(section_data['capacity']))
+
+            if 'type' in section_data:
+                index = self.type_combo.findText(section_data['type'])
+                if index >= 0:
+                    self.type_combo.setCurrentIndex(index)
+
+            if 'remarks' in section_data:
+                index = self.remarks_combo.findText(section_data['remarks'])
+                if index >= 0:
+                    self.remarks_combo.setCurrentIndex(index)
+
+            logger.info(f"Populated form fields for section: {section_data.get('section', 'Unknown')}")
+
+        except Exception as e:
+            logger.exception(f"Error populating section fields: {e}")
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             event.ignore()
         else: 
             return super().keyPressEvent(event)
+
+    def handle_draft(self):
+        """Handle draft button clicked."""
+        pass
 
     def get_data(self) -> Dict:
         """

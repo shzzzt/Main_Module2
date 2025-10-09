@@ -299,8 +299,25 @@ class CreateClassDialog(QDialog):
                 background-color: #f0f0f0;
             }
         """)
+
+        self.draft_btn = QPushButton("Draft Class")
+        self.draft_btn.setDefault(True)
+        self.draft_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #4CAF50;
+                        color: white;
+                        padding: 8px 20px;
+                        border: none;
+                        border-radius: 4px;
+                        font-weight: bold;
+                    }
+                    QPushButton:hover {
+                        background-color: #45a049;
+                    }
+                """)
         
         button_layout.addWidget(self.cancel_btn)
+        button_layout.addWidget(self.draft_btn)
         button_layout.addWidget(self.create_btn)
         
         main_layout.addLayout(button_layout)
@@ -309,6 +326,7 @@ class CreateClassDialog(QDialog):
         # Connect signals
         self.create_btn.clicked.connect(self.validate_and_accept)
         self.cancel_btn.clicked.connect(self.reject)
+        self.draft_btn.clicked.connect(self.handle_draft)
     
     def populate_sections(self):
         """Populate section dropdown with available sections."""
@@ -353,6 +371,10 @@ class CreateClassDialog(QDialog):
             widget.deleteLater()
             
             logger.debug(f"Removed schedule widget (remaining: {len(self.schedule_widgets)})")
+
+    def handle_draft(self):
+        """Handle draft button clicked."""
+        pass
     
     def validate_and_accept(self):
         """Validate input and accept dialog if valid."""

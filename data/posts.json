@@ -1,0 +1,23 @@
+{
+    "posts": [
+        {
+            "post_id": 1,
+            "class_id": 3,
+            "topic_id": null,
+            "type": "material",
+            "title": "Hello",
+            "description": "Hello",
+            "instructor": "admin",
+            "instructor_id": "faculty_001",
+            "date_posted": "2025-10-10",
+            "status": "published",
+            "created_at": "2025-10-10T01:35:06",
+            "updated_at": "2025-10-10T01:35:06",
+            "attachment": {
+                "filename": "requirements.txt",
+                "file_type": "file",
+                "file_path": "attachments/requirements.txt"
+            }
+        }
+    ]
+}
