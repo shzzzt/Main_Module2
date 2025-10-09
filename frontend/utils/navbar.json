@@ -23,9 +23,9 @@
           "name": "Tagging",
           "function": "TaggingMain()",
           "path": "views.Academics.TaggingWrapper",
-          "access": ["admin", "student", "staff"],
+          "access": ["admin"],
           "modulars":[]
-        }, 
+        },
         {
           "id": 3,
           "name": "Classes",

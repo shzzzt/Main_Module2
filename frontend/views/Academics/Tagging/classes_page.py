@@ -1,15 +1,34 @@
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
+import logging
+
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QTableView,
                              QStackedWidget, QComboBox, QHeaderView)
 from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex
 from PyQt6.QtGui import QFont, QIcon, QColor
-from .classes_table_model import ClassesTableModel
+
+from frontend.controller.Academics.Tagging.classes_controller import ClassesController
+from frontend.controller.Academics.controller_manager import ControllerManager
+from frontend.services.Academics.Tagging.section_service import SectionService
+from frontend.model.Academics.Tagging.classes_table_model import ClassesTableModel
 from .create_class_dialog import CreateClassDialog
+
+logger = logging.getLogger(__name__)
+
 
 class ClassesPage(QWidget):
     def __init__(self):
         super().__init__()
+
+        self.section_service = SectionService()
+        # self.controller = ClassesController()
+        manager = ControllerManager()
+        self.controller = manager.get_classes_controller()
+
+        self.model = ClassesTableModel()
+        self.controller.set_model(self.model)
+
         self.init_ui()
+        self.controller.load_classes()
     
     def init_ui(self):
         layout = QVBoxLayout()
@@ -77,9 +96,8 @@ class ClassesPage(QWidget):
              'units': 3, 'section': '1A', 'schedule': 'MW 9:00 - 10:30 AM',
              'room': 'CISC Room 1', 'instructor': 'Maria Santos', 'type': 'Regular'}
         ]
-        
-        model = ClassesTableModel(data)
-        self.table.setModel(model)
+
+        self.table.setModel(self.model)
         
         # Table styling
         self.table.setStyleSheet("""
@@ -140,7 +158,7 @@ class ClassesPage(QWidget):
         self.table.setColumnWidth(9, 80)  # Edit button
         
         # Add Edit buttons to last column
-        for row in range(model.rowCount()):
+        for row in range(self.model.rowCount()):
             edit_btn = QPushButton("Edit")
             edit_btn.setStyleSheet("""
                 QPushButton {
@@ -156,9 +174,46 @@ class ClassesPage(QWidget):
                     background-color: #ffcd38;
                 }
             """)
-            self.table.setIndexWidget(model.index(row, 9), edit_btn)
+            self.table.setIndexWidget(self.model.index(row, 9), edit_btn)
         
         layout.addWidget(self.table)
         self.setLayout(layout)
 
-        self.add_btn.clicked.connect(lambda: CreateClassDialog(self).exec())
+        self._connect_signals()
+
+    def _connect_signals(self) -> None:
+        """
+        Connect page signals to its appropriate slots.
+        """
+        self.add_btn.clicked.connect(self.handle_add)
+
+    # =========================================================================
+    # CRUD OPERATIONS
+    # =========================================================================
+
+
+    def handle_add(self) -> None:
+        """
+        Handle add button click.
+
+        Data Flow:
+        1. Open CreateClassDialog
+        2. If user clicks Create:
+           → Get data from dialog
+           → Pass to controller
+           → Controller validates and calls service
+           → Controller updates model
+           → View automatically refreshes
+        """
+        logger.info("Entered handled_add method")
+        try:
+            sections = self.section_service.get_all()
+            logger.info(f"Sections: {sections}")
+            dialog = CreateClassDialog(self, sections)
+
+            if dialog.exec():
+                success = self.controller.handle_create_class(dialog)
+
+        except Exception as e:
+            logger.exception(f"An error occured while creating a class: {e}")
+

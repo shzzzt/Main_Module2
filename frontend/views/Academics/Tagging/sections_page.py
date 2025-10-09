@@ -8,25 +8,32 @@ from PyQt6.QtWidgets import (QApplication,
                              QTableView,
                              QHeaderView)
 from PyQt6.QtGui import QFont
-from .sections_table_model import SectionsTableModel
-from .create_section_dialog import CreateSectionDialog
-from ....controller.Academics.Tagging.sections_controller import SectionController
+from frontend.model.Academics.Tagging.section_table_model import SectionTableModel
+from frontend.views.Academics.Tagging.create_section_dialog import CreateSectionDialog
+from frontend.controller.Academics.Tagging.sections_controller import SectionsController
 
 class SectionsPage(QWidget):
+    """
+    Complete sections management page with full CRUD functionality.
+
+    Flow:
+    User interacts with this page
+        → Page calls Controller methods
+        → Controller calls Service methods
+        → Controller updates Model
+        → Model notifies View (automatic Qt signals)
+        → View refreshes display
+    """
+
     def __init__(self):
         super().__init__()
 
-        data = [
-            {'no': 1, 'section': 'A', 'program': 'BS Computer Science', 
-             'year': 1, 'type': 'Lecture', 'capacity': 40, 'remarks': 'Regular'},
-            {'no': 2, 'section': 'B', 'program': 'BS Information Technology', 
-             'year': 2, 'type': 'Lecture', 'capacity': 50, 'remarks': 'Regular'}
-        ]
-
-        self.model = SectionsTableModel(data)
-        self.controller = SectionController(self, self.model) 
+        self.controller = SectionsController(parent_widget=self) 
+        self.model = SectionTableModel()
+        self.controller.set_model(self.model)
         
         self.init_ui()
+        self.controller.load_sections()
     
     def init_ui(self):
         layout = QVBoxLayout()
@@ -56,7 +63,59 @@ class SectionsPage(QWidget):
                 background-color: #2d5a3d;
             }
         """)
+
+        self.edit_btn = QPushButton("Edit Section")
+        self.edit_btn.setFixedHeight(40)
+        self.edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e5631;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2d5a3d;
+            }
+        """)
+
+        self.delete_btn = QPushButton("Delete Section")
+        self.delete_btn.setFixedHeight(40)
+        self.delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e5631;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2d5a3d;
+            }
+        """)
+
+        self.refresh_btn = QPushButton("Refresh")
+        self.refresh_btn.setFixedHeight(40)
+        self.refresh_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e5631;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2d5a3d;
+            }
+        """)
+
         header_layout.addWidget(self.add_btn)
+        header_layout.addWidget(self.edit_btn)
+        header_layout.addWidget(self.delete_btn)
+        header_layout.addWidget(self.refresh_btn)
         layout.addLayout(header_layout)
         
         # Table
@@ -64,9 +123,6 @@ class SectionsPage(QWidget):
         self.table.setObjectName("sectionsTable")
         
         # Sample data
-        
-        
-        
         self.table.setModel(self.model)
         
         # Table styling
@@ -100,8 +156,7 @@ class SectionsPage(QWidget):
         self.table.horizontalHeader().setMinimumSectionSize(100)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.verticalHeader().setVisible(False)
-        # table.setSelectionBehavior(QTableView.SelectionBehavior.)
-        # table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+
         
         # Set reasonable column widths
         header = self.table.horizontalHeader()
@@ -117,4 +172,57 @@ class SectionsPage(QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
 
-        self.add_btn.clicked.connect(self.controller.open_dialog)
+        # connect signals to slots
+        self._connect_signals()
+
+    def _connect_signals(self) -> None:
+        """
+        Connect page signals to its appropriate slots.
+        """
+        self.add_btn.clicked.connect(self.handle_add)
+        self.edit_btn.clicked.connect(self.handle_edit)
+        self.delete_btn.clicked.connect(self.handle_delete)
+        self.refresh_btn.clicked.connect(self.handle_refresh)
+
+    def load_sections(self):
+        pass 
+
+    # =========================================================================
+    # CRUD OPERATIONS  
+    # =========================================================================
+
+    def handle_add(self) -> None:
+        """
+        Handle add button click.
+        
+        Data Flow:
+        1. Open CreateSectionDialog
+        2. If user clicks Create:
+           → Get data from dialog
+           → Pass to controller
+           → Controller validates and calls service
+           → Controller updates model
+           → View automatically refreshes
+        """
+        dialog = CreateSectionDialog(self)
+
+        if dialog.exec():
+            success = self.controller.handle_create_section(dialog)
+
+            # if success:
+            #     self.load_sections() # reload to show new section
+
+                # last_row = self.model.rowCount() - 1
+                # if last_row >= 0:
+                #     self.table.selectRow(last_row)
+
+
+
+    def handle_edit(self):
+        pass 
+
+    def handle_delete(self):
+        pass
+
+    def handle_refresh(self):
+        pass 

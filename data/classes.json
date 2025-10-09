@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "last_updated": "2025-10-08T17:16:35.909262",
+    "version": "1.0",
+    "next_id": 3
+  },
+  "classes": [
+    {
+      "code": "IT56",
+      "title": "DB",
+      "units": 3,
+      "section_id": 1,
+      "schedules": [
+        {
+          "day": "Monday",
+          "start_time": "09:00 AM",
+          "end_time": "10:30 AM"
+        }
+      ],
+      "room": "CR1",
+      "instructor": "JC",
+      "type": "Regular",
+      "id": 1,
+      "section_name": "3A",
+      "created_at": "2025-10-08T17:13:24.837533",
+      "updated_at": "2025-10-08T17:13:24.837533"
+    },
+    {
+      "code": "IT56",
+      "title": "cdds",
+      "units": 3,
+      "section_id": 1,
+      "schedules": [
+        {
+          "day": "Monday",
+          "start_time": "09:00 AM",
+          "end_time": "10:30 AM"
+        }
+      ],
+      "room": "vs",
+      "instructor": "sv",
+      "type": "Regular",
+      "id": 2,
+      "section_name": "3A",
+      "created_at": "2025-10-08T17:16:35.909262",
+      "updated_at": "2025-10-08T17:16:35.909262"
+    }
+  ]
+}

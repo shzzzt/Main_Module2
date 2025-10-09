@@ -1,10 +1,15 @@
+import sys
+
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QComboBox, QPushButton, QGridLayout, QApplication, QSpinBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-import sys
+from typing import Dict 
+import logging 
+
+logger = logging.getLogger(__name__)
 
 
 class CreateSectionDialog(QDialog):
@@ -146,9 +151,15 @@ class CreateSectionDialog(QDialog):
         else: 
             return super().keyPressEvent(event)
 
-    def get_input_data(self) -> dict:
-        """Retrieve user input from the dialog."""
-        return {
+    def get_data(self) -> Dict:
+        """
+        Retrieve section data from form fields.
+        
+        Returns:
+            Dict: Section data dictionary with all fields
+        """
+
+        data = {
             "section": self.section_input.text(),
             "program": self.program_combo.currentText(),
             "curriculum": self.curriculum_combo.currentText(),
@@ -157,6 +168,9 @@ class CreateSectionDialog(QDialog):
             "type": self.type_combo.currentText(),
             "remarks": self.remarks_combo.currentText()
         }
+
+        logger.debug(f"Section data collected: {data['section']}")
+        return data 
 
 
 if __name__ == "__main__":
