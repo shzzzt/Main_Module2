@@ -174,13 +174,47 @@ class Ui_viewContent(object):
         self.commentBox = QtWidgets.QTextEdit(parent=scroll_content)
         self.commentBox.setMinimumSize(QtCore.QSize(200, 20))
         self.commentBox.setMaximumSize(QtCore.QSize(16777215, 50))
-        self.commentBox.setStyleSheet("font-size: 14px; color: #24292f; padding: 5px; border: 1px solid #ddd; border-radius: 16.5px;")
+        self.commentBox.setStyleSheet("""
+            font-size: 14px; 
+            color: #24292f; 
+            padding: 5px; 
+            border: 1px solid #ddd; 
+            border-radius: 16.5px;
+            background-color: #f8f9fa;
+        """)
         self.commentBox.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.commentBox.setObjectName("commentBox")
         self.commentLayout.addWidget(self.commentBox)
-        self.pushButton = QtWidgets.QPushButton(parent=scroll_content)
-        self.pushButton.setObjectName("pushButton")
-        self.commentLayout.addWidget(self.pushButton)
+        
+        # UPDATED: Proper Send Button
+        self.sendButton = QtWidgets.QPushButton(parent=scroll_content)
+        self.sendButton.setMinimumSize(QtCore.QSize(80, 38))
+        self.sendButton.setMaximumSize(QtCore.QSize(80, 38))
+        self.sendButton.setStyleSheet("""
+            QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                border-radius: 19px;
+                font-size: 14px;
+                font-weight: 500;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background-color: #0a5c2e;
+            }
+            QPushButton:pressed {
+                background-color: #06381c;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+                color: #666666;
+            }
+        """)
+        self.sendButton.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.sendButton.setObjectName("sendButton")
+        self.commentLayout.addWidget(self.sendButton)
+        
         self.verticalLayout_2.addLayout(self.commentLayout)
         
         spacerItem4 = QtWidgets.QSpacerItem(20, 60, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -206,6 +240,7 @@ class Ui_viewContent(object):
         self.attachmentType.setText(_translate("viewContent", "PDF"))
         self.label.setText(_translate("viewContent", "C"))
         self.commentBox.setHtml(_translate("viewContent", "<p style='font-size:8pt;'>Add a comment...</p>"))
+        self.sendButton.setText(_translate("viewContent", "Send"))  # UPDATED: Set send button text
 
 
 if __name__ == "__main__":

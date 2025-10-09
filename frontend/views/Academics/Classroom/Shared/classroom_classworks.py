@@ -1,10 +1,12 @@
 # classroom_classworks.py
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QDialog, QLineEdit, QTextEdit, QPushButton, QMenu, QToolButton
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QComboBox, QDialog, QLineEdit, QTextEdit, QPushButton, QMenu, QToolButton
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QAction, QPixmap, QIcon
 from widgets.classroom_classworks_content_ui import Ui_ClassroomClassworksContent
 from widgets.topic_widget import TopicWidget
+from typing import Optional, Dict
 import os
+import datetime
 
 try:
     # CHANGED: Fix import paths to match your file structure
@@ -162,14 +164,17 @@ class ClassroomClassworks(QWidget):
         
         material_action = QAction("Material", self)
         assessment_action = QAction("Assessment", self)
+        syllabus_action = QAction("Syllabus", self)
         topic_action = QAction("Topic", self)
         
         material_action.triggered.connect(lambda: self.create_item("material"))
         assessment_action.triggered.connect(lambda: self.create_item("assessment"))
+        syllabus_action.triggered.connect(lambda: self.create_item("syllabus"))  # ADD THIS
         topic_action.triggered.connect(lambda: self.create_item("topic"))
         
         menu.addAction(material_action)
         menu.addAction(assessment_action)
+        menu.addAction(syllabus_action)
         menu.addAction(topic_action)
         
         button_pos = self.ui.createButton.mapToGlobal(self.ui.createButton.rect().bottomLeft())
@@ -178,9 +183,71 @@ class ClassroomClassworks(QWidget):
     def create_item(self, item_type):
         if item_type == "topic":
             self.create_topic()
+        elif item_type == "syllabus":
+            self.create_syllabus()  # ADD THIS
         else:
             # CHANGED: Navigate to proper forms instead of showing simple dialog
             self.navigate_to_create_form(item_type)
+
+    # ADD THESE SYLLABUS METHODS
+    def create_syllabus(self):
+        """Create syllabus dialog - separate from posts"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Create Syllabus")
+        dialog.setStyleSheet("background-color: white;")
+        dialog.setModal(True)
+        dialog.setFixedSize(500, 400)
+        
+        layout = QVBoxLayout(dialog)
+        
+        title_label = QLabel("Syllabus Title:")
+        title_input = QLineEdit()
+        title_input.setText("Syllabus")  # Default title, can be changed
+        layout.addWidget(title_label)
+        layout.addWidget(title_input)
+        
+        content_label = QLabel("Syllabus Content:")
+        content_input = QTextEdit()
+        layout.addWidget(content_label)
+        layout.addWidget(content_input)
+        
+        button_layout = QHBoxLayout()
+        create_btn = QPushButton("Create Syllabus")
+        cancel_btn = QPushButton("Cancel")
+        
+        # FIXED: Only pass title, content, and dialog
+        create_btn.clicked.connect(lambda: self.handle_create_syllabus(
+            title_input.text(), 
+            content_input.toPlainText(), 
+            dialog
+        ))
+        cancel_btn.clicked.connect(dialog.reject)
+        
+        button_layout.addWidget(create_btn)
+        button_layout.addWidget(cancel_btn)
+        layout.addLayout(button_layout)
+        
+        dialog.exec()
+    
+    def get_syllabus_by_class_id(self, class_id: int) -> Optional[Dict]:
+        """Get syllabus for a specific class"""
+        data = self._load_data()
+        syllabus_list = data.get("syllabus", [])
+        return next((s for s in syllabus_list if s.get("class_id") == class_id), None)
+    
+    def update_syllabus(self, class_id: int, updates: Dict) -> bool:
+        """Update syllabus for a class"""
+        data = self._load_data()
+        syllabus_list = data.get("syllabus", [])
+        
+        for syllabus in syllabus_list:
+            if syllabus.get("class_id") == class_id:
+                syllabus.update(updates)
+                syllabus["date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Update timestamp
+                self._save_data(data)
+                return True
+        
+        return False
 
     def navigate_to_create_form(self, form_type):
         """Navigate to the appropriate creation form"""
@@ -220,6 +287,27 @@ class ClassroomClassworks(QWidget):
         layout.addLayout(button_layout)
         dialog.exec()
 
+    def handle_create_syllabus(self, title, content, dialog):
+        """Handle syllabus creation - stored separately from posts"""
+        if not title or not content:
+            print("Syllabus title and content are required")
+            return
+        
+        # Use a separate service method for syllabus
+        if self.post_controller.create_syllabus(
+            title=title,
+            content=content,
+            author=self.username
+        ):
+            print("Syllabus created successfully")
+            # Refresh both views
+            self.refresh_posts()
+            if hasattr(self, 'stream_view'):
+                self.stream_view.refresh_syllabus()
+            dialog.accept()
+        else:
+            print("Failed to create syllabus")
+
     def handle_create_topic(self, title, type_, dialog):
         if not title:
             print("Topic title is required")
@@ -234,6 +322,33 @@ class ClassroomClassworks(QWidget):
         else:
             print("Failed to create topic")
             
+    def handle_create_syllabus(self, title, content, dialog):
+        """Handle syllabus creation - stored separately from posts"""
+        if not title or not content:
+            print("Syllabus title and content are required")
+            return
+        
+        # Use a separate service method for syllabus
+        if self.post_controller.create_syllabus(
+            title=title,
+            content=content,
+            author=self.username
+        ):
+            print("Syllabus created successfully")
+            # Refresh both views
+            self.refresh_posts()
+            
+            # FIX: Explicitly refresh the stream view
+            if hasattr(self, 'stream_view') and self.stream_view:
+                self.stream_view.refresh_syllabus()
+                self.stream_view.load_posts()  # Force reload all posts
+            
+            # FIX: Emit signal to notify parent
+            self.post_created.emit()
+            
+            dialog.accept()
+        else:
+            print("Failed to create syllabus")
     # def show_create_dialog(self, item_type):
     #     dialog = QDialog(self)
     #     dialog.setWindowTitle(f"Create {item_type.capitalize()}")

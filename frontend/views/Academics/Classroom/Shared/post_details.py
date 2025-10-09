@@ -47,5 +47,46 @@ class PostDetails(QWidget):
         except Exception as e:
             print(f"Error loading post: {e}")
 
+    def load_post(self, post):
+        try:
+            self.ui.title_label.setText(post.get("title", "No Title"))
+            self.ui.instructor_label.setText(post.get("author", "Unknown"))
+            
+            # Handle date formatting
+            date_str = post.get("date", "")
+            if date_str:
+                date_part = date_str.split(" ")[0]
+                self.ui.date_label.setText("• " + date_part)
+            else:
+                self.ui.date_label.setText("• No date")
+            
+            self.ui.descriptionEdit.setHtml(post.get("content", ""))
+            
+            # Hide attachment and score sections for syllabus
+            if post.get("type") == "syllabus":
+                if hasattr(self.ui, 'attachmentFrame'):
+                    self.ui.attachmentFrame.hide()
+                if hasattr(self.ui, 'score_label'):
+                    self.ui.score_label.hide()
+            else:
+                # Handle attachment for regular posts
+                attachment = post.get("attachment")
+                if attachment and hasattr(self.ui, 'attachmentFrame'):
+                    self.ui.attachmentFrame.show()
+                    self.ui.attachmentName.setText(attachment.get("name", "No name"))
+                    self.ui.attachmentType.setText(attachment.get("type", "Unknown"))
+                elif hasattr(self.ui, 'attachmentFrame'):
+                    self.ui.attachmentFrame.hide()
+                
+                # Handle score for assessments
+                if post.get("type") == "assessment" and post.get("score") is not None and hasattr(self.ui, 'score_label'):
+                    self.ui.score_label.setText(f"{post['score']} points")
+                    self.ui.score_label.show()
+                elif hasattr(self.ui, 'score_label'):
+                    self.ui.score_label.hide()
+                    
+        except Exception as e:
+            print(f"Error loading post: {e}")        
+
     def clear(self):
         pass

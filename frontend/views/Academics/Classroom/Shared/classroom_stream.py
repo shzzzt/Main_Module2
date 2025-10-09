@@ -27,6 +27,72 @@ class ClassroomStream(QWidget):
         self.setup_existing_widgets()
         
         self.load_posts()
+        self.load_syllabus() 
+
+    def setup_existing_widgets(self):
+        """Setup the existing template widgets"""
+        # Hide syllabus frame initially - we'll show it only if syllabus exists
+        if hasattr(self.ui, 'syllabusFrame') and self.ui.syllabusFrame:
+            self.ui.syllabusFrame.setVisible(False)
+        
+        # Hide the template post initially
+        if hasattr(self.ui, 'postTemplate') and self.ui.postTemplate:
+            self.ui.postTemplate.setVisible(False)
+
+    def load_syllabus(self):
+
+        """Load and display syllabus if it exists"""
+        syllabus = self.post_controller.get_syllabus()
+        print(f"Syllabus found: {syllabus is not None}")
+        
+        if hasattr(self.ui, 'syllabusFrame') and self.ui.syllabusFrame:
+            if syllabus:
+                # Syllabus exists - show and setup the frame
+                self.ui.syllabusFrame.setVisible(True)
+                
+                # Update syllabus text
+                if hasattr(self.ui, 'label_2') and self.ui.label_2:
+                    self.ui.label_2.setText(syllabus.get("title", "Syllabus"))
+                
+                # Reconnect view button
+                if hasattr(self.ui, 'pushButton') and self.ui.pushButton:
+                    try:
+                        self.ui.pushButton.clicked.disconnect()
+                    except:
+                        pass
+                    self.ui.pushButton.setText("View")
+                    # FIX: Use lambda without parameters or use partial
+                    self.ui.pushButton.clicked.connect(lambda: self.on_syllabus_click(syllabus))
+                
+                # Make entire frame clickable - FIX: use proper lambda
+                self.ui.syllabusFrame.mousePressEvent = lambda event: self.handle_syllabus_click(event, syllabus)
+                self.ui.syllabusFrame.setCursor(Qt.CursorShape.PointingHandCursor)
+            else:
+                # No syllabus - hide the frame
+                self.ui.syllabusFrame.setVisible(False)
+
+    def on_syllabus_click(self, syllabus):
+        """Handle syllabus view button click"""
+        # Convert syllabus to post-like format for PostDetails
+        post_like_syllabus = {
+            "id": f"syllabus_{syllabus.get('id', '')}",
+            "title": syllabus.get("title", "Syllabus"),
+            "content": syllabus.get("content", ""),
+            "author": syllabus.get("author", ""),
+            "date": syllabus.get("date", ""),
+            "type": "syllabus"  # Special type for syllabus
+        }
+        self.post_selected.emit(post_like_syllabus)
+
+    def handle_syllabus_click(self, event, syllabus):
+        """Handle clicking on syllabus frame"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.on_syllabus_click(syllabus)  # This should work now
+
+    def refresh_syllabus(self):
+        """Refresh syllabus display (called after creation)"""
+        print("Refreshing syllabus in stream...")
+        self.load_syllabus()
 
     def setup_class_info(self):
         """Set the class information in the header"""
@@ -51,13 +117,23 @@ class ClassroomStream(QWidget):
         if hasattr(self.ui, 'postTemplate') and self.ui.postTemplate:
             self.ui.postTemplate.setVisible(False)
 
-    def on_syllabus_click(self):
+    def on_syllabus_click(self, syllabus=None):
         """Handle syllabus view button click"""
-        # Find syllabus post in the data
-        posts = self.controller.get_posts()
-        syllabus_posts = [p for p in posts if p.get("title") == "Syllabus"]
-        if syllabus_posts:
-            self.post_selected.emit(syllabus_posts[0])
+        # If syllabus is not passed, try to get it from controller
+        if syllabus is None:
+            syllabus = self.post_controller.get_syllabus()
+        
+        if syllabus:
+            # Convert syllabus to post-like format for PostDetails
+            post_like_syllabus = {
+                "id": f"syllabus_{syllabus.get('id', '')}",
+                "title": syllabus.get("title", "Syllabus"),
+                "content": syllabus.get("content", ""),
+                "author": syllabus.get("author", ""),
+                "date": syllabus.get("date", ""),
+                "type": "syllabus"  # Special type for syllabus
+            }
+            self.post_selected.emit(post_like_syllabus)
 
     def load_posts(self):
         # Use PostController to get posts (they're already sorted by the service)
@@ -350,6 +426,7 @@ class ClassroomStream(QWidget):
     def refresh_posts(self):
         """Force refresh posts from controller"""
         self.load_posts()
+        self.load_syllabus()
 
     # Also update the set_classworks_reference method:
     def set_classworks_reference(self, classworks_view):

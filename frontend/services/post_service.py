@@ -19,6 +19,58 @@ class PostService:
         """Save data to JSON file"""
         with open(self.data_file, 'w') as f:
             json.dump(data, f, indent=4)
+
+    # ADD THESE SYLLABUS METHODS
+    def create_syllabus(self, class_id: int, title: str, content: str, author: str) -> Optional[Dict]:
+        """Create or update syllabus for a class"""
+        data = self._load_data()
+        
+        # Check if syllabus already exists for this class
+        syllabus_list = data.setdefault("syllabus", [])
+        existing_syllabus = next((s for s in syllabus_list if s.get("class_id") == class_id), None)
+        
+        if existing_syllabus:
+            # Update existing syllabus
+            existing_syllabus.update({
+                "title": title,
+                "content": content,
+                "author": author,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+        else:
+            # Create new syllabus
+            new_syllabus = {
+                "id": len(syllabus_list) + 1,
+                "class_id": class_id,
+                "title": title,
+                "content": content,
+                "author": author,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            syllabus_list.append(new_syllabus)
+        
+        self._save_data(data)
+        return self.get_syllabus_by_class_id(class_id)
+    
+    def get_syllabus_by_class_id(self, class_id: int) -> Optional[Dict]:
+        """Get syllabus for a specific class"""
+        data = self._load_data()
+        syllabus_list = data.get("syllabus", [])
+        return next((s for s in syllabus_list if s.get("class_id") == class_id), None)
+    
+    def update_syllabus(self, class_id: int, updates: Dict) -> bool:
+        """Update syllabus for a class"""
+        data = self._load_data()
+        syllabus_list = data.get("syllabus", [])
+        
+        for syllabus in syllabus_list:
+            if syllabus.get("class_id") == class_id:
+                syllabus.update(updates)
+                syllabus["date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Update timestamp
+                self._save_data(data)
+                return True
+        
+        return False
     
     def get_posts_by_class_id(self, class_id: int) -> List[Dict]:
         """Get all posts for a specific class"""
