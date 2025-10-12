@@ -4,6 +4,7 @@ from PyQt6.QtCore import pyqtSignal, Qt
 from frontend.views.Academics.Classroom.Shared.post_details import PostDetails
 from frontend.views.Academics.Classroom.Shared.classroom_stream import ClassroomStream
 from frontend.views.Academics.Classroom.Shared.classroom_classworks import ClassroomClassworks
+from frontend.views.Academics.Classroom.Shared.classroom_students import ClassroomStudents
 from frontend.views.Academics.Classroom.Faculty.classroom_grades_view import FacultyGradesView
 from frontend.views.Academics.Classroom.Student.classroom_grades_view import StudentGradesView
 from frontend.services.post_service import PostService
@@ -125,7 +126,11 @@ class ClassroomView(QWidget):
             self.cls, self.username, self.roles, self.primary_role, 
             self.token, post_controller  # 🔗 Same controller instance
         )
-        
+        # NEW: Create students view
+        self.students_view = ClassroomStudents(
+            self.cls, self.username, self.roles, self.primary_role, 
+            self.token
+        )
         # === SIGNAL CONNECTIONS: POST SELECTION ===
         # When post is clicked in either Stream or Classworks, bubble up to ClassroomMain
         # Stream → ClassroomView → ClassroomMain
@@ -146,11 +151,13 @@ class ClassroomView(QWidget):
         
         # === GRADES VIEW SETUP (Role-based) ===
         # Faculty sees grading interface, students see their grades
-        if self.primary_role == "faculty" or "admin":
+        # FIXED: Corrected the role checking logic
+        if self.primary_role in ["faculty", "admin"]:  # ✅ FIXED: Use 'in' for multiple roles
             try:
                 self.grades_view = FacultyGradesView(
                     self.cls, self.username, self.roles, self.primary_role, self.token
                 )
+                print(f"✅ Loaded FacultyGradesView for {self.primary_role}")
             except ImportError as e:
                 # Fallback if FacultyGradesView is not available
                 print(f"FacultyGradesView not available: {e}, using placeholder")
@@ -160,6 +167,7 @@ class ClassroomView(QWidget):
                 self.grades_view = StudentGradesView(
                     self.cls, self.username, self.roles, self.primary_role, self.token
                 )
+                print(f"✅ Loaded StudentGradesView for {self.primary_role}")
             except ImportError as e:
                 print(f"StudentGradesView not available: {e}, using placeholder")
                 self.grades_view = self._create_placeholder_view("Student Grades View - Not Available")
@@ -168,7 +176,7 @@ class ClassroomView(QWidget):
         # Add all views to the tab widget
         tabs.addTab(self.stream_view, "STREAM")           # Post stream and announcements
         tabs.addTab(self.classworks_view, "CLASSWORKS")   # Materials and assessments
-        tabs.addTab(students_view, "STUDENTS")            # Student roster (placeholder)
+        tabs.addTab(self.students_view, "STUDENTS")  # CHANGED: Use actual students view
         tabs.addTab(attendance_view, "ATTENDANCE")        # Attendance (placeholder)
         tabs.addTab(self.grades_view, "GRADES")           # Grades management
         

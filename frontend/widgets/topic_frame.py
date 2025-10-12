@@ -1,3 +1,4 @@
+# topic_frame.py
 from PyQt6.QtWidgets import QFrame, QHBoxLayout
 from PyQt6.QtCore import pyqtSignal, Qt
 
@@ -12,12 +13,12 @@ class TopicFrame(QFrame):
         self.controller = controller
         self.user_role = user_role
         self.setObjectName(f"topicItemFrame_{id(self)}")
-        self.setMinimumSize(200, 70)
-        self.setMaximumHeight(70)
+        self.setMinimumHeight(80)
+        self.setMaximumHeight(80)
         self.setStyleSheet("""
             QFrame {
                 background-color: white;
-                border: 1px solid #084924;
+                border: 1px solid #E0E0E0;
                 border-radius: 20px;
                 margin-left: 20px;
             }
@@ -32,8 +33,8 @@ class TopicFrame(QFrame):
 
     def setup_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)  # Remove spacing
+        layout.setContentsMargins(20, 15, 20, 15)
+        layout.setSpacing(0)
         item_widget = ItemWidget(self.post, self.controller, self.user_role)
         layout.addWidget(item_widget)
         self.setCursor(Qt.CursorShape.PointingHandCursor)

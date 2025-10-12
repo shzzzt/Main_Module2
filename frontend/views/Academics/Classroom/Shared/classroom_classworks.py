@@ -1,7 +1,7 @@
 # classroom_classworks.py
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QComboBox, QDialog, QLineEdit, QTextEdit, QPushButton, QMenu, QToolButton
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QComboBox, QDialog, QLineEdit, QTextEdit, QPushButton, QMenu, QToolButton, QFrame, QScrollArea, QSizePolicy, QSpacerItem
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from PyQt6.QtGui import QAction, QPixmap, QIcon
+from PyQt6.QtGui import QPixmap, QIcon, QFont, QFontDatabase, QAction
 from widgets.classroom_classworks_content_ui import Ui_ClassroomClassworksContent
 from widgets.topic_widget import TopicWidget
 from typing import Optional, Dict
@@ -9,16 +9,13 @@ import os
 import datetime
 
 try:
-    # CHANGED: Fix import paths to match your file structure
     from frontend.views.Academics.Classroom.Faculty.upload_materials import MaterialForm
     from frontend.views.Academics.Classroom.Faculty.create_assessment import AssessmentForm
 except ImportError:
-    # Fallback import path
     try:
         from upload_materials import MaterialForm
         from create_assessment import AssessmentForm
     except ImportError:
-        # Final fallback - create placeholder classes
         class MaterialForm(QWidget):
             def __init__(self, cls=None, username=None, roles=None, primary_role=None, token=None, post_controller=None, parent=None):
                 super().__init__(parent)
@@ -30,22 +27,14 @@ except ImportError:
                 super().__init__(parent)
                 layout = QVBoxLayout(self)
                 layout.addWidget(QLabel(f"Assessment Form for {cls.get('title', 'Unknown Class') if cls else 'Unknown Class'}"))
-                
+
 class ClassroomClassworks(QWidget):
     post_selected = pyqtSignal(dict)
     post_created = pyqtSignal() 
-    navigate_to_form = pyqtSignal(str, object)  # signal for form navigation
+    navigate_to_form = pyqtSignal(str, object)
 
     def __init__(self, cls, username, roles, primary_role, token, post_controller, parent=None):
         super().__init__(parent)
-        self.setStyleSheet("""
-            ClassroomClassworks {
-                background-color: white;
-            }
-            QDialog {
-                background-color: white;
-            }
-        """)
         self.username = username
         self.roles = roles
         self.primary_role = primary_role
@@ -54,15 +43,89 @@ class ClassroomClassworks(QWidget):
         self.ui.setupUi(self)
         self.cls = cls
         self.post_controller = post_controller
-        self.post_controller.set_class(cls["id"])  # Set class context
+        self.post_controller.set_class(cls["id"])
         self.topic_widgets = []
         self.untitled_frames = []
         
+        # Load Poppins font
+        self.load_poppins_font()
+        
+        self.setup_styles()
         self.setup_role_based_ui()
         self.setup_filter()
         self.connect_signals()
         self.initialize_layout()
         self.load_posts()
+
+    def setup_styles(self):
+        """Setup consistent styling matching Students layout"""
+        self.setStyleSheet("""
+            ClassroomClassworks {
+                background-color: white;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QScrollArea {
+                border: none;
+                background-color: transparent;
+            }
+            QToolButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 5px;
+                font-weight: 400;
+                font-size: 11px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QToolButton:hover {
+                background-color: #1B5E20;
+            }
+            QToolButton:pressed {
+                background-color: #0D4E12;
+            }
+            QComboBox {
+                border: 1px solid #E0E0E0;
+                border-radius: 4px;
+                padding: 8px 12px;
+                background-color: white;
+                font-size: 12px;
+                font-family: "Poppins", Arial, sans-serif;
+                min-height: 35px;
+            }
+            QComboBox:hover {
+                border-color: #A8A8A8;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 25px;
+            }
+            QComboBox::down-arrow {
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 4px solid #666;
+            }
+        """)
+
+    def load_poppins_font(self):
+        """Load Poppins font if available"""
+        try:
+            font_paths = [
+                "frontend/assets/fonts/Poppins-Regular.ttf",
+                "assets/fonts/Poppins-Regular.ttf",
+                "fonts/Poppins-Regular.ttf",
+            ]
+            
+            for font_path in font_paths:
+                if os.path.exists(font_path):
+                    font_id = QFontDatabase.addApplicationFont(font_path)
+                    if font_id != -1:
+                        print(f"Successfully loaded Poppins font from {font_path}")
+                    break
+            else:
+                print("Poppins font not found, using system font")
+        except Exception as e:
+            print(f"Error loading Poppins font: {e}")
 
     def initialize_layout(self):
         """Properly initialize the scroll area layout"""
@@ -70,7 +133,6 @@ class ClassroomClassworks(QWidget):
         if scroll_widget.layout() is None:
             scroll_widget.setLayout(QVBoxLayout())
         else:
-            # Clear existing layout properly
             layout = scroll_widget.layout()
             while layout.count():
                 item = layout.takeAt(0)
@@ -86,6 +148,7 @@ class ClassroomClassworks(QWidget):
             print(f"Icon file not found: {full_path}")
             icon = QIcon.fromTheme("list-add")
         return icon
+    
 
     def setup_role_based_ui(self):
         if self.primary_role == "student":
@@ -106,6 +169,7 @@ class ClassroomClassworks(QWidget):
                     font-size: 16px;
                     min-width: 90px;
                     min-height: 30px;
+                    font-family: "Poppins", Arial, sans-serif;
                 }
                 QToolButton:hover {
                     background-color: #1B5E20;
@@ -131,12 +195,11 @@ class ClassroomClassworks(QWidget):
     def setup_filter(self):
         """Setup filter combo box using PostController"""
         self.ui.filterComboBox.clear()
-        self.ui.filterComboBox.addItem("All")
+        self.ui.filterComboBox.addItem("All items")
         self.ui.filterComboBox.addItem("Material")
         self.ui.filterComboBox.addItem("Assessment")
         
-        # Get unique topics from PostController
-        topics = self.post_controller.get_available_topics()  # Fixed: use post_controller
+        topics = self.post_controller.get_available_topics()
         unique_topics = sorted(list(set(topics)))
         
         for topic in unique_topics:
@@ -151,6 +214,7 @@ class ClassroomClassworks(QWidget):
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 padding: 4px 0px;
+                font-family: "Poppins", Arial, sans-serif;
             }
             QMenu::item {
                 padding: 8px 16px;
@@ -169,7 +233,7 @@ class ClassroomClassworks(QWidget):
         
         material_action.triggered.connect(lambda: self.create_item("material"))
         assessment_action.triggered.connect(lambda: self.create_item("assessment"))
-        syllabus_action.triggered.connect(lambda: self.create_item("syllabus"))  # ADD THIS
+        syllabus_action.triggered.connect(lambda: self.create_item("syllabus"))
         topic_action.triggered.connect(lambda: self.create_item("topic"))
         
         menu.addAction(material_action)
@@ -184,30 +248,51 @@ class ClassroomClassworks(QWidget):
         if item_type == "topic":
             self.create_topic()
         elif item_type == "syllabus":
-            self.create_syllabus()  # ADD THIS
+            self.create_syllabus()
         else:
-            # CHANGED: Navigate to proper forms instead of showing simple dialog
             self.navigate_to_create_form(item_type)
 
-    # ADD THESE SYLLABUS METHODS
     def create_syllabus(self):
-        """Create syllabus dialog - separate from posts"""
+        """Create syllabus dialog"""
         dialog = QDialog(self)
         dialog.setWindowTitle("Create Syllabus")
-        dialog.setStyleSheet("background-color: white;")
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: white;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+        """)
         dialog.setModal(True)
         dialog.setFixedSize(500, 400)
         
         layout = QVBoxLayout(dialog)
         
         title_label = QLabel("Syllabus Title:")
+        title_label.setStyleSheet("font-family: 'Poppins', Arial, sans-serif;")
         title_input = QLineEdit()
-        title_input.setText("Syllabus")  # Default title, can be changed
+        title_input.setText("Syllabus")
+        title_input.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #E0E0E0;
+                border-radius: 4px;
+                padding: 8px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+        """)
         layout.addWidget(title_label)
         layout.addWidget(title_input)
         
         content_label = QLabel("Syllabus Content:")
+        content_label.setStyleSheet("font-family: 'Poppins', Arial, sans-serif;")
         content_input = QTextEdit()
+        content_input.setStyleSheet("""
+            QTextEdit {
+                border: 1px solid #E0E0E0;
+                border-radius: 4px;
+                padding: 8px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+        """)
         layout.addWidget(content_label)
         layout.addWidget(content_input)
         
@@ -215,7 +300,33 @@ class ClassroomClassworks(QWidget):
         create_btn = QPushButton("Create Syllabus")
         cancel_btn = QPushButton("Cancel")
         
-        # FIXED: Only pass title, content, and dialog
+        create_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QPushButton:hover {
+                background-color: #1B5E20;
+            }
+        """)
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #666;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QPushButton:hover {
+                background-color: #777;
+            }
+        """)
+        
         create_btn.clicked.connect(lambda: self.handle_create_syllabus(
             title_input.text(), 
             content_input.toPlainText(), 
@@ -228,59 +339,70 @@ class ClassroomClassworks(QWidget):
         layout.addLayout(button_layout)
         
         dialog.exec()
-    
-    def get_syllabus_by_class_id(self, class_id: int) -> Optional[Dict]:
-        """Get syllabus for a specific class"""
-        data = self._load_data()
-        syllabus_list = data.get("syllabus", [])
-        return next((s for s in syllabus_list if s.get("class_id") == class_id), None)
-    
-    def update_syllabus(self, class_id: int, updates: Dict) -> bool:
-        """Update syllabus for a class"""
-        data = self._load_data()
-        syllabus_list = data.get("syllabus", [])
-        
-        for syllabus in syllabus_list:
-            if syllabus.get("class_id") == class_id:
-                syllabus.update(updates)
-                syllabus["date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Update timestamp
-                self._save_data(data)
-                return True
-        
-        return False
 
     def navigate_to_create_form(self, form_type):
         """Navigate to the appropriate creation form"""
-        # CHANGED: Just emit the form type and classroom data, let ClassroomMain handle the form creation
         self.navigate_to_form.emit(form_type, self.cls)
         print(f"Requesting {form_type} form for class: {self.cls.get('title', 'Unknown')}")
-
-    def handle_form_back(self):
-        """Handle back navigation from forms"""
-        # This will be handled by the parent ClassroomView
-        pass
 
     def create_topic(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Create Topic")
-        dialog.setStyleSheet("background-color: white;")
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: white;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+        """)
         dialog.setModal(True)
+        dialog.setFixedSize(400, 200)
         
         layout = QVBoxLayout(dialog)
         
         title_label = QLabel("Title:")
+        title_label.setStyleSheet("font-family: 'Poppins', Arial, sans-serif;")
         title_input = QLineEdit()
+        title_input.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #E0E0E0;
+                border-radius: 4px;
+                padding: 8px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+        """)
         layout.addWidget(title_label)
         layout.addWidget(title_input)
         
         type_label = QLabel("Type:")
+        type_label.setStyleSheet("font-family: 'Poppins', Arial, sans-serif;")
         type_combo = QComboBox()
         type_combo.addItems(["material", "assessment"])
+        type_combo.setStyleSheet("""
+            QComboBox {
+                border: 1px solid #E0E0E0;
+                border-radius: 4px;
+                padding: 8px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+        """)
         layout.addWidget(type_label)
         layout.addWidget(type_combo)
         
-        button_layout = QVBoxLayout()
+        button_layout = QHBoxLayout()
         create_btn = QPushButton("Create")
+        create_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QPushButton:hover {
+                background-color: #1B5E20;
+            }
+        """)
         create_btn.clicked.connect(lambda: self.handle_create_topic(title_input.text(), type_combo.currentText(), dialog))
         button_layout.addWidget(create_btn)
         
@@ -288,19 +410,17 @@ class ClassroomClassworks(QWidget):
         dialog.exec()
 
     def handle_create_syllabus(self, title, content, dialog):
-        """Handle syllabus creation - stored separately from posts"""
+        """Handle syllabus creation"""
         if not title or not content:
             print("Syllabus title and content are required")
             return
         
-        # Use a separate service method for syllabus
         if self.post_controller.create_syllabus(
             title=title,
             content=content,
             author=self.username
         ):
             print("Syllabus created successfully")
-            # Refresh both views
             self.refresh_posts()
             if hasattr(self, 'stream_view'):
                 self.stream_view.refresh_syllabus()
@@ -313,188 +433,157 @@ class ClassroomClassworks(QWidget):
             print("Topic title is required")
             return
         
-        # Use PostController to create topic
-        if self.post_controller.create_topic(title, type_):  # Fixed: use post_controller
+        if self.post_controller.create_topic(title, type_):
             print("Topic created successfully")
-            self.setup_filter()  # Refresh filter options
-            self.load_posts()    # Reload posts
+            self.setup_filter()
+            self.load_posts()
             dialog.accept()
         else:
             print("Failed to create topic")
-            
-    def handle_create_syllabus(self, title, content, dialog):
-        """Handle syllabus creation - stored separately from posts"""
-        if not title or not content:
-            print("Syllabus title and content are required")
-            return
-        
-        # Use a separate service method for syllabus
-        if self.post_controller.create_syllabus(
-            title=title,
-            content=content,
-            author=self.username
-        ):
-            print("Syllabus created successfully")
-            # Refresh both views
-            self.refresh_posts()
-            
-            # FIX: Explicitly refresh the stream view
-            if hasattr(self, 'stream_view') and self.stream_view:
-                self.stream_view.refresh_syllabus()
-                self.stream_view.load_posts()  # Force reload all posts
-            
-            # FIX: Emit signal to notify parent
-            self.post_created.emit()
-            
-            dialog.accept()
-        else:
-            print("Failed to create syllabus")
-    # def show_create_dialog(self, item_type):
-    #     dialog = QDialog(self)
-    #     dialog.setWindowTitle(f"Create {item_type.capitalize()}")
-    #     dialog.setStyleSheet("background-color: white;")
-    #     dialog.setModal(True)
-        
-    #     layout = QVBoxLayout(dialog)
-        
-    #     title_label = QLabel("Title:")
-    #     title_input = QLineEdit()
-    #     layout.addWidget(title_label)
-    #     layout.addWidget(title_input)
-        
-    #     content_label = QLabel("Content:")
-    #     content_input = QTextEdit()
-    #     layout.addWidget(content_label)
-    #     layout.addWidget(content_input)
-        
-    #     topic_label = QLabel("Topic:")
-    #     topic_combo = QComboBox()
-    #     topic_combo.addItem("None")
-        
-    #     # Get topics from PostController
-    #     for topic in self.post_controller.get_available_topics():
-    #         if topic:
-    #             topic_combo.addItem(topic)
-                
-    #     layout.addWidget(topic_label)
-    #     layout.addWidget(topic_combo)
-        
-    #     create_btn = QPushButton("Create")
-    #     create_btn.clicked.connect(lambda: self.handle_create_content(
-    #         title_input.text(),
-    #         content_input.toPlainText(),
-    #         item_type,
-    #         topic_combo.currentText() if topic_combo.currentText() != "None" else None,
-    #         dialog
-    #     ))
-    #     layout.addWidget(create_btn)
-        
-    #     dialog.exec()
 
     def set_stream_reference(self, stream_view):
         self.stream_view = stream_view
 
-    # In the handle_create_content method, update the refresh logic:
     def handle_create_content(self, title, content, type_, topic_name, dialog):
         if not title or not content:
             print("Title and content are required")
             return
         
-        # Use current user as author
-        author = self.username  # or get from your auth system
+        author = self.username
         
-        # Use PostController to create post
         if self.post_controller.create_post(title, content, type_, author, topic_name):
             print(f"{type_.capitalize()} created successfully")
             self.load_posts(self.ui.filterComboBox.currentText())
-            self.post_created.emit()  # Notify other views
+            self.post_created.emit()
             dialog.accept()
         else:
             print(f"Failed to create {type_}")
-    
+
     def refresh_posts(self):
         """Refresh posts when new ones are created"""
         self.load_posts(self.ui.filterComboBox.currentText())
 
-
     def load_posts(self, filter_topic=None):
-        """Load posts using PostController"""
-        # Determine filter parameters
+        """Load posts using PostController with clean layout"""
         filter_type = None
         topic_name = None
         if filter_topic == "Material":
             filter_type = "material"
         elif filter_topic == "Assessment":
             filter_type = "assessment"
-        elif filter_topic not in ["All", "Material", "Assessment"]:
+        elif filter_topic not in ["All items", "Material", "Assessment"]:
             topic_name = filter_topic
         
-        # Use post_controller with filters
-        self.post_controller.set_filters(filter_type=filter_type, topic_name=topic_name)  # Fixed: use post_controller
-        posts = self.post_controller.get_classwork_posts()  # Fixed: use post_controller
+        self.post_controller.set_filters(filter_type=filter_type, topic_name=topic_name)
+        posts = self.post_controller.get_classwork_posts()
         
-        # Sort posts: latest first
         try:
             posts.sort(key=lambda x: x.get('date', ''), reverse=True)
         except:
             pass
         
-        # Get the layout
         scroll_widget = self.ui.scrollAreaWidgetContents
         layout = scroll_widget.layout()
         
-        # Clear previous content
         while layout.count():
             item = layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
         
-        # Clear references
         self.topic_widgets.clear()
         self.untitled_frames.clear()
         
-        # Add posts to layout
         if posts:
             grouped = {}
             for post in posts:
-                # Get topic title from topic_id
                 topic_title = "Untitled"
                 if post.get("topic_id"):
-                    # You might need to implement a method to get topic by ID
                     topic = self.post_controller.get_topic_by_id(post["topic_id"])
                     if topic:
                         topic_title = topic.get("title", "Untitled")
                 
                 grouped.setdefault(topic_title, []).append(post)
             
-            # Sort posts within each group by date (latest first)
             for topic_title in grouped:
                 grouped[topic_title].sort(key=lambda x: x.get('date', ''), reverse=True)
             
-            # Put Untitled group first, then alphabetical order for others
             sorted_groups = sorted(grouped.items(), 
                                 key=lambda x: (x[0] != "Untitled", x[0] if x[0] != "Untitled" else ""))
             
             for topic_title, topic_posts in sorted_groups:
                 if topic_title == "Untitled":
-                    # Add untitled posts directly
                     for post in topic_posts:
                         from frontend.widgets.topic_frame import TopicFrame
-                        frame = TopicFrame(post, self.post_controller, self.primary_role)  # Fixed: use post_controller
+                        frame = TopicFrame(post, self.post_controller, self.primary_role)
                         frame.post_clicked.connect(self.post_selected.emit)
+                        
+                        # Apply consistent styling
+                        frame.setStyleSheet("""
+                            QFrame {
+                                background-color: white;
+                                border: 1px solid #E0E0E0;
+                                border-radius: 20px;
+                                margin-left: 20px;
+                            }
+                            QFrame:hover {
+                                background-color: #F8F9FA;
+                                border-color: #D0D7DE;
+                            }
+                        """)
+                        
                         layout.addWidget(frame)
                         self.untitled_frames.append(frame)
                 else:
-                    # Use TopicWidget for posts with topics
                     from frontend.widgets.topic_widget import TopicWidget
-                    topic_widget = TopicWidget(topic_title, topic_posts, self.post_controller, self.primary_role)  # Fixed: use post_controller
+                    topic_widget = TopicWidget(topic_title, topic_posts, self.post_controller, self.primary_role)
                     
-                    # Connect post selection signal
+                    # Apply consistent topic header styling
+                    topic_widget.title_label.setStyleSheet("""
+                        QLabel {
+                            font-size: 24px;
+                            font-weight: 400;
+                            margin-left: 20px;
+                            margin-top: 10px;
+                            margin-bottom: 5px;
+                            color: #000000;
+                            background-color: transparent;
+                            font-family: "Poppins", Arial, sans-serif;
+                        }
+                    """)
+                    
                     for frame in topic_widget.frames:
                         frame.post_clicked.connect(self.post_selected.emit)
+                        # Apply consistent frame styling
+                        frame.setStyleSheet("""
+                            QFrame {
+                                background-color: white;
+                                border: 1px solid #E0E0E0;
+                                border-radius: 20px;
+                                margin-left: 20px;
+                            }
+                            QFrame:hover {
+                                background-color: #F8F9FA;
+                                border-color: #D0D7DE;
+                            }
+                        """)
                     
                     layout.addWidget(topic_widget)
                     self.topic_widgets.append(topic_widget)
+        
+        else:
+            # No posts message
+            no_posts_label = QLabel("No classworks available")
+            no_posts_label.setStyleSheet("""
+                QLabel {
+                    color: #666;
+                    font-size: 16px;
+                    padding: 50px;
+                    text-align: center;
+                    font-family: "Poppins", Arial, sans-serif;
+                }
+            """)
+            no_posts_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(no_posts_label)
         
         layout.addStretch()
 
@@ -513,8 +602,8 @@ class ClassroomClassworks(QWidget):
             frame.setVisible(True)
         
         # Apply filters
-        if filter_text == "All":
-            return  # Already visible
+        if filter_text == "All items":
+            return
         
         elif filter_text == "Material":
             for frame in self.untitled_frames:
@@ -539,7 +628,6 @@ class ClassroomClassworks(QWidget):
                         frame.setVisible(frame.post["type"] == "assessment")
         
         else:  # Topic filter
-            # Hide all untitled frames when filtering by topic
             for frame in self.untitled_frames:
                 frame.setVisible(False)
             

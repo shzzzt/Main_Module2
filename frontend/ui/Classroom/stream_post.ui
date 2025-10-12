@@ -83,7 +83,7 @@ QScrollBar:horizontal {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-11</y>
+             <y>0</y>
              <width>888</width>
              <height>548</height>
             </rect>
@@ -221,14 +221,13 @@ MONDAY - 1:00 - 4:00 PM</string>
                 </property>
                 <property name="styleSheet">
                  <string notr="true">QFrame {
-    background-color: white;
-    border-radius: 8px;
-    border: 1px solid #084924;
-	background-position: top right;
-}
+                background-color: white;
+                border: 1px solid #E0E0E0;
+                border-radius: 20px;
+            }
 QFrame:hover {
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                background-color: #F8F9FA;
+                border-color: #D0D7DE;
 }</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -285,6 +284,9 @@ font-size: 16px;</string>
                    </item>
                    <item>
                     <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
                      <property name="sizeHint" stdset="0">
                       <size>
                        <width>20</width>
@@ -329,13 +331,13 @@ font-size: 16px;</string>
                      </property>
                      <property name="styleSheet">
                       <string notr="true">QFrame {
-    background-color: white;
-    border-radius: 8px;
-    border: 1px solid #084924;
-}
+                background-color: white;
+                border: 1px solid #E0E0E0;
+                border-radius: 20px;
+            }
 QFrame:hover {
-    border: 1px solid #e9ecef;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                background-color: #F8F9FA;
+                border-color: #D0D7DE;
 }</string>
                      </property>
                      <property name="frameShape">
@@ -368,7 +370,17 @@ border: 2px solid white;</string>
                            <widget class="QLabel" name="title_label">
                             <property name="styleSheet">
                              <string notr="true">font-size: 18px;
-border:none;</string>
+border:none;
+
+QFrame {
+                background-color: white;
+                border: 1px solid #E0E0E0;
+                border-radius: 20px;
+            }
+QFrame:hover {
+                background-color: #F8F9FA;
+                border-color: #D0D7DE;
+}</string>
                             </property>
                             <property name="text">
                              <string>Carlos Fidel Castro posted a material: Desktop Project Guidelines</string>
@@ -437,6 +449,9 @@ QPushButton:pressed {
                  </item>
                  <item>
                   <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>20</width>
@@ -452,6 +467,9 @@ QPushButton:pressed {
             </item>
             <item>
              <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>

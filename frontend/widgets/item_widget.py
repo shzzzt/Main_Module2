@@ -1,8 +1,9 @@
+# item_widget.py
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QMenu, QSpacerItem, QSizePolicy
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QFont, QPixmap
+import os
 
-# In item_widget.py - modify only the title_text line
 class ItemWidget(QWidget):
     def __init__(self, post, controller, user_role, parent=None):
         super().__init__(parent)
@@ -11,77 +12,111 @@ class ItemWidget(QWidget):
         self.user_role = user_role
         self.setup_ui()
 
+    def _load_document_icon(self):
+        """Load document icon matching Stream layout"""
+        try:
+            icon_path = "frontend/assets/icons/document.svg"
+            if os.path.exists(icon_path):
+                pixmap = QPixmap(icon_path)
+                # Scale to match Stream icon size (24x24 inside 42x42 circle)
+                return pixmap.scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, 
+                                   Qt.TransformationMode.SmoothTransformation)
+        except:
+            pass
+        return None
+
     def setup_ui(self):
         layout = QHBoxLayout(self)
-        layout.setSpacing(12)
-        layout.setSpacing(8)  # Reduced spacing to save horizontal space
-        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(15)  # Same spacing as Stream
+        layout.setContentsMargins(15, 12, 15, 12)  # Same padding as Stream
 
-       # Icon Label (placeholder green circle)
-        icon_label = QLabel(self)
-        icon_label.setMinimumSize(32, 32)
-        icon_label.setMaximumSize(32, 32)
-        icon_label.setStyleSheet("""
-            QLabel {
-                background-color: #084924;
-                border-radius: 16px;  /* Changed from 19px to 16px (half of minimum size) */
-                border: 2px solid white;
-                margin: 0px;
-                padding: 0px;
-            }
-        """)
-        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(icon_label)
-        # Title Label - CHANGED: Only show title, no "User posted..." text
-        title_text = self.post.get("title", "")  # Simplified to just the title
+        # # Icon - Matching Stream layout exactly
+        # icon_label = QLabel(self)
+        # icon_label.setFixedSize(40, 40)  # Same size as Stream (42x42 instead of 50x50)
+        # icon_label.setStyleSheet("""
+        #     QLabel {
+        #         background-color: #084924;
+        #         border-radius: 20px;  /* Half of 42px for perfect circle */
+        #         border: 2px solid white;
+        #         min-width: 42px;
+        #         min-height: 42px;
+        #         padding: 0px;
+        #         margin: 5px;
+        #         margin-top: -10px;
+        #     }
+        # """)
+        
+        # # Load document icon like Stream
+        # document_pixmap = self._load_document_icon()
+        # if document_pixmap and not document_pixmap.isNull():
+        #     icon_label.setPixmap(document_pixmap)
+        #     icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # else:
+        #     # Fallback to document emoji (same as Stream fallback)
+        #     icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        #     icon_label.setText("📄")
+        #     icon_label.setStyleSheet(icon_label.styleSheet() + """
+        #         QLabel {
+        #             color: white;
+        #             font-size: 16px;
+        #         }
+        #     """)
+        
+        # layout.addWidget(icon_label)
+
+        # Title Label - Stream style (title only, no author)
+        title_text = self.post.get("title", "")
         title_label = QLabel(title_text, self)
         title_label.setStyleSheet("""
             QLabel {
-                font-size: 14px;
-                font-weight: 400;
-                color: #24292f;
+                font-size: 16px;
                 border: none;
-                background: transparent;
-                margin-left: 5px;           /* Added margin for consistency */
-                padding: 2px;          /* Added padding for text */
+                color: #333;
+                margin: 0px;
+                padding: 0px;
+                font-family: "Poppins", Arial, sans-serif;
             }
         """)
         title_label.setWordWrap(True)
+        title_label.setMinimumHeight(20)
+        title_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         layout.addWidget(title_label)
 
         # Spacer
         spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         layout.addItem(spacer)
 
-        # Date Label
-        date_text = self.post.get("date", "").split(" ")[0]  # e.g., "2025-08-18"
+        # Date Label - Stream style
+        date_text = self.format_date(self.post.get("date", ""))
         date_label = QLabel(date_text, self)
         date_label.setStyleSheet("""
             QLabel {
-                font-size: 11px;
-                color: #656d76;
+                font-size: 14px;
                 border: none;
-                background: transparent;
-                margin: 5px;           /* Added margin for consistency */
-                padding: 2px;          /* Added padding for text */
+                color: #666;
+                margin: 0px;
+                padding: 0px;
+                font-family: "Poppins", Arial, sans-serif;
             }
         """)
-        date_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        date_label.setMinimumHeight(16)
         layout.addWidget(date_label)
 
         # Menu Button (for faculty/admin)
         if self.user_role in ["faculty", "admin"]:
             self.menu_button = QPushButton("⋮", self)
-            self.menu_button.setMinimumSize(24, 24)
+            self.menu_button.setFixedSize(30, 30)
+            menu_font = QFont("Poppins")
+            menu_font.setPointSize(16)
+            self.menu_button.setFont(menu_font)
             self.menu_button.setStyleSheet("""
                 QPushButton {
                     border: none;
                     background-color: transparent;
-                    font-size: 34px;
                     color: #656d76;
-                    border-radius: 12px;
-                    margin: 5px;       /* Added margin for consistency */
-                    padding: 0px;      /* No padding needed for the dots */
+                    border-radius: 15px;
+                    font-weight: bold;
+                    font-family: "Poppins", Arial, sans-serif;
                 }
                 QPushButton:hover {
                     background-color: #F3F4F6;
@@ -90,31 +125,16 @@ class ItemWidget(QWidget):
             layout.addWidget(self.menu_button)
             self.menu_button.clicked.connect(self.show_menu)
 
-    def show_menu(self):
-        menu = QMenu(self)
-        menu.setStyleSheet("""
-            QMenu {
-                background-color: white;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                padding: 4px 0px;
-            }
-            QMenu::item {
-                padding: 8px 16px;
-                font-size: 13px;
-            }
-            QMenu::item:selected {
-                background-color: #f5f5f5;
-            }
-        """)
-        edit_action = QAction("Edit", self)
-        delete_action = QAction("Delete", self)
-        edit_action.triggered.connect(lambda: self.controller.edit_post(self.post))
-        delete_action.triggered.connect(lambda: self.controller.delete_post(self.post))
-        menu.addAction(edit_action)
-        menu.addAction(delete_action)
-        button_pos = self.menu_button.mapToGlobal(self.menu_button.rect().bottomLeft())
-        menu.exec(button_pos)
+    def format_date(self, date_str):
+        """Format date string for display - same as Stream"""
+        if not date_str:
+            return ""
+        try:
+            from datetime import datetime
+            dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            return dt.strftime("%b %d")  # Same format as Stream
+        except:
+            return date_str.split(" ")[0] if " " in date_str else date_str
 
     def show_menu(self):
         menu = QMenu(self)
@@ -124,10 +144,11 @@ class ItemWidget(QWidget):
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 padding: 4px 0px;
+                font-family: "Poppins", Arial, sans-serif;
             }
             QMenu::item {
                 padding: 8px 16px;
-                font-size: 13px;
+                font-size: 16px;
             }
             QMenu::item:selected {
                 background-color: #f5f5f5;
