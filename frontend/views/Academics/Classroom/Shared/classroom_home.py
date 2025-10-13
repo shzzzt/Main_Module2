@@ -21,6 +21,8 @@ class ClassroomHome(QtWidgets.QWidget):
         controller = manager.get_classes_controller()
         # connect signals to automatically update home if Admin modifies classes in Tagging
         controller.class_created.connect(self.on_class_changed)
+        controller.class_updated.connect(self.on_class_changed)
+        controller.class_deleted.connect(self.on_class_changed)
 
         self.setup_ui()
         self.load_classes()
@@ -65,6 +67,8 @@ class ClassroomHome(QtWidgets.QWidget):
         self.main_layout.addWidget(self.scroll_area)
 
     def load_classes(self):
+        self.clear()
+
         classes = self.controller.get_classes()
         print(f"[ClassroomHome] Classes loaded: {classes}")
         row, col = 0, 0

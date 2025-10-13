@@ -58,74 +58,6 @@
             "created_at": "2025-10-08T18:57:12.159138",
             "updated_at": "2025-10-08T18:57:12.159138",
             "instructor_id": "faculty_2"
-        },
-        {
-            "code": "IT61",
-            "title": "Software Engineering",
-            "units": 3,
-            "section_id": 1,
-            "schedules": [
-                {
-                    "day": "Monday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "CISC Lab1",
-            "instructor": "Donah Rae Verula",
-            "type": "Lecture",
-            "id": 3,
-            "section_name": "BSCS-3C",
-            "created_at": "2025-10-08T20:28:14.300158",
-            "updated_at": "2025-10-10T07:06:10.050958",
-            "instructor_id": "faculty_3"
-        },
-        {
-            "code": "IT56",
-            "title": "DBMS",
-            "units": 3,
-            "section_id": 1,
-            "schedules": [
-                {
-                    "day": "Monday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "R3",
-            "instructor": "Michaela",
-            "type": "Laboratory",
-            "id": 4,
-            "section_name": "BSCS-3C",
-            "created_at": "2025-10-08T21:23:16.448786",
-            "updated_at": "2025-10-08T21:23:16.448786",
-            "instructor_id": "faculty_4"
-        },
-        {
-            "code": "CS101",
-            "title": "Mobile App Dev",
-            "units": 3,
-            "section_id": 1,
-            "schedules": [
-                {
-                    "day": "Monday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                },
-                {
-                    "day": "Tuesday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "Room 2",
-            "instructor": "Mindell Aguirre",
-            "type": "Lecture",
-            "id": 5,
-            "section_name": "BSCS-3C",
-            "created_at": "2025-10-10T07:02:16.953824",
-            "updated_at": "2025-10-10T07:02:31.256566",
-            "instructor_id": "faculty_5"
         }
     ],
     "topics": [
@@ -243,6 +175,21 @@
             "score": null,
             "date": "2025-10-10T07:34:38",
             "author": "admin"
+        },
+        {
+            "id": 3,
+            "topic_id": null,
+            "class_id": 1,
+            "title": "example",
+            "content": "hello",
+            "type": "material",
+            "attachment": {
+                "name": "requirements.txt",
+                "type": "FILE"
+            },
+            "score": null,
+            "date": "2025-10-13T12:41:04",
+            "author": "admin"
         }
     ],
     "sections": [
@@ -251,12 +198,12 @@
             "program": "BS Computer Science",
             "curriculum": "2023-2024",
             "year": "3rd",
-            "capacity": 25,
-            "type": "Laboratory",
+            "capacity": 50,
+            "type": "Lecture",
             "remarks": "Regular",
             "id": 1,
             "created_at": "2025-10-08T21:13:33.717558",
-            "updated_at": "2025-10-10T05:38:55.053344"
+            "updated_at": "2025-10-13T12:39:27.141763"
         },
         {
             "section": "C",
