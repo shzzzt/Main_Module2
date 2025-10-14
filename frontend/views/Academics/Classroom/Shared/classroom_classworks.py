@@ -463,6 +463,38 @@ class ClassroomClassworks(QWidget):
         """Refresh posts when new ones are created"""
         self.load_posts(self.ui.filterComboBox.currentText())
 
+    # classroom_classworks.py
+
+    def format_date(self, date_str):
+        """Format date string for display - same as in classroom_stream.py"""
+        if not date_str:
+            return ""
+        
+        # If it's already in "Oct 14" format, return as is
+        if len(date_str) <= 6 and any(month in date_str.lower() for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']):
+            return date_str
+        
+        # Try multiple date formats
+        date_formats = [
+            "%Y-%m-%d %H:%M:%S",    # 2025-08-18 10:00:00
+            "%Y-%m-%dT%H:%M:%S",    # 2025-10-10T01:35:06 (ISO format)
+            "%Y-%m-%d",             # 2025-08-18
+            "%b %d",                # Oct 14 (already formatted)
+            "%d/%m/%Y",             # 16/10/2025
+            "%m/%d/%Y"              # 10/16/2025
+        ]
+        
+        for fmt in date_formats:
+            try:
+                from datetime import datetime
+                dt = datetime.strptime(date_str, fmt)
+                return dt.strftime("%b %d")  # Format to "Oct 16"
+            except ValueError:
+                continue
+        
+        # If all parsing fails, return the original string or part of it
+        return date_str.split(" ")[0] if " " in date_str else date_str    
+
     def load_posts(self, filter_topic=None):
         """Load posts using PostController with clean layout"""
         filter_type = None
@@ -476,6 +508,15 @@ class ClassroomClassworks(QWidget):
         
         self.post_controller.set_filters(filter_type=filter_type, topic_name=topic_name)
         posts = self.post_controller.get_classwork_posts()
+
+        # Format dates for display
+        for post in posts:
+            if 'date' in post:
+                post['display_date'] = self.format_date(post['date'])
+            elif 'date_posted' in post:
+                post['display_date'] = self.format_date(post['date_posted'])
+            else:
+                post['display_date'] = ""
         
         try:
             posts.sort(key=lambda x: x.get('date', ''), reverse=True)
