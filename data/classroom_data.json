@@ -190,6 +190,36 @@
             "score": null,
             "date": "2025-10-13T12:41:04",
             "author": "admin"
+        },
+        {
+            "id": 4,
+            "topic_id": null,
+            "class_id": 1,
+            "title": "example material",
+            "content": "hello hello",
+            "type": "material",
+            "attachment": {
+                "name": "README.md",
+                "type": "FILE"
+            },
+            "score": null,
+            "date": "2025-10-14T21:43:30",
+            "author": "admin"
+        },
+        {
+            "id": 5,
+            "topic_id": null,
+            "class_id": 1,
+            "title": "example example",
+            "content": "aefaefeaf",
+            "type": "material",
+            "attachment": {
+                "name": "README.md",
+                "type": "FILE"
+            },
+            "score": null,
+            "date": "2025-10-14T22:17:20",
+            "author": "admin"
         }
     ],
     "sections": [

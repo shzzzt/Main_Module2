@@ -131,20 +131,20 @@ class CreateSectionDialog(QDialog):
         self.type_combo = QComboBox()
         self.type_combo.addItems(["Lecture", "Laboratory"])
         self.type_combo.setMaximumWidth(40)  # Different width for grid combobox
-        grid_layout.addWidget(type_label, 0, 2)
-        grid_layout.addWidget(self.type_combo, 1, 2)
+        grid_layout.addWidget(type_label, 2, 0)
+        grid_layout.addWidget(self.type_combo, 3, 0)
 
-        main_layout.addLayout(grid_layout)
-
-        # Remarks label 
+        # Remarks label
         remarks_label = QLabel("Remarks")
         self.remarks_combo = QComboBox()
         self.remarks_combo.addItems([
-            "Regular", 
+            "Regular",
             "Petition"
         ])
-        main_layout.addWidget(remarks_label)
-        main_layout.addWidget(self.remarks_combo)
+        grid_layout.addWidget(remarks_label, 2, 1)
+        grid_layout.addWidget(self.remarks_combo, 3, 1)
+        main_layout.addLayout(grid_layout)
+
 
         # Buttons layout
         buttons_layout = QHBoxLayout()

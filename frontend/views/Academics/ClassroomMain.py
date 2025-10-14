@@ -249,10 +249,19 @@ class ClassroomMain(QWidget):
         # SIGNAL CONNECTION: Form → Classroom
         # When user clicks back in form, return to classroom view
         self.current_form_view.back_clicked.connect(self.return_to_classroom_from_form)
+
+        if hasattr(self.current_form_view, 'material_created'):
+            self.current_form_view.material_created.connect(self.refresh_classroom_views)
         
         # Add form to stacked widget and show it
         self.stacked_widget.addWidget(self.current_form_view)
         self.stacked_widget.setCurrentWidget(self.current_form_view)
+
+    def refresh_classroom_views(self):
+        """Refresh both stream and classworks when new material is created"""
+        if self.current_classroom_view:
+            self.current_classroom_view.stream_view.refresh_posts()
+            self.current_classroom_view.classworks_view.refresh_posts()
 
     def return_to_classroom_from_form(self):
         """
