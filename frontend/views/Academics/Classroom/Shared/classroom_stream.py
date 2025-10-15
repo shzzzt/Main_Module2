@@ -2,6 +2,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QFrame, QVBoxLayout, QHBoxLayout, QPushButton,QSizePolicy
 from PyQt6.QtCore import pyqtSignal, Qt
 from widgets.stream_post_ui import Ui_ClassroomStreamContent
+from utils.date_utils import format_date_display
 
 class ClassroomStream(QWidget):
     post_selected = pyqtSignal(dict)
@@ -210,7 +211,6 @@ class ClassroomStream(QWidget):
                     widget.setParent(None)
                     widget.deleteLater()
 
-                    
 
     def create_post_widget(self, post, stream_layout):
         """Create a post widget based on the template with proper spacing and document icon"""
@@ -317,6 +317,32 @@ class ClassroomStream(QWidget):
                 layout.addLayout(content_layout)
                 layout.addStretch()
                 
+                # Add menu button for faculty/admin (same as Classworks)
+                if self.primary_role in ["faculty", "admin"]:
+                    menu_button = QPushButton("⋮")
+                    menu_button.setFixedSize(30, 30)
+                    from PyQt6.QtGui import QFont
+                    menu_font = QFont("Poppins")
+                    menu_font.setPointSize(16)
+                    menu_button.setFont(menu_font)
+                    menu_button.setStyleSheet("""
+                        QPushButton {
+                            border: none;
+                            background-color: transparent;
+                            color: #656d76;
+                            border-radius: 15px;
+                            font-weight: bold;
+                            font-family: "Poppins", Arial, sans-serif;
+                        }
+                        QPushButton:hover {
+                            background-color: #F3F4F6;
+                        }
+                    """)
+                    layout.addWidget(menu_button)
+                    
+                    # Connect menu button click
+                    menu_button.clicked.connect(lambda checked, p=post: self.show_post_menu(p, menu_button))
+                
                 # Make clickable
                 post_frame.mousePressEvent = lambda event, p=post: self.handle_post_click(event, p)
                 post_frame.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -331,7 +357,120 @@ class ClassroomStream(QWidget):
             print(f"Error creating post widget: {e}")
             # Fallback to simple widget
             self.create_simple_post_widget(post, stream_layout)
+                    
+        except Exception as e:
+            print(f"Error creating post widget: {e}")
+            # Fallback to simple widget
+            self.create_simple_post_widget(post, stream_layout)
 
+    def show_post_menu(self, post, menu_button):
+        """Show context menu for post actions (Edit, Delete)"""
+        from PyQt6.QtWidgets import QMenu
+        from PyQt6.QtGui import QAction
+        
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 4px 0px;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QMenu::item {
+                padding: 8px 16px;
+                font-size: 16px;
+            }
+            QMenu::item:selected {
+                background-color: #f5f5f5;
+            }
+        """)
+        
+        edit_action = QAction("Edit", self)
+        delete_action = QAction("Delete", self)
+        
+        edit_action.triggered.connect(lambda: self.edit_post(post))
+        delete_action.triggered.connect(lambda: self.delete_post(post))
+        
+        menu.addAction(edit_action)
+        menu.addAction(delete_action)
+        
+        button_pos = menu_button.mapToGlobal(menu_button.rect().bottomLeft())
+        menu.exec(button_pos)
+
+    def edit_post(self, post):
+        """Handle edit post action"""
+        print(f"Edit post: {post['title']}")
+        # TODO: Implement edit post functionality
+        # You can emit a signal or open an edit dialog here
+
+    def delete_post(self, post):
+        """Handle delete post action"""
+        print(f"Delete post: {post['title']}")
+        
+        # Import QMessageBox here to avoid circular imports
+        from PyQt6.QtWidgets import QMessageBox
+        
+        # Create confirmation dialog
+        reply = QMessageBox(self)
+        reply.setWindowTitle("Delete Post")
+        reply.setText(f"Are you sure you want to delete '{post['title']}'?")
+        reply.setIcon(QMessageBox.Icon.Question)
+        reply.setStandardButtons(
+            QMessageBox.StandardButton.Yes | 
+            QMessageBox.StandardButton.No
+        )
+        reply.setDefaultButton(QMessageBox.StandardButton.No)
+        
+        # Apply styling to match the app
+        reply.setStyleSheet("""
+            QMessageBox {
+                background-color: white;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QMessageBox QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-family: "Poppins", Arial, sans-serif;
+                min-width: 80px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #1B5E20;
+            }
+        """)
+        
+        result = reply.exec()
+        
+        if result == QMessageBox.StandardButton.Yes:
+            # Delete the post using post_controller
+            if self.post_controller.delete_post(post["id"]):
+                print("Post deleted successfully")
+                
+                # Refresh both Stream and Classworks views
+                self.refresh_posts()
+                
+                # Also refresh Classworks view if it exists
+                if hasattr(self, 'classworks_view_ref'):
+                    self.classworks_view_ref.refresh_posts()
+                else:
+                    # Try to find classworks view through parent
+                    parent = self.parent()
+                    while parent:
+                        if hasattr(parent, 'classworks_view'):
+                            parent.classworks_view.refresh_posts()
+                            break
+                        parent = parent.parent()
+            else:
+                print("Failed to delete post")
+                QMessageBox.warning(self, "Error", "Failed to delete post. Please try again.")
+
+    def set_classworks_reference(self, classworks_view):
+        """Set reference to Classworks view for cross-refresh"""
+        self.classworks_view_ref = classworks_view
+        
     def create_simple_post_widget(self, post, stream_layout):
         """Create a simple post widget as fallback with proper spacing and icon"""
         try:
@@ -409,6 +548,33 @@ class ClassroomStream(QWidget):
             content_layout.addWidget(date_label)
             
             layout.addLayout(content_layout, 1)  # Set stretch factor
+            
+            # Add menu button for faculty/admin
+            if self.primary_role in ["faculty", "admin"]:
+                menu_button = QPushButton("⋮")
+                menu_button.setFixedSize(30, 30)
+                from PyQt6.QtGui import QFont
+                menu_font = QFont("Poppins")
+                menu_font.setPointSize(16)
+                menu_button.setFont(menu_font)
+                menu_button.setStyleSheet("""
+                    QPushButton {
+                        border: none;
+                        background-color: transparent;
+                        color: #656d76;
+                        border-radius: 15px;
+                        font-weight: bold;
+                        font-family: "Poppins", Arial, sans-serif;
+                    }
+                    QPushButton:hover {
+                        background-color: #F3F4F6;
+                    }
+                """)
+                layout.addWidget(menu_button)
+                
+                # Connect menu button click
+                menu_button.clicked.connect(lambda checked, p=post: self.show_post_menu(p, menu_button))
+            
             layout.addStretch()
             
             post_frame.mousePressEvent = lambda event, p=post: self.handle_post_click(event, p)
@@ -436,17 +602,8 @@ class ClassroomStream(QWidget):
 
 
     def format_date(self, date_str):
-        """Format date string for display"""
-        if not date_str:
-            return ""
-        try:
-            # Convert "2025-08-18 10:00:00" to "Aug 18"
-            from datetime import datetime
-            dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-            return dt.strftime("%b %d")
-        except:
-            return date_str.split(" ")[0] if " " in date_str else date_str
-
+        return format_date_display(date_str)
+    
     def handle_post_click(self, event, post):
         if event.button() == Qt.MouseButton.LeftButton:
             print(f"Stream post clicked: {post['title']}")

@@ -35,7 +35,7 @@ class PostService:
                 "title": title,
                 "content": content,
                 "author": author,
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Keep full format for parsing
             })
         else:
             # Create new syllabus
@@ -45,13 +45,13 @@ class PostService:
                 "title": title,
                 "content": content,
                 "author": author,
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Keep full format for parsing
             }
             syllabus_list.append(new_syllabus)
         
         self._save_data(data)
         return self.get_syllabus_by_class_id(class_id)
-    
+        
     def get_syllabus_by_class_id(self, class_id: int) -> Optional[Dict]:
         """Get syllabus for a specific class"""
         data = self._load_data()
@@ -66,11 +66,12 @@ class PostService:
         for syllabus in syllabus_list:
             if syllabus.get("class_id") == class_id:
                 syllabus.update(updates)
-                syllabus["date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Update timestamp
+                syllabus["date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Keep full format for parsing
                 self._save_data(data)
                 return True
         
         return False
+    
     
     def get_posts_by_class_id(self, class_id: int) -> List[Dict]:
         """Get all posts for a specific class"""
@@ -151,18 +152,18 @@ class PostService:
         
     #     return False
     
-    # def delete_post(self, post_id: int) -> bool:
-    #     """Delete a post"""
-    #     data = self._load_data()
+    def delete_post(self, post_id: int) -> bool:
+        """Delete a post"""
+        data = self._load_data()
         
-    #     posts = data.get("posts", [])
-    #     for i, post in enumerate(posts):
-    #         if post.get("id") == post_id:
-    #             posts.pop(i)
-    #             self._save_data(data)
-    #             return True
+        posts = data.get("posts", [])
+        for i, post in enumerate(posts):
+            if post.get("id") == post_id:
+                posts.pop(i)
+                self._save_data(data)
+                return True
         
-    #     return False
+        return False
     
     # def get_post_by_id(self, post_id: int) -> Optional[Dict]:
     #     """Get a specific post by ID"""

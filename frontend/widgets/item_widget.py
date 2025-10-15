@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QMenu, QS
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QFont, QPixmap
 import os
+from utils.date_utils import format_date_display
 
 class ItemWidget(QWidget):
     def __init__(self, post, controller, user_role, parent=None):
@@ -126,15 +127,7 @@ class ItemWidget(QWidget):
             self.menu_button.clicked.connect(self.show_menu)
 
     def format_date(self, date_str):
-        """Format date string for display - same as Stream"""
-        if not date_str:
-            return ""
-        try:
-            from datetime import datetime
-            dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-            return dt.strftime("%b %d")  # Same format as Stream
-        except:
-            return date_str.split(" ")[0] if " " in date_str else date_str
+        return format_date_display(date_str)
 
     def show_menu(self):
         menu = QMenu(self)

@@ -92,9 +92,9 @@ class PostController:
     #     """Update an existing post"""
     #     return self.post_service.update_post(post_id, updates)
     
-    # def delete_post(self, post_id: int) -> bool:
-    #     """Delete a post"""
-    #     return self.post_service.delete_post(post_id)
+    def delete_post(self, post_id: int) -> bool:
+        """Delete a post"""
+        return self.post_service.delete_post(post_id)
     
     # def get_post(self, post_id: int) -> Optional[Dict]:
     #     """Get a specific post"""

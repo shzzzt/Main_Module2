@@ -267,28 +267,46 @@ class MaterialForm(QWidget):
         except:
             return None
 
+    def format_date(self, date_str):
+        """Format date string for display - same as in classroom_stream.py"""
+        if not date_str:
+            return ""
+        try:
+            # Convert "2025-08-18 10:00:00" to "Aug 18"
+            from datetime import datetime
+            dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            return dt.strftime("%b %d")
+        except:
+            # If parsing fails, try alternative formats
+            try:
+                dt = datetime.strptime(date_str, "%Y-%m-%d")
+                return dt.strftime("%b %d")
+            except:
+                return date_str.split(" ")[0] if " " in date_str else date_str
+        
     # ADDED: Create post data structure
     def create_post_data(self, material_data, topic_id):
         """Create post data matching JSON format"""
         next_id = self.get_next_post_id()
         
         now = datetime.now()
-        date_posted = now.strftime("%Y-%m-%d")
-        created_at = now.strftime("%Y-%m-%dT%H:%M:%S")
+        # Use the format that works with the format_date function
+        created_at = now.strftime("%Y-%m-%d %H:%M:%S")  # This format: "2025-10-16 14:30:00"
+        date_posted = self.format_date(created_at)  # This should give "Oct 16"
         
         # For posts.json format
         post = {
             "post_id": next_id,
             "class_id": self.cls.get('id') if self.cls else 1,
             "topic_id": topic_id,
-            "type": "material",
+            "type": "material",  # or "assessment" for assessment form
             "title": material_data['title'],
             "description": material_data['description'],
             "instructor": self.username or "Unknown Instructor",
             "instructor_id": "faculty_001",
-            "date_posted": date_posted,
+            "date_posted": date_posted,  # This should be in "Oct 16" format
             "status": "published",
-            "created_at": created_at,
+            "created_at": created_at,  # Keep full format for internal use
             "updated_at": created_at
         }
         
@@ -300,7 +318,6 @@ class MaterialForm(QWidget):
             }
         
         return post
-
     # ADDED: Get next post ID
     def get_next_post_id(self):
         """Get the next available post ID"""
@@ -346,7 +363,7 @@ class MaterialForm(QWidget):
                     "type": post_data['attachment']['file_type'].upper() if post_data.get('attachment') else "PDF"
                 } if post_data.get('attachment') else None,
                 "score": None,
-                "date": post_data['created_at'],
+                "date": post_data['date_posted'],  # Use the formatted date here
                 "author": post_data['instructor']
             }
             
