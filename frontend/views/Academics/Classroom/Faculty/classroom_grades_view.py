@@ -58,52 +58,108 @@ class FacultyGradesView(QWidget):
         self.grade_model = GradeDataModel(class_id=class_id)
         self.grade_controller = GradeController(self.grade_model)
         
+        # Set current user context
+        self.grade_model.set_current_user(username, {'roles': roles, 'primary_role': primary_role})
+        
         # Setup UI
         self.setup_ui()
         
         # Connect signals
         self.grade_controller.columns_changed.connect(self.rebuild_table)
         
-        # Load data - use actual students or sample data
+        # Load data with flexible loading strategy
         self.load_students_data()
         self.rebuild_table()
     
     def load_students_data(self):
-        """Load students from classroom or use sample data"""
-        # Try to load from classroom data
-        students_loaded = False
-
-        # For now, use sample data with Adolf as the main test student
-        # In production, this would fetch from Django API
+        """
+        Flexible student loading with multiple strategies:
+        1. Try Django API (if available)
+        2. Try JSON file (development/fallback)
+        3. Use sample data (ultimate fallback)
+        """
+        print(f"[FACULTY GRADES] Starting flexible data load for class {self.cls.get('id')}")
+        
+        # Strategy 1: Try Django API (future implementation)
+        if self.token and self._try_load_from_api():
+            print("[FACULTY GRADES] Successfully loaded from Django API")
+            return
+        
+        # Strategy 2: Try JSON file
+        if self._try_load_from_json():
+            print("[FACULTY GRADES] Successfully loaded from JSON file")
+            return
+        
+        # Strategy 3: Sample data (ultimate fallback)
+        print("[FACULTY GRADES] Using sample data (fallback)")
         self.grade_model.load_sample_data()
-
-        print(f"[FACULTY GRADES] Loaded {len(self.grade_model.students)} students")
+        
+        # Log loaded students
+        print(f"[FACULTY GRADES] Loaded {len(self.grade_model.students)} students:")
         for student in self.grade_model.students:
-            print(f"  - {student['name']} (ID: {student['id']}, Username: {student['username']})")
-
+            print(f"  - {student['name']} (ID: {student['id']}, Username: {student.get('username', 'N/A')})")
+    
+    def _try_load_from_api(self):
+        """Try to load students from Django API"""
+        # TODO: Implement when Django backend is ready
+        # Example:
+        # try:
+        #     import requests
+        #     headers = {'Authorization': f'Bearer {self.token}'}
+        #     response = requests.get(
+        #         f'http://127.0.0.1:8000/api/classes/{self.cls.get("id")}/students/',
+        #         headers=headers,
+        #         timeout=5
+        #     )
+        #     if response.status_code == 200:
+        #         self.grade_model.load_students_from_django_api(response.json())
+        #         return True
+        # except Exception as e:
+        #     print(f"[FACULTY GRADES] API load failed: {e}")
+        return False
+    
+    def _try_load_from_json(self):
+        """Try to load students from JSON file"""
+        try:
+            # Try multiple possible JSON file locations
+            json_paths = [
+                'data/users_data.json',
+                '../data/users_data.json',
+                '../../data/users_data.json',
+                os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', 'data', 'users_data.json')
+            ]
+            
+            for json_path in json_paths:
+                if os.path.exists(json_path):
+                    print(f"[FACULTY GRADES] Found JSON file at: {json_path}")
+                    self.grade_model.load_students_from_json(json_path)
+                    return True
+            
+            print("[FACULTY GRADES] No JSON file found in expected locations")
+            return False
+            
+        except Exception as e:
+            print(f"[FACULTY GRADES] JSON load failed: {e}")
+            return False
+    
     def setup_ui(self):
         """Setup the faculty interface"""
-        # Set background
         self.setAutoFillBackground(True)
         pal = self.palette()
         pal.setColor(QPalette.ColorRole.Window, QColor("white"))
         self.setPalette(pal)
         
-        # Main layout
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(30, 30, 30, 30)
         main_layout.setSpacing(20)
         
-        # Header with controls
         header_layout = self._create_header()
         
-        # Create grades table
         self.grades_table = EnhancedGradesTableView(
             self.grade_model,
             self.grade_controller
         )
         
-        # Add to main layout
         main_layout.addLayout(header_layout)
         main_layout.addWidget(self.grades_table)
         
@@ -113,7 +169,6 @@ class FacultyGradesView(QWidget):
         """Create header with faculty controls"""
         header_layout = QHBoxLayout()
         
-        # Rubrics combo
         self.rubrics_combo = QComboBox()
         self.rubrics_combo.addItems(["Overall Lecture", "Performance Task", "Quiz", "Exam"])
         self.rubrics_combo.setFixedWidth(150)
@@ -137,10 +192,8 @@ class FacultyGradesView(QWidget):
             }
         """)
         
-        # Spacer
         spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         
-        # Grading System button
         self.grading_label = QLabel("Grading System")
         self.grading_label.setStyleSheet("""
             QLabel {
@@ -158,7 +211,6 @@ class FacultyGradesView(QWidget):
         self.grading_label.setCursor(Qt.CursorShape.PointingHandCursor)
         connect_grading_button(self, self.grading_label)
         
-        # Download button
         download_button = QPushButton("📥 Download")
         download_button.setStyleSheet("""
             QPushButton {
@@ -175,7 +227,6 @@ class FacultyGradesView(QWidget):
             }
         """)
         
-        # Add to layout
         header_layout.addWidget(self.rubrics_combo)
         header_layout.addItem(spacer)
         header_layout.addWidget(self.grading_label)
@@ -296,7 +347,7 @@ if __name__ == "__main__":
     window = QMainWindow()
     window.setWindowTitle("Faculty Grades View Test")
     window.setGeometry(100, 100, 1000, 700)
-
+    
     mock_cls = {
         'id': 1,
         'name': 'Desktop Application Development',
