@@ -1,4 +1,3 @@
-# frontend/controller/controller_manager.py
 """
 Singleton manager for shared controller instances.
 Ensures all views use the same controller and receive signals.

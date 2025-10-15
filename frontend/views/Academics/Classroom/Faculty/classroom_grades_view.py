@@ -32,13 +32,13 @@ from PyQt6.QtGui import QColor, QPalette # noqa: E402
 #         print("Warning: grading_system_dialog.py not found")
 # Import local modules with proper error handling
 try:
-    from frontend.model.grade_data_model import GradeDataModel
-    from frontend.controller.grade_controller import GradeController
+    from frontend.model.Academics.Classroom.grade_data_model import GradeDataModel
+    from frontend.controller.Academics.Classroom.grade_controller import GradeController
     from frontend.views.Academics.Classroom.Faculty.table_model import EnhancedGradesTableView
 except ImportError:
     # Fallback for development
-    from ....model.grade_data_model import GradeDataModel
-    from ....controller.grade_controller import GradeController
+    from .....model.Academics.Classroom.grade_data_model import GradeDataModel
+    from .....controller.Academics.Classroom.grade_controller import GradeController
     from .table_model import EnhancedGradesTableView
 
 # Import grading dialog if available

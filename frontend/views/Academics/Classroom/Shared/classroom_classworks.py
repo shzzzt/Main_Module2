@@ -2,8 +2,8 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QComboBox, QDialog, QLineEdit, QTextEdit, QPushButton, QMenu, QToolButton, QFrame, QScrollArea, QSizePolicy, QSpacerItem
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QFontDatabase, QAction
-from widgets.classroom_classworks_content_ui import Ui_ClassroomClassworksContent
-from widgets.topic_widget import TopicWidget
+from widgets.Academics.classroom_classworks_content_ui import Ui_ClassroomClassworksContent
+from widgets.Academics.topic_widget import TopicWidget
 from typing import Optional, Dict
 import os
 import datetime
@@ -554,7 +554,7 @@ class ClassroomClassworks(QWidget):
             for topic_title, topic_posts in sorted_groups:
                 if topic_title == "Untitled":
                     for post in topic_posts:
-                        from frontend.widgets.topic_frame import TopicFrame
+                        from frontend.widgets.Academics.topic_frame import TopicFrame
                         frame = TopicFrame(post, self.post_controller, self.primary_role)
                         frame.post_clicked.connect(self.post_selected.emit)
                         
@@ -575,7 +575,7 @@ class ClassroomClassworks(QWidget):
                         layout.addWidget(frame)
                         self.untitled_frames.append(frame)
                 else:
-                    from frontend.widgets.topic_widget import TopicWidget
+                    from frontend.widgets.Academics.topic_widget import TopicWidget
                     topic_widget = TopicWidget(topic_title, topic_posts, self.post_controller, self.primary_role)
                     
                     # Apply consistent topic header styling

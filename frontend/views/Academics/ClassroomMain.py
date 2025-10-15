@@ -2,14 +2,13 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsDropShadowEffect, QPu
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QColor
 import sys
-import os
 
 # Relative imports from Academics to Classroom/Shared
 try:
     from .Classroom.Shared.classroom_home import ClassroomHome
     from .Classroom.Shared.post_details import PostDetails
     from .ClassroomView import ClassroomView
-    from ...controller.classroom_controller import ClassroomController
+    from frontend.controller.Academics.Classroom.classroom_controller import ClassroomController
 except ImportError:
     try:
         from Classroom.Shared.classroom_home import ClassroomHome

@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets, QtCore
-from widgets.classroom_home_ui import Ui_ClassCard
-from controller.classroom_controller import ClassroomController
+from widgets.Academics.classroom_home_ui import Ui_ClassCard
+from controller.Academics.Classroom.classroom_controller import ClassroomController
 
 from frontend.controller.Academics.Tagging.classes_controller import ClassesController
 from frontend.controller.Academics.controller_manager import ControllerManager

@@ -22,9 +22,9 @@ from PyQt6.QtWidgets import (
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QCursor
-from frontend.widgets.labeled_section import LabeledSection
-from frontend.widgets.dropdown import DropdownMenu
-from frontend.widgets.upload_class_material_widget import UploadClassMaterialPanel
+from frontend.widgets.Academics.labeled_section import LabeledSection
+from frontend.widgets.Academics.dropdown import DropdownMenu
+from frontend.widgets.Academics.upload_class_material_widget import UploadClassMaterialPanel
 
 class MaterialForm(QWidget):
     back_clicked = pyqtSignal()

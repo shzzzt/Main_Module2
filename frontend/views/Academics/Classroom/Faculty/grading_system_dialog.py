@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
 from PyQt6.QtGui import QColor, QFont
-from frontend.controller.grading_system_controller import GradingSystemController
+from frontend.controller.Academics.Classroom.grading_system_controller import GradingSystemController
 
 
 # ============================================================================

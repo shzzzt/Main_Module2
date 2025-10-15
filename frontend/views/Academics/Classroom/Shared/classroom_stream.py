@@ -1,7 +1,7 @@
 # classroom_stream.py
 from PyQt6.QtWidgets import QWidget, QLabel, QFrame, QVBoxLayout, QHBoxLayout, QPushButton,QSizePolicy
 from PyQt6.QtCore import pyqtSignal, Qt
-from widgets.stream_post_ui import Ui_ClassroomStreamContent
+from widgets.Academics.stream_post_ui import Ui_ClassroomStreamContent
 from utils.date_utils import format_date_display
 
 class ClassroomStream(QWidget):

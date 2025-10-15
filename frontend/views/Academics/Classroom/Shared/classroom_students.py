@@ -7,10 +7,10 @@ from PyQt6.QtGui import QPixmap, QIcon, QFont, QFontDatabase, QAction
 import os
 
 try:
-    from frontend.widgets.add_student_dialog import AddStudentDialog
+    from frontend.widgets.Academics.add_student_dialog import AddStudentDialog
 except ImportError:
     try:
-        from widgets.add_student_dialog import AddStudentDialog
+        from widgets.Academics.add_student_dialog import AddStudentDialog
     except ImportError:
         # Fallback import
         from add_student_dialog import AddStudentDialog

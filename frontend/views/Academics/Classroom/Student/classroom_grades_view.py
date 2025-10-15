@@ -20,12 +20,12 @@ from PyQt6.QtGui import QColor, QPalette, QFont # noqa: E402
 # from frontend.controller.grade_controller import GradeController  # noqa: E402
 
 try:
-    from frontend.model.grade_data_model import GradeDataModel
-    from frontend.controller.grade_controller import GradeController
+    from frontend.model.Academics.Classroom.grade_data_model import GradeDataModel
+    from frontend.controller.Academics.Classroom.grade_controller import GradeController
 except ImportError:
     # Fallback for development
-    from ....model.grade_data_model import GradeDataModel
-    from ....controller.grade_controller import GradeController
+    from .....model.Academics.Classroom.grade_data_model import GradeDataModel
+    from .....controller.Academics.Classroom.grade_controller import GradeController
 
 
 

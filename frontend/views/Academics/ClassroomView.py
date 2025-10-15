@@ -7,9 +7,9 @@ from frontend.views.Academics.Classroom.Shared.classroom_classworks import Class
 from frontend.views.Academics.Classroom.Shared.classroom_students import ClassroomStudents
 from frontend.views.Academics.Classroom.Faculty.classroom_grades_view import FacultyGradesView
 from frontend.views.Academics.Classroom.Student.classroom_grades_view import StudentGradesView
-from frontend.services.post_service import PostService
-from frontend.services.topic_service import TopicService
-from frontend.controller.post_controller import PostController
+from frontend.services.Academics.Classroom.post_service import PostService
+from frontend.services.Academics.Classroom.topic_service import TopicService
+from frontend.controller.Academics.Classroom.post_controller import PostController
 
 class ClassroomView(QWidget):
     """
