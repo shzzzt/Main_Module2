@@ -1,5 +1,6 @@
 # create_assessment.py - UPDATED WITH RESPONSIVE LAYOUT
 import os, sys
+import datetime
 
 project_root = (os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
 if project_root not in sys.path:
@@ -159,6 +160,56 @@ class AssessmentForm(QWidget):
         body_layout.addWidget(right_panel, 1)  # Right panel gets less space
         
         return body_widget
+    
+    def format_date(self, date_str):
+        """Format date string for display - same as in classroom_stream.py"""
+        if not date_str:
+            return ""
+        try:
+            # Convert "2025-08-18 10:00:00" to "Aug 18"
+            from datetime import datetime
+            dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+            return dt.strftime("%b %d")
+        except:
+            # If parsing fails, try alternative formats
+            try:
+                dt = datetime.strptime(date_str, "%Y-%m-%d")
+                return dt.strftime("%b %d")
+            except:
+                return date_str.split(" ")[0] if " " in date_str else date_str
+    
+    def create_assessment_data(self, assessment_data, topic_id):
+        """Create assessment data with proper date formatting"""
+        next_id = self.get_next_post_id()
+        
+        now = datetime.now()
+        created_at = now.strftime("%Y-%m-%d %H:%M:%S")  # Full format for internal use
+        date_posted = self.format_date(created_at)  # Use the same formatting as stream posts
+        
+        # For posts.json format
+        post = {
+            "post_id": next_id,
+            "class_id": self.cls.get('id') if self.cls else 1,
+            "topic_id": topic_id,
+            "type": "assessment",
+            "title": assessment_data['title'],
+            "description": assessment_data.get('description', ''),
+            "instructor": self.username or "Unknown Instructor",
+            "instructor_id": "faculty_001",
+            "date_posted": date_posted,  # This will now be in "Aug 18" format
+            "status": "published",
+            "created_at": created_at,
+            "updated_at": created_at
+        }
+        
+        if assessment_data.get('attachment'):
+            post['attachment'] = {
+                "filename": assessment_data['attachment']['name'],
+                "file_type": assessment_data['attachment']['type'].lower(),
+                "file_path": assessment_data['attachment']['file_path']
+            }
+        
+        return post
     
     def create_left_panel(self):
         """Create responsive left panel"""
