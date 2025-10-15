@@ -52,11 +52,11 @@ class PostDetails(QWidget):
             self.ui.title_label.setText(post.get("title", "No Title"))
             self.ui.instructor_label.setText(post.get("author", "Unknown"))
             
-            # Handle date formatting
+            # Handle date formatting - NEW: Format as "August 18, 2025"
             date_str = post.get("date", "")
             if date_str:
-                date_part = date_str.split(" ")[0]
-                self.ui.date_label.setText("• " + date_part)
+                formatted_date = self.format_date_for_display(date_str)
+                self.ui.date_label.setText("• " + formatted_date)
             else:
                 self.ui.date_label.setText("• No date")
             
@@ -86,7 +86,7 @@ class PostDetails(QWidget):
                     self.ui.score_label.hide()
                     
         except Exception as e:
-            print(f"Error loading post: {e}")     
+            print(f"Error loading post: {e}")   
 
     def format_date_for_display(self, date_str):
         """Format date string for display in post details as 'August 18, 2025'"""
