@@ -1,5 +1,3 @@
-# frontend/views/Academics/Classroom/Faculty/classroom_grades_view.py
-# MODIFIED FILE - Complete version with user integration
 """
 Faculty Grades View - Full grade management interface
 Features: bulk input, draft/upload status, expandable columns, grading system management

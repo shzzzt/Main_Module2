@@ -1,5 +1,3 @@
-# # frontend/views/Academics/Classroom/Student/classroom_grades_view.py
-# MODIFIED FILE - Complete version with proper expandable grades display
 """
 Student Grades View - Read-only view showing student's own grades
 UPDATED: Shows only uploaded grades with proper expandable components

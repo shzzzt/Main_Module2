@@ -1,5 +1,3 @@
-# frontend/model/grade_data_model.py
-# MODIFIED FILE - Complete version with flexible user loading
 from PyQt6.QtCore import QObject, pyqtSignal
 from .grade_item import GradeItem
 import sys
