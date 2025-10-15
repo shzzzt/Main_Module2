@@ -1,8 +1,9 @@
+# frontend/model/grade_data_model.py
+# MODIFIED FILE - Complete version
 from PyQt6.QtCore import QObject, pyqtSignal
 from .grade_item import GradeItem
 import sys
 import os
-import json
 
 # Add data directory to path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -18,8 +19,8 @@ except ImportError:
 class GradeDataModel(QObject):
     """
     Main data model holding all application data.
-    FLEXIBLE: Adapts to any users from Django backend or JSON files
-    FUTURE-READY: Prepared for PostgreSQL integration
+    Single source of truth for students, grades, and rubric configuration.
+    NOW WITH PERSISTENT STORAGE
     """
     data_reset = pyqtSignal()
     data_updated = pyqtSignal()
@@ -29,7 +30,6 @@ class GradeDataModel(QObject):
         super().__init__()
         self.class_id = class_id
         self.students = []
-        self.current_user = None  # Store current logged-in user
         
         # Initialize grade manager
         if GradeDataManager:
@@ -100,40 +100,14 @@ class GradeDataModel(QObject):
                 if state_key not in self.column_states:
                     self.column_states[state_key] = False
 
-    def set_current_user(self, username, user_data=None):
-        """Set the current logged-in user"""
-        self.current_user = {
-            'username': username,
-            'data': user_data or {}
-        }
-
-    def load_students_from_django_api(self, api_response):
-        """
-        Load students from Django API response
-        Expected format from backend API:
-        {
-            "students": [
-                {
-                    "id": 1,
-                    "username": "Marcus",
-                    "first_name": "Marcus",
-                    "last_name": "Mercer",
-                    "institutional_id": "456456456",
-                    "email": "immarcusmercer@gmail.com"
-                }
-            ]
-        }
-        """
+    def load_students_from_classroom(self, students_data):
+        """Load actual students from classroom data"""
         self.students = []
-        students_data = api_response.get('students', [])
-        
         for student in students_data:
             self.students.append({
-                'id': str(student.get('institutional_id', student.get('id', ''))),
+                'id': student.get('institutional_id', student.get('id')),
                 'name': f"{student.get('last_name', '')}, {student.get('first_name', '')}",
-                'username': student.get('username', ''),
-                'email': student.get('email', ''),
-                'django_id': student.get('id', None)  # Keep Django DB ID for future API calls
+                'username': student.get('username', '')
             })
         
         # Initialize grades storage for each student
@@ -144,50 +118,7 @@ class GradeDataModel(QObject):
         # Load grades from persistent storage
         self._load_grades_from_storage()
         
-        print(f"[GRADE MODEL] Loaded {len(self.students)} students from Django API")
         self.data_reset.emit()
-
-    def load_students_from_json(self, json_file_path='data/users_data.json'):
-        """
-        Load students from JSON file (fallback or development mode)
-        """
-        try:
-            with open(json_file_path, 'r') as f:
-                data = json.load(f)
-            
-            self.students = []
-            users = data.get('users', [])
-            
-            for user in users:
-                # Only include students
-                if user.get('role_type') == 'student' or user.get('role') == 'student':
-                    self.students.append({
-                        'id': str(user.get('institutional_id', user.get('id', ''))),
-                        'name': f"{user.get('last_name', '')}, {user.get('first_name', '')}",
-                        'username': user.get('username', ''),
-                        'email': user.get('email', ''),
-                        'django_id': user.get('id', None)
-                    })
-            
-            # Initialize grades storage
-            for student in self.students:
-                if student['id'] not in self.grades:
-                    self.grades[student['id']] = {}
-            
-            # Load grades from persistent storage
-            self._load_grades_from_storage()
-            
-            print(f"[GRADE MODEL] Loaded {len(self.students)} students from JSON file")
-            self.data_reset.emit()
-            
-        except FileNotFoundError:
-            print(f"[GRADE MODEL] JSON file not found: {json_file_path}")
-            print("[GRADE MODEL] Falling back to sample data")
-            self.load_sample_data()
-        except json.JSONDecodeError:
-            print(f"[GRADE MODEL] Error decoding JSON file: {json_file_path}")
-            print("[GRADE MODEL] Falling back to sample data")
-            self.load_sample_data()
 
     def _load_grades_from_storage(self):
         """Load grades from persistent storage"""
@@ -207,45 +138,20 @@ class GradeDataModel(QObject):
                 self.grades[student_id][component_key] = grade_item
 
     def load_sample_data(self):
-        """Load sample student data (fallback)"""
-        print("[GRADE MODEL] Loading sample data")
-        
-        # Try to load from script.py created users first
-        sample_users = self._get_sample_users_from_script()
-        
-        if sample_users:
-            self.students = sample_users
-        else:
-            # Ultimate fallback
-            self.students = [
-                {'id': '456456456', 'name': "Mercer, Marcus", 'username': 'Marcus', 'email': 'immarcusmercer@gmail.com'},
-                {'id': '102', 'name': "Santos, Maria Elena", 'username': 'maria', 'email': 'maria@example.com'},
-                {'id': '103', 'name': "Garcia, Juan Pablo", 'username': 'juan', 'email': 'juan@example.com'},
-                {'id': '104', 'name': "Rodriguez, Ana Sofia", 'username': 'ana', 'email': 'ana@example.com'}
-            ]
-        
+        """Load sample student data"""
+        self.students = [
+            {'id': '456456456', 'name': "Hitler, Adolf", 'username': 'Adolf'},
+            {'id': '102', 'name': "Santos, Maria Elena", 'username': 'maria'},
+            {'id': '103', 'name': "Garcia, Juan Pablo", 'username': 'juan'},
+            {'id': '104', 'name': "Rodriguez, Ana Sofia", 'username': 'ana'}
+        ]
         for student in self.students:
             self.grades[student['id']] = {}
         
         # Load grades from storage
         self._load_grades_from_storage()
         
-        print(f"[GRADE MODEL] Sample data loaded with {len(self.students)} students")
         self.data_reset.emit()
-
-    def _get_sample_users_from_script(self):
-        """Extract sample users from script.py pattern"""
-        # This matches the users created in your script.py
-        return [
-            {
-                'id': '456456456', 
-                'name': "Mercer, Marcus", 
-                'username': 'Marcus', 
-                'email': 'immarcusmercer@gmail.com',
-                'first_name': 'Marcus',
-                'last_name': 'Mercer'
-            }
-        ]
 
     def get_column_state(self, key):
         """Get column expansion state"""
@@ -378,13 +284,6 @@ class GradeDataModel(QObject):
                 return student
         return None
 
-    def get_student_by_id(self, student_id):
-        """Get student data by ID"""
-        for student in self.students:
-            if str(student.get('id')) == str(student_id):
-                return student
-        return None
-
     def get_uploaded_grades_for_student(self, student_id):
         """Get only uploaded grades for a student (for student view)"""
         uploaded_grades = {}
@@ -395,33 +294,3 @@ class GradeDataModel(QObject):
                     uploaded_grades[component_key] = grade_item
         
         return uploaded_grades
-
-    def get_all_students(self):
-        """Get list of all students"""
-        return self.students.copy()
-
-    def refresh_from_backend(self, api_url, token):
-        """
-        Future method: Refresh data from Django backend
-        This will be called when integrated with PostgreSQL
-        """
-        # TODO: Implement API call to Django backend
-        # Example structure:
-        # headers = {'Authorization': f'Bearer {token}'}
-        # response = requests.get(f'{api_url}/api/grades/class/{self.class_id}/students/', headers=headers)
-        # if response.status_code == 200:
-        #     self.load_students_from_django_api(response.json())
-        pass
-
-    def sync_grades_to_backend(self, api_url, token):
-        """
-        Future method: Sync grades to Django backend
-        This will be called when integrated with PostgreSQL
-        """
-        # TODO: Implement API call to Django backend
-        # Example structure:
-        # headers = {'Authorization': f'Bearer {token}'}
-        # payload = {'grades': self.grades}
-        # response = requests.post(f'{api_url}/api/grades/class/{self.class_id}/sync/', 
-        #                         json=payload, headers=headers)
-        pass
