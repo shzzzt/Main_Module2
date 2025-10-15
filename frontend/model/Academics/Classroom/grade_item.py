@@ -1,20 +1,24 @@
+"""
+Grade Item data structure
+"""
 
 class GradeItem:
-    """Represents a single grade entry with metadata"""
-    def __init__(self, value="", is_draft=True):
-        self.value = value  # "35/40" or "87.5"
-        self.is_draft = is_draft
+    def __init__(self):
+        self.value = ""
+        self.is_draft = True
     
     def get_numeric_score(self):
-        """Convert value to percentage"""
-        if not self.value:
+        """Get numeric score percentage from value like '35/40'"""
+        if not self.value or '/' not in self.value:
             return 0.0
+        
         try:
-            if '/' in self.value:
-                parts = self.value.split('/')
-                score = float(parts[0])
-                total = float(parts[1])
-                return (score / total * 100) if total > 0 else 0.0
-            return float(self.value)
-        except (ValueError, IndexError):
-            return 0.0
+            parts = self.value.split('/')
+            score = float(parts[0])
+            max_score = float(parts[1])
+            if max_score > 0:
+                return (score / max_score) * 100
+        except (ValueError, IndexError, ZeroDivisionError):
+            pass
+        
+        return 0.0

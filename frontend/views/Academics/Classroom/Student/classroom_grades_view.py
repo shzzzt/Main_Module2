@@ -1,23 +1,23 @@
+# frontend/views/Academics/Classroom/Student/classroom_grades_view.py
+# MODIFIED FILE - Complete version with proper expandable grades display
 """
 Student Grades View - Read-only view showing student's own grades
+UPDATED: Shows only uploaded grades with proper expandable components
 """
 
 import os
 import sys
-    
-from PyQt6.QtWidgets import ( QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QFrame ) # noqa: E402
-from PyQt6.QtCore import Qt # noqa: E402
-from PyQt6.QtGui import QColor, QPalette, QFont # noqa: E402
-# Navigate 5 levels up to get to the project's root directory
-# i dont know unsaon pagpa work using frontend....... dili ga work sa akoa basin naa lang ems mali na type
-# project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
 
-# # Add the project root to the system path
-# if project_root not in sys.path:
-#     sys.path.insert(0, project_root)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
-# from frontend.model.grade_data_model import GradeDataModel      # noqa: E402
-# from frontend.controller.grade_controller import GradeController  # noqa: E402
+from frontend.model.Academics.Classroom.grade_data_model import GradeDataModel      # noqa: E402
+from frontend.controller.Academics.Classroom.grade_controller import GradeController  # noqa: E402
+
+from PyQt6.QtWidgets import ( QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QFrame )
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QPalette, QFont
 
 try:
     from frontend.model.Academics.Classroom.grade_data_model import GradeDataModel
@@ -28,7 +28,6 @@ except ImportError:
     from .....controller.Academics.Classroom.grade_controller import GradeController
 
 
-
 class ExpandableGradeRow(QWidget):
     
     def __init__(self, title, score, max_score, percentage, bg_color="#084924", has_arrow=True, parent=None):
@@ -37,8 +36,7 @@ class ExpandableGradeRow(QWidget):
         self.bg_color = bg_color
         self.sub_items = []
         self.has_arrow = has_arrow
-        
-        # Main layout - no margins, no spacing
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
@@ -58,8 +56,7 @@ class ExpandableGradeRow(QWidget):
         header_layout = QHBoxLayout(self.header)
         header_layout.setContentsMargins(15, 0, 15, 0)
         header_layout.setSpacing(10)
-        
-        # Arrow indicator (only if has_arrow is True)
+
         if has_arrow:
             self.arrow_label = QLabel(">")
             self.arrow_label.setStyleSheet("""
@@ -70,7 +67,6 @@ class ExpandableGradeRow(QWidget):
             self.arrow_label.setFixedWidth(15)
             header_layout.addWidget(self.arrow_label)
         else:
-            # Add empty space where arrow would be
             arrow_spacer = QWidget()
             arrow_spacer.setFixedWidth(15)
             header_layout.addWidget(arrow_spacer)
@@ -82,8 +78,7 @@ class ExpandableGradeRow(QWidget):
             font-size: 13px;
             font-weight: normal;
         """)
-        
-        # Spacer
+
         header_layout.addWidget(title_label)
         header_layout.addStretch()
         
@@ -99,7 +94,7 @@ class ExpandableGradeRow(QWidget):
         
         main_layout.addWidget(self.header)
         
-        # Content container (hidden by default, only if has_arrow is True)
+        # Content container
         self.content_container = QWidget()
         self.content_container.setVisible(False)
         self.content_layout = QVBoxLayout(self.content_container)
@@ -113,8 +108,7 @@ class ExpandableGradeRow(QWidget):
         """Add a sub-item row with alternating background colors"""
         sub_row = QWidget()
         sub_row.setFixedHeight(40)
-        
-        # Alternate between #FFFFFF and #E0E0E0
+
         bg_color = "#FFFFFF" if row_index % 2 == 0 else "#E0E0E0"
         sub_row.setStyleSheet(f"""
             QWidget {{
@@ -123,10 +117,9 @@ class ExpandableGradeRow(QWidget):
         """)
         
         sub_layout = QHBoxLayout(sub_row)
-        sub_layout.setContentsMargins(50, 0, 15, 0)  # Indent for sub-items
+        sub_layout.setContentsMargins(50, 0, 15, 0)
         sub_layout.setSpacing(10)
-        
-        # Item name
+
         name_label = QLabel(name)
         name_label.setStyleSheet("""
             color: #333333;
@@ -135,8 +128,7 @@ class ExpandableGradeRow(QWidget):
         
         sub_layout.addWidget(name_label)
         sub_layout.addStretch()
-        
-        # Score
+
         score_label = QLabel(score)
         score_label.setStyleSheet("""
             color: #333333;
@@ -155,11 +147,9 @@ class ExpandableGradeRow(QWidget):
             
         self.is_expanded = not self.is_expanded
         self.content_container.setVisible(self.is_expanded)
-        
-        # Update arrow: > when collapsed, ∨ when expanded
+
         if self.is_expanded:
             self.arrow_label.setText("⌄")
-
         else:
             self.arrow_label.setText(">")
 
@@ -175,8 +165,9 @@ class StudentGradesView(QWidget):
         self.token = token
         self.setMinimumSize(940, 530)
         
-        # Initialize models and controllers
-        self.grade_model = GradeDataModel()
+        # Initialize models and controllers with class ID
+        class_id = cls.get('id', 1)
+        self.grade_model = GradeDataModel(class_id=class_id)
         self.grade_controller = GradeController(self.grade_model)
         
         # Setup UI
@@ -186,7 +177,8 @@ class StudentGradesView(QWidget):
         self.load_student_grades()
     
     def setup_ui(self):
-        self.setMinimumSize(300,300)
+        self.setMinimumSize(300, 300)
+
         # White background
         self.setAutoFillBackground(True)
         pal = self.palette()
@@ -208,10 +200,10 @@ class StudentGradesView(QWidget):
         separator.setStyleSheet("background-color: #E0E0E0; max-height: 1px;")
         main_layout.addWidget(separator)
         
-        # Filter button - narrow width as in Figma
+        # Filter button
         filter_btn = QPushButton("Overall Laboratory")
         filter_btn.setFixedHeight(35)
-        filter_btn.setFixedWidth(150)  # Narrow width
+        filter_btn.setFixedWidth(150)
         filter_btn.setStyleSheet("""
             QPushButton {
                 background-color: white;
@@ -241,7 +233,7 @@ class StudentGradesView(QWidget):
         self.grades_container = QWidget()
         self.grades_layout = QVBoxLayout(self.grades_container)
         self.grades_layout.setContentsMargins(0, 0, 0, 0)
-        self.grades_layout.setSpacing(0)  # NO spacing between rows
+        self.grades_layout.setSpacing(0)
         
         scroll.setWidget(self.grades_container)
         main_layout.addWidget(scroll)
@@ -267,7 +259,8 @@ class StudentGradesView(QWidget):
         avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # Student name
-        name_label = QLabel(self.username)
+        student_name = self._get_student_name()
+        name_label = QLabel(student_name)
         name_label.setStyleSheet("""
             QLabel {
                 font-size: 14px;
@@ -286,7 +279,7 @@ class StudentGradesView(QWidget):
         grade_layout.setContentsMargins(0, 0, 0, 0)
         grade_layout.setSpacing(0)
         
-        self.overall_grade_label = QLabel("95.4%")
+        self.overall_grade_label = QLabel("0.0%")
         self.overall_grade_label.setStyleSheet("""
             QLabel {
                 font-size: 22px;
@@ -313,15 +306,23 @@ class StudentGradesView(QWidget):
         return header
     
     def load_student_grades(self):
-        """Load and display student's grades from model"""
-        # Load sample data (in production, fetch from Django API)
+        """Load and display student's grades from model - ONLY UPLOADED GRADES"""
+        # Load all students (needed for grade model)
         self.grade_model.load_sample_data()
         
         student_id = self._get_student_id()
         if not student_id:
+            print(f"[STUDENT GRADES] Could not find student with username: {self.username}")
             return
         
-        # Calculate grades
+        print(f"[STUDENT GRADES] Loading grades for student ID: {student_id}")
+
+        # Get only uploaded grades for this student
+        uploaded_grades = self.grade_model.get_uploaded_grades_for_student(student_id)
+
+        print(f"[STUDENT GRADES] Found {len(uploaded_grades)} uploaded grades")
+
+        # Calculate grades using all grades (for calculation purposes)
         calculated = self.grade_controller.calculate_grades_for_student(student_id)
         
         # Update overall grade
@@ -345,12 +346,12 @@ class StudentGradesView(QWidget):
             "100",
             f"{midterm_avg:.1f}%",
             "#084924",
-            has_arrow=False  # Not expandable
+            has_arrow=False
         )
         self.grades_layout.addWidget(midterm_row)
         
-        # Add midterm components
-        self._add_components_for_term("midterm", student_id)
+        # Add midterm components (show all, but only display uploaded grades in dropdowns)
+        self._add_components_for_term("midterm", student_id, uploaded_grades)
         
         # Add Final Term Grade section (not expandable)
         finalterm_avg = float(calculated.get('finalterm_avg', 0))
@@ -360,25 +361,25 @@ class StudentGradesView(QWidget):
             "100",
             f"{finalterm_avg:.1f}%",
             "#084924",
-            has_arrow=False  # Not expandable
+            has_arrow=False
         )
         self.grades_layout.addWidget(finalterm_row)
         
         # Add final term components
-        self._add_components_for_term("finalterm", student_id)
+        self._add_components_for_term("finalterm", student_id, uploaded_grades)
         
         # Add stretch to push everything to top
         self.grades_layout.addStretch()
     
-    def _add_components_for_term(self, term, student_id):
-        """Add component rows for a term"""
+    def _add_components_for_term(self, term, student_id, uploaded_grades):
+        """Add component rows for a term - Show all components, but only uploaded grades in dropdowns"""
         term_key = 'midterm' if term == 'midterm' else 'final'
         
         for comp_name in self.grade_model.get_rubric_components(term_key):
-            type_key = self.grade_model.get_component_type_key(comp_name)
+            type_key = self.grade_model.get_component_type_key(comp_name, term)
             sub_items = self.grade_model.get_component_items_with_scores(type_key)
             
-            # Calculate component average
+            # Calculate component average from ALL grades (for display)
             total_score = 0
             total_max = 0
             count = 0
@@ -387,9 +388,11 @@ class StudentGradesView(QWidget):
                 item_name = item['name']
                 max_score = item['max_score']
                 component_key = f"{item_name.lower().replace(' ', '')}_{term}"
+
+                # Get grade from model (all grades for calculation)
                 grade_item = self.grade_model.get_grade(student_id, component_key)
                 
-                if grade_item.value:
+                if grade_item.value and not grade_item.is_draft:
                     try:
                         if '/' in grade_item.value:
                             score_parts = grade_item.value.split('/')
@@ -414,46 +417,49 @@ class StudentGradesView(QWidget):
                 display_score = "0"
                 display_max = "0"
             
-            # Create component row (#036800) - expandable
+            # Create component row (#036800) - expandable (ALWAYS SHOW)
             comp_row = ExpandableGradeRow(
                 f"{comp_name.title()} ({comp_percentage}%)",
                 display_score,
                 display_max,
                 "",
                 "#036800",
-                has_arrow=True  # Expandable
+                has_arrow=True
             )
             
-            # Add sub-items
+            # Add ALL sub-items (show 0/0 for non-uploaded grades)
             row_idx = 0
             for item in sub_items:
                 item_name = item['name']
                 component_key = f"{item_name.lower().replace(' ', '')}_{term}"
+
+                # Get grade from model
                 grade_item = self.grade_model.get_grade(student_id, component_key)
                 
-                if grade_item.value:
+                # Only show if uploaded (not draft)
+                if grade_item.value and not grade_item.is_draft:
                     comp_row.add_sub_item(item_name, grade_item.value, row_idx)
                 else:
-                    comp_row.add_sub_item(item_name, "0/0", row_idx)
+                    # Show placeholder for non-uploaded grades
+                    max_score = item['max_score']
+                    comp_row.add_sub_item(item_name, f"--/{max_score}", row_idx)
                 
                 row_idx += 1
             
             self.grades_layout.addWidget(comp_row)
     
     def _get_student_id(self):
-        """Get current student's ID (from model or API)"""
-        if self.grade_model.students:
-            # In production: filter by self.username
-            return self.grade_model.students[0]['id']
+        """Get current student's ID by username"""
+        student = self.grade_model.get_student_by_username(self.username)
+        if student:
+            return student['id']
         return None
     
     def _get_student_name(self):
         """Get current student's name"""
-        student_id = self._get_student_id()
-        if student_id:
-            for student in self.grade_model.students:
-                if student['id'] == student_id:
-                    return student['name']
+        student = self.grade_model.get_student_by_username(self.username)
+        if student:
+            return student['name']
         return "Unknown Student"
     
     def clear(self):
@@ -471,19 +477,18 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     
     window = QMainWindow()
-    window.setWindowTitle("Student Grades View - Figma Design")
+    window.setWindowTitle("Student Grades View")
     window.setGeometry(100, 100, 500, 800)
-    
-    # Mock student data
+
     mock_cls = {
-        'id': 'CS101',
-        'name': 'Introduction to Computer Science',
-        'section': 'A'
+        'id': 1,
+        'name': 'Desktop Application Development',
+        'section': 'BSCS-3C'
     }
     
     widget = StudentGradesView(
         cls=mock_cls,
-        username='castro.carlosfidel',
+        username='Adolf',
         roles=['student'],
         primary_role='student',
         token='test_token'
