@@ -200,9 +200,9 @@ class BulkInputHeaderView(QHeaderView):
                 arrow
             )
     
+        # In the BulkInputHeaderView class, update the create_bulk_widget method:
     def create_bulk_widget(self, column, max_score=40):
         """Create bulk input widget for a grade column - parented to viewport()"""
-        # CRITICAL: Parent to viewport(), not self
         container = QWidget(self.viewport())
         layout = QHBoxLayout(container)
         layout.setContentsMargins(4, 2, 4, 2)
@@ -267,11 +267,12 @@ class BulkInputHeaderView(QHeaderView):
             }
         """)
         
+        # FIXED: Pass column index properly
         draft_action = menu.addAction("Keep as Draft")
-        draft_action.triggered.connect(lambda col=column: self.draft_column_clicked.emit(col))
+        draft_action.triggered.connect(lambda checked=False, col=column: self.draft_column_clicked.emit(col))
         
         upload_action = menu.addAction("Upload All")
-        upload_action.triggered.connect(lambda col=column: self.upload_column_clicked.emit(col))
+        upload_action.triggered.connect(lambda checked=False, col=column: self.upload_column_clicked.emit(col))
         
         options_btn.setMenu(menu)
         options_btn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
@@ -606,10 +607,14 @@ class EnhancedGradesTableView(QTableView):
     
     def _on_upload_single(self, row, col):
         """Handle upload single grade"""
-        self.table_model.upload_single_grade(row, col)
-    
+        print(f"[DEBUG] Upload clicked for cell ({row}, {col})")
+        success = self.table_model.upload_single_grade(row, col)
+        if success:
+            print(f"[DEBUG] Grade uploaded successfully")
+
     def _on_keep_draft_single(self, row, col):
         """Handle keep as draft for single grade"""
+        print(f"[DEBUG] Keep as Draft clicked for cell ({row}, {col})")
         col_info = self.table_model.columns[col]
         if col_info.get('type') == 'grade_input':
             component_key = col_info.get('component_key', '')
@@ -617,7 +622,8 @@ class EnhancedGradesTableView(QTableView):
             grade_item = self.data_model.get_grade(student_id, component_key)
             if grade_item.value:
                 self.data_model.set_grade(student_id, component_key, grade_item.value, is_draft=True)
-    
+                print(f"[DEBUG] Grade kept as draft")
+        
     def resizeEvent(self, event):
         """Reposition widgets on resize"""
         super().resizeEvent(event)
