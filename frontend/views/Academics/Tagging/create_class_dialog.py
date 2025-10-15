@@ -47,31 +47,34 @@ class ScheduleWidget(QWidget):
         self.start_time = QTimeEdit()
         self.start_time.setDisplayFormat("hh:mm AP")
         self.start_time.setTime(QTime(9, 0))  # Default 9:00 AM
-        self.start_time.setMinimumWidth(100)
+        self.start_time.setMinimumWidth(130)
         layout.addWidget(QLabel("from"))
         layout.addWidget(self.start_time)
-        
+
         # End time
         self.end_time = QTimeEdit()
         self.end_time.setDisplayFormat("hh:mm AP")
         self.end_time.setTime(QTime(10, 30))  # Default 10:30 AM
-        self.end_time.setMinimumWidth(100)
+        self.end_time.setMinimumWidth(130)
         layout.addWidget(QLabel("to"))
         layout.addWidget(self.end_time)
-        
+
         # Remove button
         self.remove_btn = QPushButton("✕")
-        self.remove_btn.setFixedSize(30, 30)
+        self.remove_btn.setFixedSize(35, 35)
         self.remove_btn.setStyleSheet("""
             QPushButton {
-                background-color: #f44336;
+                background-color: #dc3545;
                 color: white;
                 border: none;
+                border-radius: 4px;
                 font-weight: bold;
-                font-size: 10px;
+                font-size: 16px;
+                margin: 0px;
+                padding: 0px;
             }
             QPushButton:hover {
-                background-color: #da190b;
+                background-color: #c82333;
             }
         """)
         self.remove_btn.clicked.connect(self.remove_clicked)
@@ -182,11 +185,115 @@ class CreateClassDialog(QDialog):
     
     def setup_ui(self):
         """Set up the user interface."""
+        # Apply global stylesheet
+        self.setStyleSheet("""
+            QLabel {
+                color: #2d2d2d;
+                font-size: 14px;
+            }
+            QLineEdit, QComboBox, QSpinBox, QTimeEdit {
+                border: 1px solid #cccccc;
+                border-radius: 5px;
+                padding: 6px 10px;
+                background-color: #f9f9f9;
+                min-height: 30px;
+                font-size: 14px;
+            }
+            QComboBox QAbstractItemView {
+                font-size: 14px;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+                height: 5px;
+            }
+            QPushButton {
+                background-color: #1e5631;
+                color: white;
+                padding: 8px 18px;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 14px;
+                border: none;
+                min-width: 100px;
+                margin-top: 10px;
+            }
+            QPushButton:hover {
+                background-color: #2d5a3d;
+            }
+            QGroupBox {
+                font-weight: bold;
+                border: 1px solid #cccccc;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding-top: 10px;
+            }
+            QGroupBox::title {
+                color: #1e5631;
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #f0f0f0;
+                width: 12px;
+                border-radius: 6px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #1e5631;
+                min-height: 30px;
+                border-radius: 6px;
+                margin: 2px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #2d5a3d;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                border: none;
+                background: none;
+                height: 0px;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+            QScrollBar:horizontal {
+                border: none;
+                background: #f0f0f0;
+                height: 12px;
+                border-radius: 6px;
+                margin: 0px;
+            }
+            QScrollBar::handle:horizontal {
+                background: #1e5631;
+                min-width: 30px;
+                border-radius: 6px;
+                margin: 2px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background: #2d5a3d;
+            }
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                border: none;
+                background: none;
+                width: 0px;
+            }
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+                background: none;
+            }
+        """)
+
         main_layout = QVBoxLayout()
-        
+        main_layout.setContentsMargins(25, 25, 25, 25)
+        main_layout.setSpacing(5)
+
         # Title - dynamic based on mode
-        title_text = "Edit Class" if self.is_edit_mode else "Create New Class"
+        title_text = "Edit Class" if self.is_edit_mode else "Create Class"
         title_label = QLabel(title_text)
+        from PyQt6.QtGui import QFont
+        title_label.setFont(QFont("Segoe UI", 18, QFont.Weight.DemiBold))
+        title_label.setStyleSheet("color: #1e5631; margin-bottom: 10px;")
         main_layout.addWidget(title_label)
         
         # Scrollable area for form
@@ -200,6 +307,10 @@ class CreateClassDialog(QDialog):
         # Basic Information Group
         basic_group = QGroupBox("Basic Information")
         basic_layout = QFormLayout()
+
+        self.section_combo = QComboBox()
+        self.populate_sections()
+        basic_layout.addRow("Section*:", self.section_combo)
         
         self.code_edit = QLineEdit()
         self.code_edit.setPlaceholderText("e.g., IT57, CS101")
@@ -216,9 +327,7 @@ class CreateClassDialog(QDialog):
         self.units_spin.setSuffix(" units")
         basic_layout.addRow("Units*:", self.units_spin)
         
-        self.section_combo = QComboBox()
-        self.populate_sections()
-        basic_layout.addRow("Section*:", self.section_combo)
+
         
         basic_group.setLayout(basic_layout)
         scroll_layout.addWidget(basic_group)
@@ -259,7 +368,7 @@ class CreateClassDialog(QDialog):
         scroll_layout.addWidget(schedule_group)
         
         # Location & Instructor Group
-        location_group = QGroupBox("Location & Instructor")
+        location_group = QGroupBox("Other Details")
         location_layout = QFormLayout()
         
         self.room_edit = QLineEdit()
@@ -290,7 +399,7 @@ class CreateClassDialog(QDialog):
         self.create_btn.setDefault(True)
         self.create_btn.setStyleSheet("""
             QPushButton {
-                background-color: #4CAF50;
+                background-color: #1e5631;
                 color: white;
                 padding: 8px 20px;
                 border: none;
@@ -310,7 +419,7 @@ class CreateClassDialog(QDialog):
                 border-radius: 4px;
             }
             QPushButton:hover {
-                background-color: #f0f0f0;
+                background-color: #45a049;
             }
         """)
 
@@ -318,7 +427,7 @@ class CreateClassDialog(QDialog):
         self.draft_btn.setDefault(True)
         self.draft_btn.setStyleSheet("""
                     QPushButton {
-                        background-color: #4CAF50;
+                        background-color: #1e5631;
                         color: white;
                         padding: 8px 20px;
                         border: none;
@@ -532,3 +641,105 @@ class CreateClassDialog(QDialog):
         """
         self.sections = sections
         self.populate_sections()
+
+
+    # hard coded data for simplicity, will improve later
+    bsit_curriculum = {
+        "1st": {
+            "First Semester": [
+                {"code": "GEC 11", "title": "Understanding the Self", "units": 3},
+                {"code": "GEC 14", "title": "Mathematics in the Modern World", "units": 3},
+                {"code": "GEC 15", "title": "Purposive Communication", "units": 3},
+                {"code": "GEC 16", "title": "Art Appreciation", "units": 3},
+                {"code": "PE 31", "title": "Movement Enhancement (PATH-FIT I)", "units": 2},
+                {"code": "NSTP 1", "title": "National Service Training Program I", "units": 3},
+                {"code": "ITCC 41", "title": "Introduction to Computing", "units": 3},
+                {"code": "ITCC 43", "title": "Computer Programming 1", "units": 3}
+            ],
+            "Second Semester": [
+                {"code": "GEC 12", "title": "Readings in Philippine History", "units": 3},
+                {"code": "GEC 13", "title": "The Contemporary World", "units": 3},
+                {"code": "GEC 18", "title": "Ethics", "units": 3},
+                {"code": "GEC 19", "title": "The Life and Works of Jose Rizal", "units": 3},
+                {"code": "GEE 16", "title": "The Entrepreneurial Mind", "units": 3},
+                {"code": "PE 32", "title": "Fitness Exercise (PATH-FIT II)", "units": 2},
+                {"code": "NSTP 2", "title": "National Service Training Program II", "units": 3},
+                {"code": "ITCC 42", "title": "Computer Programming 2", "units": 3},
+                {"code": "ITCC 44", "title": "Discrete Structures", "units": 3}
+            ]
+        },
+
+        "2nd": {
+            "First Semester": [
+                {"code": "ITCC 45", "title": "Computer Programming 3 (OOP)", "units": 3},
+                {"code": "ITCC 47", "title": "Data Structures and Algorithms", "units": 3},
+                {"code": "IT 51", "title": "Computer Architecture", "units": 3},
+                {"code": "GEC 17", "title": "Science, Technology and Society", "units": 3},
+                {"code": "GEE 11", "title": "Environmental Science", "units": 3},
+                {"code": "PE 33", "title": "Physical Activities Towards Health and Fitness III", "units": 2}
+            ],
+            "Second Semester": [
+                {"code": "ITCC 46", "title": "Information Management", "units": 3},
+                {"code": "ITCC 48", "title": "Application Development and Emerging Technologies", "units": 3},
+                {"code": "IT 52", "title": "Operating Systems", "units": 3},
+                {"code": "STAT 22", "title": "Elementary Statistics and Probability", "units": 3},
+                {"code": "GEE 15", "title": "Gender and Society", "units": 3},
+                {"code": "PE 34", "title": "Physical Activities Towards Health and Fitness IV", "units": 2}
+            ]
+        },
+
+        "3rd": {
+            "First Semester": [
+                {"code": "IT 57", "title": "Fundamentals of Networking", "units": 3},
+                {"code": "IT 59", "title": "Web Systems and Technologies 1", "units": 3},
+                {"code": "IT 61", "title": "Integrative Programming and Technologies", "units": 3},
+                {"code": "IT 63", "title": "Information Assurance and Security 1", "units": 3},
+                {"code": "IT 95", "title": "Research Methods for IT", "units": 3},
+                {"code": "IT 62", "title": "Systems Administration and Maintenance", "units": 3}
+            ],
+            "Second Semester": [
+                {"code": "IT 58", "title": "Routing and Switching", "units": 3},
+                {"code": "IT 60", "title": "Web Systems and Technologies 2", "units": 3},
+                {"code": "IT 56", "title": "Systems Integration and Architecture", "units": 3},
+                {"code": "IT 99", "title": "Technopreneurship", "units": 1},
+                {"code": "IT 100.1", "title": "IT Capstone Project and Research 1", "units": 3}
+            ]
+        },
+
+        "4th": {
+            "First Semester": [
+                {"code": "IT 65", "title": "Software Engineering", "units": 3},
+                {"code": "IT 67", "title": "Information Assurance and Security 2", "units": 3},
+                {"code": "IT 69", "title": "Professional Elective 1", "units": 3},
+                {"code": "IT 71", "title": "Professional Elective 2", "units": 3},
+                {"code": "IT 100.2", "title": "IT Capstone Project and Research 2", "units": 3}
+            ],
+            "Second Semester": [
+                {"code": "IT 98", "title": "Practicum (486 Hours)", "units": 6}
+            ]
+        },
+
+        "Electives": {
+            "Software Development Track": [
+                {"code": "ITSD 81", "title": "Desktop Application Development", "units": 3},
+                {"code": "ITSD 82", "title": "Mobile Application Development 1", "units": 3},
+                {"code": "ITSD 83", "title": "Web Software Tools", "units": 3},
+                {"code": "ITSD 84", "title": "Mobile Application Development 2", "units": 3},
+                {"code": "ITSD 85", "title": "Special Topics in Software Development", "units": 3}
+            ],
+            "Data Network Track": [
+                {"code": "ITDN 81", "title": "Scaling Networks", "units": 3},
+                {"code": "ITDN 82", "title": "Connecting Networks", "units": 3},
+                {"code": "ITDN 83", "title": "Network Security", "units": 3},
+                {"code": "ITDN 84", "title": "Internet of Things", "units": 3},
+                {"code": "ITDN 85", "title": "Special Topics in Networking", "units": 3}
+            ],
+            "Information Management Track": [
+                {"code": "ITIM 81", "title": "Programming for Data Science and AI", "units": 3},
+                {"code": "ITIM 82", "title": "Data Mining", "units": 3},
+                {"code": "ITIM 83", "title": "Big Data Analytics", "units": 3},
+                {"code": "ITIM 84", "title": "Intelligent Systems", "units": 3},
+                {"code": "ITIM 85", "title": "Special Topics in Information Management", "units": 3}
+            ]
+        }
+    }

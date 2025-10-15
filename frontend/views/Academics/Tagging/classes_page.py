@@ -40,7 +40,7 @@ class ClassesPage(QWidget):
         
         # Header with title and controls
         header_layout = QHBoxLayout()
-        title = QLabel("Classes")
+        title = QLabel("Classes (First Semester, A.Y. 2025-2026)")
         title.setFont(QFont("Segoe UI", 18, QFont.Weight.DemiBold))
         title.setStyleSheet("color: #2d2d2d;")
         header_layout.addWidget(title)
