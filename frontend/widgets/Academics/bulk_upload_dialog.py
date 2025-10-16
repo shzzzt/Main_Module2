@@ -28,10 +28,13 @@ class BulkUploadDialog(QDialog):
             project_root = os.path.dirname(current_dir)
 
             possible_paths = [
-                os.path.join(project_root, "ui", "Enrollment", "bulk_upload_dialog.ui"),  # Most likely: enrollment_ui/ui/
-                os.path.join(current_dir, "..", "Enrollment", "ui", "bulk_upload_dialog.ui"),  # Same as above
-                os.path.join(current_dir, "bulk_upload_dialog.ui"),  # windows/bulk_upload_dialog.ui
-            ]
+            os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "ui", "Academics", "Enrollment", "bulk_upload_dialog.ui")),
+            os.path.normpath(os.path.join(os.path.dirname(__file__), "ui", "Academics", "Enrollment", "bulk_upload_dialog.ui")),
+            os.path.normpath(os.path.join(os.path.dirname(__file__), "bulk_upload_dialog.ui")),
+            "frontend/ui/Academics/Enrollment/bulk_upload_dialog.ui",
+            "ui/Academics/Enrollment/bulk_upload_dialog.ui",
+            "ui/Academics/Enrollment/bulk_upload_dialog.ui",
+        ]
                     
             # Debug: print paths being checked
             print("Searching for bulk_upload_dialog.ui in:")

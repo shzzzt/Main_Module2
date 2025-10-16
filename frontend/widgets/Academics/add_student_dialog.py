@@ -57,17 +57,36 @@ class AddStudentDialog(QDialog):
         import os
         from PyQt6 import uic
 
-        ui_path = os.path.normpath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "ui",
-                "Enrollment",
-                "add_student_dialog.ui"
-            )
-        )
-
-        uic.loadUi(ui_path, self)
+        # Try multiple possible paths for the UI file
+        possible_paths = [
+            os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "ui", "Academics", "Enrollment", "add_student_dialog.ui")),
+            os.path.normpath(os.path.join(os.path.dirname(__file__), "ui", "Academics", "Enrollment", "add_student_dialog.ui")),
+            os.path.normpath(os.path.join(os.path.dirname(__file__), "add_student_dialog.ui")),
+            "frontend/ui/Academics/Enrollment/add_student_dialog.ui",
+            "ui/Academics/Enrollment/add_student_dialog.ui",
+            "ui/Academics/Enrollment/add_student_dialog.ui",
+        ]
+        
+        ui_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                ui_path = path
+                print(f"Found UI file at: {ui_path}")
+                break
+        
+        if ui_path is None:
+            # Create a basic dialog programmatically if UI file not found
+            print("UI file not found, creating basic dialog programmatically")
+            self.setup_basic_dialog()
+            return
+        
+        try:
+            uic.loadUi(ui_path, self)
+        except Exception as e:
+            print(f"Error loading UI file: {e}")
+            # Fallback to basic dialog
+            self.setup_basic_dialog()
+            return
 
         self.students_to_enroll = []
         self.suggestion_widgets = []
@@ -77,6 +96,55 @@ class AddStudentDialog(QDialog):
         self._connect_signals()
         self._hide_suggestions()
         self._update_count_label()
+
+    def setup_basic_dialog(self):
+        """Setup a basic dialog programmatically if UI file is not found"""
+        from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QTableWidget, QTableWidgetItem
+        
+        self.setWindowTitle("Add Students")
+        self.resize(600, 400)
+        
+        layout = QVBoxLayout(self)
+        
+        # Search area
+        search_layout = QHBoxLayout()
+        self.searchLineEdit = QLineEdit()
+        self.searchLineEdit.setPlaceholderText("Search students by ID or name...")
+        search_layout.addWidget(self.searchLineEdit)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        self.cancelButton = QPushButton("Cancel")
+        self.enrollButton = QPushButton("Enroll")
+        button_layout.addWidget(self.cancelButton)
+        button_layout.addWidget(self.enrollButton)
+        
+        # Table
+        self.studentsTable = QTableWidget()
+        self.studentsTable.setColumnCount(4)
+        self.studentsTable.setHorizontalHeaderLabels(["No", "ID Number", "Full Name", "Year Level"])
+        
+        # Count label
+        self.countLabel = QLabel("0 student(s) to enroll")
+        
+        layout.addLayout(search_layout)
+        layout.addWidget(self.studentsTable)
+        layout.addWidget(self.countLabel)
+        layout.addLayout(button_layout)
+        
+        # Store references for compatibility
+        self.suggestionsContainer = None
+        self.suggestionsList = None
+        self.bulkButton = None
+        
+        # Initialize
+        self.students_to_enroll = []
+        self.suggestion_widgets = []
+        
+        # Connect basic signals
+        self.searchLineEdit.textChanged.connect(self._on_search_changed)
+        self.cancelButton.clicked.connect(self.reject)
+        self.enrollButton.clicked.connect(self._on_enroll)
     
     # ==================== SETUP ====================
     

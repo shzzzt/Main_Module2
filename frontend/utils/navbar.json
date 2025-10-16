@@ -37,9 +37,9 @@
         {
           "id": 4,
           "name": "Schedule",
-          "function": "()",
-          "path": "",
-          "access": ["student", "admin"],
+          "function": "Schedule()",
+          "path": "views.Academics.Scheduler.Schedule",
+          "access": ["student", "admin","faculty"],
           "modulars":[]
         },
         {
@@ -67,9 +67,9 @@
         {
           "id": 7,
           "name": "Browse",
-          "function": "()",
-          "path": "",
-          "access": ["student","admin"],
+          "function": "Browse()",
+          "path": "views.Organizations.browse",
+          "access": ["student","admin", "faculty"],
           "modulars":[]
         },
         {
@@ -83,8 +83,8 @@
         {
           "id": 9,
           "name": "Events",
-          "function": "()",
-          "path": "",
+          "function": "Events()",
+          "path": "views.Organizations.Events",
           "access": ["student", "admin"],
           "modulars":[]
         }
@@ -97,34 +97,35 @@
         {
           "id": 10,
           "name": "Calendar",
-          "function": "()",
-          "path": "",
-          "access": ["student", "admin"],
+          "function": "MainCalendar()",
+          "path": "views.Calendar.MainCalendar",
+          "access": ["admin", "faculty", "staff", "student"],
           "modulars":[]
         },
         {
           "id": 11,
           "name": "Announcements",
-          "function": "()",
-          "path": "",
-          "access": ["student","admin"],
-          "modulars":[]
+          "icon": "bullhorn",
+          "function": "AnnouncementsRouter()",
+          "path": "views.Announcements.Announcements",
+          "access": ["admin","faculty","staff","student"],
+          "modulars": []
         },
         {
           "id": 12,
           "name": "House System",
-          "function": "()",
-          "path": "",
+          "function": "HouseMain()",
+          "path": "views.House.HouseMain",
           "access": ["student","admin"],
           "modulars":[]
         },
         {
           "id": 13,
           "name": "Showcase",
-          "function": "()",
-          "path": "",
-          "access": ["student","admin"],
-          "modulars":[]
+          "function": "ShowcaseRouter()",
+          "path": "views.Showcase.Showcase",
+          "access": ["admin","faculty","staff","student"],
+          "modulars": []
         }
       ]
     },
@@ -135,8 +136,8 @@
         {
           "id": 14,
           "name": "Documents",
-          "function": "()",
-          "path": "",
+          "function": "DocumentsView()",
+          "path": "views.Documents.Documents",
           "access": ["student","admin"],
           "modulars":[]
         },
