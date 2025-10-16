@@ -43,21 +43,28 @@ class ScheduleWidget(QWidget):
         self.day_combo.setMinimumWidth(120)
         layout.addWidget(self.day_combo)
         
-        # Start time
+        # Start time (7 AM to 7 PM)
         self.start_time = QTimeEdit()
         self.start_time.setDisplayFormat("hh:mm AP")
-        self.start_time.setTime(QTime(9, 0))  # Default 9:00 AM
+        self.start_time.setTime(QTime(9, 0)) # Default 9:00 AM
+        self.start_time.setMinimumTime(QTime(7, 0))  # 7:00 AM minimum
+        self.start_time.setMaximumTime(QTime(18, 0))  # 6:00 PM maximum (to allow 1-hour class until 7 PM)
         self.start_time.setMinimumWidth(130)
         layout.addWidget(QLabel("from"))
         layout.addWidget(self.start_time)
 
-        # End time
+        # End time (8 AM to 7 PM)
         self.end_time = QTimeEdit()
         self.end_time.setDisplayFormat("hh:mm AP")
         self.end_time.setTime(QTime(10, 30))  # Default 10:30 AM
+        self.end_time.setMinimumTime(QTime(8, 0))  # 8:00 AM minimum (start + 1 hour)
+        self.end_time.setMaximumTime(QTime(19, 0))  # 7:00 PM maximum
         self.end_time.setMinimumWidth(130)
         layout.addWidget(QLabel("to"))
         layout.addWidget(self.end_time)
+
+        self.start_time.timeChanged.connect(self._validate_time_range)
+        self.end_time.timeChanged.connect(self._validate_time_range)
 
         # Remove button
         self.remove_btn = QPushButton("✕")
@@ -82,6 +89,29 @@ class ScheduleWidget(QWidget):
         
         layout.addStretch()
         self.setLayout(layout)
+
+    def _validate_time_range(self):
+        """
+        Validate that end time is at least 1 hour after start time.
+        Adjusts end time if necessary.
+        """
+        start = self.start_time.time()
+        end = self.end_time.time()
+
+        # Calculate minimum end time (start + 1 hour)
+        min_end_time = start.addSecs(3600)  # 3600 seconds = 1 hour
+
+        # If end time is before the minimum, adjust it
+        if end < min_end_time:
+            self.end_time.setTime(min_end_time)
+
+        # Ensure end time doesn't exceed 7 PM
+        max_time = QTime(19, 0)  # 7:00 PM
+        if self.end_time.time() > max_time:
+            self.end_time.setTime(max_time)
+            # If this forces start time to be too late, adjust start time
+            if self.start_time.time().addSecs(3600) > max_time:
+                self.start_time.setTime(QTime(18, 0))  # 6:00 PM
     
     def remove_clicked(self):
         """Handle remove button click."""
@@ -97,6 +127,10 @@ class ScheduleWidget(QWidget):
         """
         start = self.start_time.time()
         end = self.end_time.time()
+
+        if end.secsTo(start) >= -3600:  # Less than 1 hour duration
+            # just in case
+            logger.warning("Invalid schedule duration detected")
         
         return {
             'day': self.day_combo.currentText(),
