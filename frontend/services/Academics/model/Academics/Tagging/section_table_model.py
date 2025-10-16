@@ -52,8 +52,12 @@ class SectionsTableModel(QAbstractTableModel):
             return None
 
         section = self._sections[index.row()]
-        keys = ["id", "section", "program", "track", "year", "type", "capacity", "remarks"]
-        return section.get(keys[index.column()], "")
+
+        if index.column() == 0:
+            return index.row() + 1
+
+        keys = ["section", "program", "track", "year", "type", "capacity", "remarks"]
+        return section.get(keys[index.column() - 1], "")
     
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:

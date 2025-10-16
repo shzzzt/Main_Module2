@@ -60,27 +60,6 @@
             "instructor_id": "faculty_2"
         },
         {
-            "code": "GEC 15",
-            "title": "Purposive Communication",
-            "units": 3,
-            "section_id": 5,
-            "schedules": [
-                {
-                    "day": "Tuesday",
-                    "start_time": "09:00 AM",
-                    "end_time": "10:30 AM"
-                }
-            ],
-            "room": "Room 301",
-            "instructor": "T5",
-            "type": "Lecture",
-            "id": 3,
-            "section_name": "BSIT-1B",
-            "created_at": "2025-10-15T16:30:26.906446",
-            "updated_at": "2025-10-15T19:05:44.183715",
-            "instructor_id": "faculty_3"
-        },
-        {
             "code": "IT 65",
             "title": "Software Engineering",
             "units": 3,
@@ -328,19 +307,6 @@
             "id": 8,
             "created_at": "2025-10-16T19:49:01.333297",
             "updated_at": "2025-10-16T19:52:38.992358"
-        },
-        {
-            "section": "C",
-            "program": "BS Information Technology",
-            "curriculum": "2023-2024",
-            "track": "N/A",
-            "year": "1st",
-            "capacity": 50,
-            "type": "Lecture",
-            "remarks": "Regular",
-            "id": 9,
-            "created_at": "2025-10-16T20:10:24.171567",
-            "updated_at": "2025-10-16T20:10:24.171567"
         },
         {
             "section": "D",
