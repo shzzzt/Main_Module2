@@ -64,7 +64,7 @@ class SectionsController:
     # CREATE OPERATION
     # =================================================   
 
-    def handle_create_section(self, dialog: CreateSectionDialog) -> bool:
+    def handle_create_section(self, dialog: CreateSectionDialog) -> tuple[bool, Optional[str]]:
         """
         Handle section creation from dialog. 
 
@@ -72,32 +72,40 @@ class SectionsController:
             dialog: CreateSectionDialog instance
         
         Returns:
-            bool: True if section created successfully, False otherwise
+             tuple: (success: bool, error_message: Optional[str])
         """
         try:
-            section_data = dialog.get_data() 
+            section_data = dialog.get_data()
             logger.info(f"Attempting to create section: {section_data.get('section')}")
 
-            if self._validate_unique_section_data(section_data):
+            # Check for duplicates
+            validation_result, error_message = self._validate_unique_section_data(section_data)
+
+            if validation_result:
                 created_section = self.service.create(section_data)
 
                 # update the table model
                 logger.info(f"Before self.model add_section method")
-                self.model.add_section(created_section) 
+                self.model.add_section(created_section)
                 logger.info(f"After self.model add_section method")
 
-                logger.info(f"Successfully created section ID {created_section['id']}") 
-                return True
-        
+                logger.info(f"Successfully created section ID {created_section['id']}")
+                return True, None
+            else:
+                # Validation failed - duplicate found
+                logger.warning(f"Duplicate section detected: {error_message}")
+                return False, error_message
+
         except Exception as e:
             logger.exception(f"An error occured while creating a section: {e}")
-            return False 
-        
+            error_msg = f"An unexpected error occurred: {str(e)}"
+            return False, error_msg
+
         logger.info(f"Unable to create section. Check whether duplicate section already exists or SectionController.model has been set.")
-        return False 
+        return False, "Unable to create section. Please check your input."
 
 
-    def _validate_unique_section_data(self, section_data: Dict) -> bool:
+    def _validate_unique_section_data(self, section_data: Dict) -> tuple[bool, Optional[str]]:
         """
         Business rule validation of duplicate sections. Sections cannot have the same name, program, year, curriculum and type.
 
@@ -105,7 +113,7 @@ class SectionsController:
             section_data: Section data to validate
 
         Returns:
-            bool: True if section_data passes validation, False otherwise
+            tuple: (is_valid: bool, error_message: Optional[str])
         """
         existing_sections = self.service.get_all() 
 
@@ -116,11 +124,20 @@ class SectionsController:
                 existing['year'] == section_data['year'] and 
                 existing['curriculum'] == section_data['curriculum'] and
                 existing['type'] == section_data['type']
-            ): 
+            ):
+                error_message = (
+                    f"Duplicate section detected!\n\n"
+                    f"Section: {section_data['section']}\n"
+                    f"Program: {section_data['program']}\n"
+                    f"Year: {section_data['year']}\n"
+                    f"Curriculum: {section_data['curriculum']}\n"
+                    f"Type: {section_data['type']}\n\n"
+                    f"A section with these exact details already exists."
+                )
                 logger.error(f"Duplicate section data. Section {section_data['section']} already exists.")
-                return False
+                return False, error_message
             
-        return True
+        return True, None
 
         # =================================================
 
@@ -143,7 +160,7 @@ class SectionsController:
             logger.exception(f"Error retrieving section {section_id}: {e}")
             return None
 
-    def handle_update_section(self, section_id: int, section_data: Dict) -> bool:
+    def handle_update_section(self, section_id: int, section_data: Dict) -> tuple[bool, Optional[str]]:
         """
         Handle section update.
 
@@ -152,29 +169,35 @@ class SectionsController:
             section_data: Updated section data
 
         Returns:
-            bool: True if update successful, False otherwise
+            tuple: (success: bool, error_message: Optional[str])
         """
         try:
             logger.info(f"Attempting to update section ID {section_id}")
 
             # Validate uniqueness (excluding current section)
-            if self._validate_unique_section_data_for_update(section_id, section_data):
+            validation_result, error_message = self._validate_unique_section_data_for_update(section_id, section_data)
+
+            if validation_result:
                 updated_section = self.service.update(section_id, section_data)
 
                 # Update the table model
                 self.model.update_section(section_id, updated_section)
 
                 logger.info(f"Successfully updated section ID {section_id}")
-                return True
+                return True, None
+            else:
+                logger.warning(f"Duplicate section detected during update: {error_message}")
+                return False, error_message
 
         except Exception as e:
             logger.exception(f"Error updating section {section_id}: {e}")
-            return False
+            error_msg = f"An unexpected error occurred: {str(e)}"
+            return False, error_msg
 
         logger.warning(f"Unable to update section ID {section_id}")
-        return False
+        return False, "Unable to update section. Please check your input."
 
-    def _validate_unique_section_data_for_update(self, section_id: int, section_data: Dict) -> bool:
+    def _validate_unique_section_data_for_update(self, section_id: int, section_data: Dict) -> tuple[bool, Optional[str]]:
         """
         Validate section uniqueness during update (excluding current section).
 
@@ -183,7 +206,7 @@ class SectionsController:
             section_data: New section data
 
         Returns:
-            bool: True if validation passes, False otherwise
+             tuple: (is_valid: bool, error_message: Optional[str])
         """
         existing_sections = self.service.get_all()
 
@@ -199,10 +222,19 @@ class SectionsController:
                     existing['curriculum'] == section_data['curriculum'] and
                     existing['type'] == section_data['type']
             ):
+                error_message = (
+                    f"Duplicate section detected!\n\n"
+                    f"Section: {section_data['section']}\n"
+                    f"Program: {section_data['program']}\n"
+                    f"Year: {section_data['year']}\n"
+                    f"Curriculum: {section_data['curriculum']}\n"
+                    f"Type: {section_data['type']}\n\n"
+                    f"A section with these exact details already exists."
+                )
                 logger.error(f"Duplicate section data. Section {section_data['section']} already exists.")
-                return False
+                return False, error_message
 
-        return True
+        return True, None
 
     # =================================================
     # DELETE OPERATION

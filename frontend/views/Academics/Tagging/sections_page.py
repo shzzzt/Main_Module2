@@ -289,17 +289,40 @@ class SectionsPage(QWidget):
            → Controller updates model
            → View automatically refreshes
         """
+        from PyQt6.QtWidgets import QMessageBox
         dialog = CreateSectionDialog(self)
 
-        if dialog.exec():
-            success = self.controller.handle_create_section(dialog)
+        while True:  # Loop to allow user to fix duplicate issues
+            if dialog.exec():
+                success, error_message = self.controller.handle_create_section(dialog)
 
-            # if success:
-            #     self.load_sections() # reload to show new section
+                if success:
+                    # Section created successfully
+                    QMessageBox.information(
+                        self,
+                        "Success",
+                        "Section created successfully!",
+                        QMessageBox.StandardButton.Ok
+                    )
+                    break
+                else:
+                    # Show error dialog with the duplicate information
+                    reply = QMessageBox.critical(
+                        self,
+                        "Error Creating Section",
+                        f"{error_message}\n\nWould you like to modify the section details?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                        QMessageBox.StandardButton.Yes
+                    )
 
-                # last_row = self.model.rowCount() - 1
-                # if last_row >= 0:
-                #     self.table.selectRow(last_row)
+                    if reply == QMessageBox.StandardButton.No:
+                        # User doesn't want to fix, exit loop
+                        break
+                        # If Yes, dialog will reopen with same data for editing
+            else:
+                # User cancelled
+                break
+
 
     def handle_edit(self, row: int) -> None:
         """
@@ -309,6 +332,8 @@ class SectionsPage(QWidget):
             row: Row index in the table
         """
         try:
+            from PyQt6.QtWidgets import QMessageBox
+
             section_id = self.model.get_section_id(row)
             section_data = self.controller.get_section_by_id(section_id)
 
@@ -319,13 +344,39 @@ class SectionsPage(QWidget):
             dialog = CreateSectionDialog(self, section_data)
             dialog.setWindowTitle("Edit Section")
 
-            if dialog.exec():
-                updated_data = dialog.get_data()
-                success = self.controller.handle_update_section(section_id, updated_data)
+            while True:  # Loop to allow user to fix duplicate issues
+                if dialog.exec():
+                    updated_data = dialog.get_data()
+                    success, error_message = self.controller.handle_update_section(section_id, updated_data)
 
-                if success:
-                    # Refresh the row buttons
-                    self._refresh_row_buttons(row)
+                    if success:
+                        # Refresh the row buttons
+                        self._refresh_row_buttons(row)
+                        QMessageBox.information(
+                            self,
+                            "Success",
+                            "Section updated successfully!",
+                            QMessageBox.StandardButton.Ok
+                        )
+                        break
+                    else:
+                        # Show error dialog
+                        reply = QMessageBox.critical(
+                            self,
+                            "Error Updating Section",
+                            f"{error_message}\n\nWould you like to modify the section details?",
+                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                            QMessageBox.StandardButton.Yes
+                        )
+
+                        if reply == QMessageBox.StandardButton.No:
+                            # User doesn't want to fix, exit loop
+                            break
+                        # If Yes, loop continues and dialog reopens
+                else:
+                    # User cancelled
+                    break
+
 
         except Exception as e:
             logger.exception(f"Error editing section at row {row}: {e}")

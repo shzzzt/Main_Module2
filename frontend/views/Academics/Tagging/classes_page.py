@@ -299,11 +299,11 @@ class ClassesPage(QWidget):
         """
         logger.info("Entered handled_add method")
         try:
-            sections = self.section_service.get_all()
-            logger.info(f"Sections: {sections}")
-            dialog = CreateClassDialog(self, sections)
-
             while True:
+                sections = self.section_service.get_all()
+                logger.info(f"Sections: {sections}")
+                dialog = CreateClassDialog(self, sections)
+
                 if dialog.exec():
                     success, error_message = self.controller.handle_create_class(dialog)
 

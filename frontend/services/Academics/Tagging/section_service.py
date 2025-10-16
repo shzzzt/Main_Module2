@@ -90,8 +90,8 @@ class SectionService:
 
     def _load_data(self) -> Dict:
         """Load data from unified JSON file."""
-        if self._cache is not None:
-            return deepcopy(self._cache)
+        # if self._cache is not None:
+        #     return deepcopy(self._cache)
 
         try:
             with open(self.json_file, 'r', encoding='utf-8') as f:

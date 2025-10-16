@@ -304,19 +304,6 @@
             "track": "N/A"
         },
         {
-            "section": "PS99",
-            "program": "BS Information Systems",
-            "curriculum": "2023-2024",
-            "year": "1st",
-            "capacity": 50,
-            "type": "Lecture",
-            "remarks": "Petition",
-            "id": 4,
-            "created_at": "2025-10-15T16:06:43.276302",
-            "updated_at": "2025-10-15T18:37:13.545005",
-            "track": "N/A"
-        },
-        {
             "section": "B",
             "program": "BS Information Technology",
             "curriculum": "2023-2024",
@@ -328,6 +315,45 @@
             "id": 5,
             "created_at": "2025-10-15T17:03:08.623815",
             "updated_at": "2025-10-15T17:03:08.623815"
+        },
+        {
+            "section": "G",
+            "program": "BS Information Technology",
+            "curriculum": "2023-2024",
+            "track": "N/A",
+            "year": "1st",
+            "capacity": 50,
+            "type": "Lecture",
+            "remarks": "Regular",
+            "id": 8,
+            "created_at": "2025-10-16T19:49:01.333297",
+            "updated_at": "2025-10-16T19:52:38.992358"
+        },
+        {
+            "section": "C",
+            "program": "BS Information Technology",
+            "curriculum": "2023-2024",
+            "track": "N/A",
+            "year": "1st",
+            "capacity": 50,
+            "type": "Lecture",
+            "remarks": "Regular",
+            "id": 9,
+            "created_at": "2025-10-16T20:10:24.171567",
+            "updated_at": "2025-10-16T20:10:24.171567"
+        },
+        {
+            "section": "D",
+            "program": "BS Information Technology",
+            "curriculum": "2023-2024",
+            "track": "N/A",
+            "year": "1st",
+            "capacity": 50,
+            "type": "Lecture",
+            "remarks": "Regular",
+            "id": 10,
+            "created_at": "2025-10-16T20:10:46.235260",
+            "updated_at": "2025-10-16T20:10:46.235260"
         }
     ],
     "enrollments": [],
