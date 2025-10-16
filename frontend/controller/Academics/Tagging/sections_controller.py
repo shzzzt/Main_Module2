@@ -3,7 +3,7 @@ from typing import Optional, Dict, List
 from PyQt6.QtWidgets import QWidget
 
 from frontend.services.Academics.Tagging.section_service import SectionService
-from frontend.model.Academics.Tagging.section_table_model import SectionsTableModel
+from frontend.services.Academics.model.Academics.Tagging.section_table_model import SectionsTableModel
 from frontend.views.Academics.Tagging.create_section_dialog import CreateSectionDialog
 
 logger = logging.getLogger(__name__)

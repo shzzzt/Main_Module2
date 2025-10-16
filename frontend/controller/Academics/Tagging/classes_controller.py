@@ -4,7 +4,7 @@ from typing import Optional
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
-from frontend.model.Academics.Tagging.classes_table_model import ClassesTableModel
+from frontend.services.Academics.model.Academics.Tagging.classes_table_model import ClassesTableModel
 from frontend.services.Academics.Tagging.class_service import ClassService
 from frontend.services.Academics.Tagging.section_service import SectionService
 from frontend.views.Academics.Tagging.create_class_dialog import CreateClassDialog

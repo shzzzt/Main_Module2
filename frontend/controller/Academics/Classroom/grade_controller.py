@@ -12,7 +12,7 @@ if project_root not in sys.path:
 
 # The comment below tells the linter to ignore the "E402: module level import not at top of file" warning.
 # We are doing this intentionally and correctly here.
-from model.Academics.Classroom.grade_data_model import GradeDataModel      # noqa: E402
+from frontend.services.Academics.model.Academics.Classroom.grade_data_model import GradeDataModel      # noqa: E402
 
 
 class GradeController(QObject):

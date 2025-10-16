@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (QApplication,
                              QTableView,
                              QHeaderView)
 from PyQt6.QtGui import QFont
-from frontend.model.Academics.Tagging.section_table_model import SectionsTableModel
+from frontend.services.Academics.model.Academics.Tagging.section_table_model import SectionsTableModel
 from frontend.views.Academics.Tagging.create_section_dialog import CreateSectionDialog
 from frontend.controller.Academics.Tagging.sections_controller import SectionsController
 

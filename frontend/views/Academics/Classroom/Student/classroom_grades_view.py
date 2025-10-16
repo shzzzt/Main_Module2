@@ -12,7 +12,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from frontend.model.Academics.Classroom.grade_data_model import GradeDataModel      # noqa: E402
+from frontend.services.Academics.model.Academics.Classroom.grade_data_model import GradeDataModel      # noqa: E402
 from frontend.controller.Academics.Classroom.grade_controller import GradeController  # noqa: E402
 
 from PyQt6.QtWidgets import ( QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QScrollArea, QFrame )
@@ -20,11 +20,11 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPalette, QFont
 
 try:
-    from frontend.model.Academics.Classroom.grade_data_model import GradeDataModel
+    from frontend.services.Academics.model.Academics.Classroom.grade_data_model import GradeDataModel
     from frontend.controller.Academics.Classroom.grade_controller import GradeController
 except ImportError:
     # Fallback for development
-    from .....model.Academics.Classroom.grade_data_model import GradeDataModel
+    from Main_Module2.frontend.services.Academics.model import GradeDataModel
     from .....controller.Academics.Classroom.grade_controller import GradeController
 
 

@@ -9,7 +9,7 @@ from PyQt6.QtGui import QFont, QIcon, QColor
 from frontend.controller.Academics.Tagging.classes_controller import ClassesController
 from frontend.controller.Academics.controller_manager import ControllerManager
 from frontend.services.Academics.Tagging.section_service import SectionService
-from frontend.model.Academics.Tagging.classes_table_model import ClassesTableModel
+from frontend.services.Academics.model.Academics.Tagging.classes_table_model import ClassesTableModel
 from .create_class_dialog import CreateClassDialog
 
 logger = logging.getLogger(__name__)

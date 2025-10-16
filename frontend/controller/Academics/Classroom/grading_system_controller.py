@@ -11,8 +11,8 @@ if project_root not in sys.path:
 
 # The comment below tells the linter to ignore the "E402: module level import not at top of file" warning.
 # We are doing this intentionally and correctly here.
-from model.Academics.Classroom.grading_system_model import GradingSystemModel      # noqa: E402
-from model.Academics.Classroom.component_item import ComponentItem # noqa: E402
+from frontend.services.Academics.model.Academics.Classroom.grading_system_model import GradingSystemModel      # noqa: E402
+from frontend.services.Academics.model.Academics.Classroom.component_item import ComponentItem # noqa: E402
 
 
 from PyQt6.QtCore import QObject, pyqtSignal # noqa: E402
