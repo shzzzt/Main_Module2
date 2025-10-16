@@ -152,17 +152,58 @@ class PostService:
         
     #     return False
     
+    # In post_service.py - update the delete_post method
+    # In post_service.py - update the delete_post method
     def delete_post(self, post_id: int) -> bool:
-        """Delete a post"""
+        """Delete a post - FIXED to handle different ID fields"""
         data = self._load_data()
         
         posts = data.get("posts", [])
-        for i, post in enumerate(posts):
-            if post.get("id") == post_id:
-                posts.pop(i)
-                self._save_data(data)
-                return True
+        initial_count = len(posts)
         
+        # FIXED: Check multiple ID fields and handle duplicates
+        posts_to_keep = []
+        deleted = False
+        
+        for post in posts:
+            # Check all possible ID fields
+            if (post.get("id") == post_id or 
+                post.get("post_id") == post_id):
+                # Skip this post (delete it)
+                deleted = True
+                print(f"DEBUG: Deleting post - ID: {post_id}, Title: {post.get('title')}")
+                continue
+            posts_to_keep.append(post)
+        
+        if deleted:
+            data["posts"] = posts_to_keep
+            self._save_data(data)
+            print(f"DEBUG: Successfully deleted post with ID: {post_id}")
+            return True
+        
+        print(f"DEBUG: Could not find post with ID: {post_id}")
+        print(f"DEBUG: Available posts and their IDs:")
+        for i, post in enumerate(posts):
+            print(f"  {i}: id={post.get('id')}, post_id={post.get('post_id')}, title={post.get('title')}")
+        return False
+    
+    # Add this method to PostService class
+    def delete_syllabus(self, class_id: int) -> bool:
+        """Delete syllabus for a class"""
+        data = self._load_data()
+        
+        syllabus_list = data.get("syllabus", [])
+        initial_count = len(syllabus_list)
+        
+        # Remove syllabus for this class
+        data["syllabus"] = [s for s in syllabus_list if s.get("class_id") != class_id]
+        
+        if len(data["syllabus"]) < initial_count:
+            self._save_data(data)
+            print(f"DEBUG: Successfully deleted syllabus for class_id: {class_id}")
+            return True
+        
+        print(f"DEBUG: Could not find syllabus for class_id: {class_id}")
         return False
     
     # def get_post_by_id(self, post_id: int) -> Optional[Dict]:
@@ -210,3 +251,16 @@ class PostService:
         posts.sort(key=lambda x: x.get('date', ''), reverse=True)
         
         return posts
+    
+    # Add this method to post_service.py
+    def debug_print_posts(self, class_id: int):
+        """Debug method to print all posts for a class"""
+        data = self._load_data()
+        posts = [post for post in data.get("posts", []) 
+                if post.get("class_id") == class_id]
+        
+        print(f"DEBUG: Posts for class_id {class_id}:")
+        for i, post in enumerate(posts):
+            print(f"  {i}: id={post.get('id')}, post_id={post.get('post_id')}, title='{post.get('title')}'")
+        return posts
+        

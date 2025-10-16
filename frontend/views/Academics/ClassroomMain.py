@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsDropShadowEffect, QPushButton, QApplication, QHBoxLayout, QLabel, QStackedWidget
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsDropShadowEffect, QPushButton, QApplication, QHBoxLayout, QLabel, QStackedWidget, QMessageBox
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QColor
 import sys
@@ -291,15 +291,175 @@ class ClassroomMain(QWidget):
             self.stacked_widget.removeWidget(self.current_post_view)
             self.current_post_view.deleteLater()
         
-        # Create post details view with the selected post data
-        self.current_post_view = PostDetails(post)
+        # FIXED: Create post details view with all required parameters
+        self.current_post_view = PostDetails(
+            post=post,
+            username=self.username,
+            roles=self.roles,
+            primary_role=self.primary_role,
+            parent=self
+        )
         
         # SIGNAL CONNECTION: Post Details → Classroom
         # When user clicks back in post details, return to classroom
         self.current_post_view.back_clicked.connect(self.return_to_classroom)
+        # Connect edit and delete signals
+        self.current_post_view.post_edited.connect(self.handle_post_edit)
+        self.current_post_view.post_deleted.connect(self.handle_post_delete)
+        # NEW: Connect syllabus deletion signal
+        self.current_post_view.syllabus_deleted.connect(self.handle_syllabus_delete)
         
         self.stacked_widget.addWidget(self.current_post_view)
         self.stacked_widget.setCurrentWidget(self.current_post_view)
+
+
+    def handle_post_edit(self, post):
+        """Handle post edit from PostDetails"""
+        print(f"Editing post: {post['title']}")
+        # TODO: Implement edit functionality
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.information(self, "Edit Post", f"Edit functionality for '{post['title']}' will be implemented soon.")
+
+    def handle_syllabus_delete(self, syllabus_post):
+        """Handle syllabus deletion from PostDetails"""
+        print(f"Deleting syllabus: {syllabus_post['title']}")
+        
+        # Create confirmation dialog
+        reply = QMessageBox(self)
+        reply.setWindowTitle("Delete Post")
+        reply.setText(f"Are you sure you want to delete '{syllabus_post['title']}'?")
+        reply.setIcon(QMessageBox.Icon.Question)
+        reply.setStandardButtons(
+            QMessageBox.StandardButton.Yes | 
+            QMessageBox.StandardButton.No
+        )
+        reply.setDefaultButton(QMessageBox.StandardButton.No)
+        
+        # Apply styling to match the app
+        reply.setStyleSheet("""
+            QMessageBox {
+                background-color: white;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QMessageBox QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-family: "Poppins", Arial, sans-serif;
+                min-width: 80px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #1B5E20;
+            }
+        """)
+        result = reply.exec()
+        
+        if result == QMessageBox.StandardButton.Yes:
+            # Delete syllabus using post_controller
+            if self.current_classroom_view and hasattr(self.current_classroom_view, 'classworks_view'):
+                post_controller = self.current_classroom_view.classworks_view.post_controller
+                
+                # Delete syllabus from the service
+                if hasattr(post_controller, 'delete_syllabus'):
+                    if post_controller.delete_syllabus():
+                        print("Syllabus deleted successfully")
+                        
+                        # Show success message
+                        QMessageBox.information(self, "Success", "Syllabus deleted successfully.")
+                        
+                        # Refresh all views and go back to class content
+                        self.refresh_classroom_views()
+                        self.return_to_classroom()
+                    else:
+                        print("Failed to delete syllabus")
+                        QMessageBox.warning(self, "Error", "Failed to delete syllabus. Please try again.")
+                else:
+                    print("Syllabus deletion not implemented in controller")
+                    QMessageBox.warning(self, "Error", "Syllabus deletion is not yet implemented.")
+            else:
+                print("No post controller available")
+                QMessageBox.warning(self, "Error", "Cannot delete syllabus: No classroom view available.")
+
+    def handle_post_delete(self, post):
+        """Handle post delete from PostDetails"""
+        print(f"Deleting post: {post['title']}")
+        print(f"DEBUG: Post data - id: {post.get('id')}, post_id: {post.get('post_id')}")
+        
+        # Debug: Print all posts for this class
+        if self.current_classroom_view and hasattr(self.current_classroom_view, 'classworks_view'):
+            post_controller = self.current_classroom_view.classworks_view.post_controller
+            # Call debug method to see what posts exist
+            if hasattr(post_controller.post_service, 'debug_print_posts'):
+                post_controller.post_service.debug_print_posts(post_controller.current_class_id)
+        
+        # Create confirmation dialog - FIXED: QMessageBox is now imported
+        reply = QMessageBox(self)
+        reply.setWindowTitle("Delete Post")
+        reply.setText(f"Are you sure you want to delete '{post['title']}'?")
+        reply.setIcon(QMessageBox.Icon.Question)
+        reply.setStandardButtons(
+            QMessageBox.StandardButton.Yes | 
+            QMessageBox.StandardButton.No
+        )
+        reply.setDefaultButton(QMessageBox.StandardButton.No)
+        
+        # Apply styling to match the app
+        reply.setStyleSheet("""
+            QMessageBox {
+                background-color: white;
+                font-family: "Poppins", Arial, sans-serif;
+            }
+            QMessageBox QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-family: "Poppins", Arial, sans-serif;
+                min-width: 80px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #1B5E20;
+            }
+        """)
+        result = reply.exec()
+
+        if result == QMessageBox.StandardButton.Yes:
+            # Use your post_controller to delete the post
+            if self.current_classroom_view and hasattr(self.current_classroom_view, 'classworks_view'):
+                post_controller = self.current_classroom_view.classworks_view.post_controller
+                
+                # Try both possible ID fields
+                post_id_to_delete = post.get('id') or post.get('post_id')
+                
+                if post_id_to_delete and post_controller.delete_post(post_id_to_delete):
+                    print("Post deleted successfully")
+                    
+                    # Show success message
+                    QMessageBox.information(self, "Success", f"Post '{post['title']}' deleted successfully.")
+                    
+                    # Refresh all views and go back to class content
+                    self.refresh_classroom_views()
+                    self.return_to_classroom()
+                else:
+                    print("Failed to delete post")
+                    QMessageBox.warning(self, "Error", "Failed to delete post. Please try again.")
+            else:
+                print("No post controller available")
+                QMessageBox.warning(self, "Error", "Cannot delete post: No classroom view available.")
+
+    def refresh_classroom_views(self):
+        """Refresh all classroom views after post deletion"""
+        if self.current_classroom_view:
+            # Refresh stream view
+            if hasattr(self.current_classroom_view, 'stream_view'):
+                self.current_classroom_view.stream_view.refresh_posts()
+            
+            # Refresh classworks view  
+            if hasattr(self.current_classroom_view, 'classworks_view'):
+                self.current_classroom_view.classworks_view.refresh_posts()
     
     def return_to_classroom(self):
         """

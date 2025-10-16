@@ -110,7 +110,7 @@ class Ui_viewContent(object):
         self.descriptionEdit = QtWidgets.QTextEdit(parent=scroll_content)
         self.descriptionEdit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)  # Changed to Minimum
         self.descriptionEdit.setMinimumSize(QtCore.QSize(0, 60))  # Reasonable minimum height
-        self.descriptionEdit.setMaximumSize(QtCore.QSize(16777215, 16777215))  # Remove maximum height constraint
+        self.descriptionEdit.setMaximumSize(QtCore.QSize(16777215, 200)) 
         self.descriptionEdit.setStyleSheet("""
             font-size: 14px;
             color: #000000;

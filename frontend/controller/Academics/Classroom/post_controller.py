@@ -42,6 +42,13 @@ class PostController:
         """Check if syllabus exists for current class"""
         return self.get_syllabus() is not None
     
+    # Add this method to PostController class
+    def delete_syllabus(self) -> bool:
+        """Delete syllabus for current class"""
+        if self.current_class_id is None:
+            return False
+        return self.post_service.delete_syllabus(self.current_class_id)
+    
     def set_class(self, class_id: int) -> None:
         """Set the current class context"""
         self.current_class_id = class_id
