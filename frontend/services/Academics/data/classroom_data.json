@@ -94,7 +94,7 @@
             "section_id": 1,
             "schedules": [
                 {
-                    "day": "Monday",
+                    "day": "Thursday",
                     "start_time": "09:00 AM",
                     "end_time": "10:30 AM"
                 }
@@ -105,7 +105,7 @@
             "id": 5,
             "section_name": "BSIT-3C",
             "created_at": "2025-10-16T22:53:16.127226",
-            "updated_at": "2025-10-16T23:40:12.116433",
+            "updated_at": "2025-10-17T00:29:43.026098",
             "instructor_id": "faculty_5"
         },
         {
