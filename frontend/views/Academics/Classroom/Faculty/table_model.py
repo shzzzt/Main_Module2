@@ -238,7 +238,7 @@ class BulkInputHeaderView(QHeaderView):
             QToolButton {
                 background: transparent;
                 border: none;
-                color: white;
+                color:  #023020;
                 font-size: 14px;
                 font-weight: bold;
                 padding: 0px;
