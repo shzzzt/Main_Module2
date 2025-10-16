@@ -1,5 +1,3 @@
-# frontend/views/Academics/Classroom/Student/classroom_grades_view.py
-# MODIFIED FILE - Complete version with proper expandable grades display
 """
 Student Grades View - Read-only view showing student's own grades
 UPDATED: Shows only uploaded grades with proper expandable components
@@ -36,7 +34,7 @@ class ExpandableGradeRow(QWidget):
         self.bg_color = bg_color
         self.sub_items = []
         self.has_arrow = has_arrow
-
+        
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
@@ -56,7 +54,7 @@ class ExpandableGradeRow(QWidget):
         header_layout = QHBoxLayout(self.header)
         header_layout.setContentsMargins(15, 0, 15, 0)
         header_layout.setSpacing(10)
-
+        
         if has_arrow:
             self.arrow_label = QLabel(">")
             self.arrow_label.setStyleSheet("""
@@ -78,7 +76,7 @@ class ExpandableGradeRow(QWidget):
             font-size: 13px;
             font-weight: normal;
         """)
-
+        
         header_layout.addWidget(title_label)
         header_layout.addStretch()
         
@@ -108,7 +106,7 @@ class ExpandableGradeRow(QWidget):
         """Add a sub-item row with alternating background colors"""
         sub_row = QWidget()
         sub_row.setFixedHeight(40)
-
+        
         bg_color = "#FFFFFF" if row_index % 2 == 0 else "#E0E0E0"
         sub_row.setStyleSheet(f"""
             QWidget {{
@@ -119,7 +117,7 @@ class ExpandableGradeRow(QWidget):
         sub_layout = QHBoxLayout(sub_row)
         sub_layout.setContentsMargins(50, 0, 15, 0)
         sub_layout.setSpacing(10)
-
+        
         name_label = QLabel(name)
         name_label.setStyleSheet("""
             color: #333333;
@@ -128,7 +126,7 @@ class ExpandableGradeRow(QWidget):
         
         sub_layout.addWidget(name_label)
         sub_layout.addStretch()
-
+        
         score_label = QLabel(score)
         score_label.setStyleSheet("""
             color: #333333;
@@ -147,7 +145,7 @@ class ExpandableGradeRow(QWidget):
             
         self.is_expanded = not self.is_expanded
         self.content_container.setVisible(self.is_expanded)
-
+        
         if self.is_expanded:
             self.arrow_label.setText("⌄")
         else:
@@ -170,15 +168,65 @@ class StudentGradesView(QWidget):
         self.grade_model = GradeDataModel(class_id=class_id)
         self.grade_controller = GradeController(self.grade_model)
         
+        # Set current user context
+        self.grade_model.set_current_user(username, {'roles': roles, 'primary_role': primary_role})
+        
         # Setup UI
         self.setup_ui()
         
-        # Load student's data
+        # Load student's data with flexible loading
+        self.load_student_data()
+    
+    def load_student_data(self):
+        """
+        Flexible data loading for student view
+        1. Try Django API (if available)
+        2. Try JSON file
+        3. Use sample data
+        """
+        print(f"[STUDENT GRADES] Loading data for username: {self.username}")
+        
+        # Try different loading strategies
+        if self.token and self._try_load_from_api():
+            print("[STUDENT GRADES] Loaded from Django API")
+        elif self._try_load_from_json():
+            print("[STUDENT GRADES] Loaded from JSON file")
+        else:
+            print("[STUDENT GRADES] Using sample data")
+            self.grade_model.load_sample_data()
+        
+        # Now load the grades
         self.load_student_grades()
+    
+    def _try_load_from_api(self):
+        """Try to load from Django API"""
+        # TODO: Implement when Django backend is ready
+        return False
+    
+    def _try_load_from_json(self):
+        """Try to load from JSON file"""
+        try:
+            json_paths = [
+                'data/users_data.json',
+                '../data/users_data.json',
+                '../../data/users_data.json',
+                os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', 'data', 'users_data.json')
+            ]
+            
+            for json_path in json_paths:
+                if os.path.exists(json_path):
+                    self.grade_model.load_students_from_json(json_path)
+                    return True
+            
+            return False
+            
+        except Exception as e:
+            print(f"[STUDENT GRADES] JSON load failed: {e}")
+            return False
     
     def setup_ui(self):
         self.setMinimumSize(300, 300)
-
+        
         # White background
         self.setAutoFillBackground(True)
         pal = self.palette()
@@ -307,21 +355,21 @@ class StudentGradesView(QWidget):
     
     def load_student_grades(self):
         """Load and display student's grades from model - ONLY UPLOADED GRADES"""
-        # Load all students (needed for grade model)
-        self.grade_model.load_sample_data()
-        
         student_id = self._get_student_id()
         if not student_id:
             print(f"[STUDENT GRADES] Could not find student with username: {self.username}")
+            student_name = self._get_student_name()
+            print(f"[STUDENT GRADES] Displaying for: {student_name}")
+            # Still show the UI even if no grades found
             return
         
         print(f"[STUDENT GRADES] Loading grades for student ID: {student_id}")
-
+        
         # Get only uploaded grades for this student
         uploaded_grades = self.grade_model.get_uploaded_grades_for_student(student_id)
-
+        
         print(f"[STUDENT GRADES] Found {len(uploaded_grades)} uploaded grades")
-
+        
         # Calculate grades using all grades (for calculation purposes)
         calculated = self.grade_controller.calculate_grades_for_student(student_id)
         
@@ -388,7 +436,7 @@ class StudentGradesView(QWidget):
                 item_name = item['name']
                 max_score = item['max_score']
                 component_key = f"{item_name.lower().replace(' ', '')}_{term}"
-
+                
                 # Get grade from model (all grades for calculation)
                 grade_item = self.grade_model.get_grade(student_id, component_key)
                 
@@ -427,12 +475,12 @@ class StudentGradesView(QWidget):
                 has_arrow=True
             )
             
-            # Add ALL sub-items (show 0/0 for non-uploaded grades)
+            # Add ALL sub-items (show --/max for non-uploaded grades)
             row_idx = 0
             for item in sub_items:
                 item_name = item['name']
                 component_key = f"{item_name.lower().replace(' ', '')}_{term}"
-
+                
                 # Get grade from model
                 grade_item = self.grade_model.get_grade(student_id, component_key)
                 
@@ -449,18 +497,27 @@ class StudentGradesView(QWidget):
             self.grades_layout.addWidget(comp_row)
     
     def _get_student_id(self):
-        """Get current student's ID by username"""
+        """Get current student's ID by username - FLEXIBLE"""
         student = self.grade_model.get_student_by_username(self.username)
         if student:
+            print(f"[STUDENT GRADES] Found student: {student['name']} (ID: {student['id']})")
             return student['id']
+        
+        print(f"[STUDENT GRADES] Student not found for username: {self.username}")
         return None
     
     def _get_student_name(self):
-        """Get current student's name"""
+        """Get current student's name - FLEXIBLE with proper formatting"""
         student = self.grade_model.get_student_by_username(self.username)
+        
         if student:
-            return student['name']
-        return "Unknown Student"
+            # Return the properly formatted name
+            return student.get('name', f"{self.username} (Name Not Available)")
+        
+        # If student not found, try to format username nicely
+        # Capitalize first letter of username
+        formatted_username = self.username.capitalize()
+        return f"{formatted_username}"
     
     def clear(self):
         """Clear the view"""
@@ -479,16 +536,17 @@ if __name__ == "__main__":
     window = QMainWindow()
     window.setWindowTitle("Student Grades View")
     window.setGeometry(100, 100, 500, 800)
-
+    
     mock_cls = {
         'id': 1,
         'name': 'Desktop Application Development',
         'section': 'BSCS-3C'
     }
     
+    # Test with Marcus (new user from script.py)
     widget = StudentGradesView(
         cls=mock_cls,
-        username='Adolf',
+        username='Marcus',
         roles=['student'],
         primary_role='student',
         token='test_token'
