@@ -19,7 +19,8 @@ class GradeDataModel(QObject):
     """
     Main data model holding all application data.
     FLEXIBLE: Adapts to any users from Django backend or JSON files
-    FUTURE-READY: Prepared for PostgreSQL integration
+    INTEGRATED: Loads rubrics from Django backend API
+    FUTURE-READY: Prepared for complete PostgreSQL integration
     """
     data_reset = pyqtSignal()
     data_updated = pyqtSignal()
@@ -29,7 +30,7 @@ class GradeDataModel(QObject):
         super().__init__()
         self.class_id = class_id
         self.students = []
-        self.current_user = None  # Store current logged-in user
+        self.current_user = None
         
         # Initialize grade manager
         if GradeDataManager:
@@ -37,7 +38,7 @@ class GradeDataModel(QObject):
         else:
             self.grade_manager = None
         
-        # Component types with sub-items
+        # Component types with sub-items (will be dynamically updated based on rubrics)
         self.components = {
             'performance_tasks': ['PT1', 'PT2', 'PT3'],
             'quizzes': ['Quiz 1', 'Quiz 2', 'Quiz 3', 'Quiz 4'],
@@ -53,7 +54,7 @@ class GradeDataModel(QObject):
             'exams_final': 100
         }
         
-        # Rubric configuration
+        # Rubric configuration (will be loaded from Django backend)
         self.rubric_config = {
             'midterm': {
                 'term_percentage': 33,
@@ -235,7 +236,6 @@ class GradeDataModel(QObject):
 
     def _get_sample_users_from_script(self):
         """Extract sample users from script.py pattern"""
-        # This matches the users created in your script.py
         return [
             {
                 'id': '456456456', 
@@ -331,7 +331,21 @@ class GradeDataModel(QObject):
         return [{'name': item, 'max_score': max_score} for item in items]
 
     def update_rubric_config(self, rubric_data):
-        """Update rubric configuration from grading system dialog"""
+        """
+        Update rubric configuration from grading system dialog or Django backend
+        rubric_data format:
+        {
+            'midterm': {
+                'term_percentage': 33,
+                'components': [
+                    {'id': 1, 'name': 'Performance Task', 'percentage': 20},
+                    {'id': 2, 'name': 'Quiz', 'percentage': 30},
+                    ...
+                ]
+            },
+            'final': {...}
+        }
+        """
         self.rubric_config = {
             'midterm': {
                 'term_percentage': rubric_data['midterm']['term_percentage'],
@@ -343,19 +357,35 @@ class GradeDataModel(QObject):
             }
         }
         
+        # Parse midterm components
         for comp in rubric_data['midterm']['components']:
-            comp_name = comp['name'].lower()
-            self.rubric_config['midterm']['components'][comp_name] = comp['percentage']
+            if isinstance(comp, dict):
+                comp_name = comp['name'].lower()
+                comp_percentage = comp['percentage']
+            else:
+                # Handle ComponentItem objects
+                comp_name = comp.name.lower()
+                comp_percentage = comp.percentage
+            
+            self.rubric_config['midterm']['components'][comp_name] = comp_percentage
         
+        # Parse final components
         for comp in rubric_data['final']['components']:
-            comp_name = comp['name'].lower()
-            self.rubric_config['final']['components'][comp_name] = comp['percentage']
+            if isinstance(comp, dict):
+                comp_name = comp['name'].lower()
+                comp_percentage = comp['percentage']
+            else:
+                # Handle ComponentItem objects
+                comp_name = comp.name.lower()
+                comp_percentage = comp.percentage
+            
+            self.rubric_config['final']['components'][comp_name] = comp_percentage
         
+        # Update component type mapping
         self.component_type_mapping = {}
         all_component_names = set()
         for term_key in ['midterm', 'final']:
-            for comp in rubric_data[term_key]['components']:
-                comp_name = comp['name'].lower()
+            for comp_name in self.rubric_config[term_key]['components'].keys():
                 all_component_names.add(comp_name)
         
         for comp_name in all_component_names:
@@ -370,6 +400,8 @@ class GradeDataModel(QObject):
         
         self._initialize_component_states()
         self.columns_changed.emit()
+        
+        print(f"[GRADE MODEL] Updated rubric config - Midterm: {len(self.rubric_config['midterm']['components'])} components, Final: {len(self.rubric_config['final']['components'])} components")
 
     def get_student_by_username(self, username):
         """Get student data by username"""
@@ -402,26 +434,16 @@ class GradeDataModel(QObject):
 
     def refresh_from_backend(self, api_url, token):
         """
-        Future method: Refresh data from Django backend
+        Refresh data from Django backend
         This will be called when integrated with PostgreSQL
         """
-        # TODO: Implement API call to Django backend
-        # Example structure:
-        # headers = {'Authorization': f'Bearer {token}'}
-        # response = requests.get(f'{api_url}/api/grades/class/{self.class_id}/students/', headers=headers)
-        # if response.status_code == 200:
-        #     self.load_students_from_django_api(response.json())
+        # TODO: Implement full API integration
         pass
 
     def sync_grades_to_backend(self, api_url, token):
         """
-        Future method: Sync grades to Django backend
+        Sync grades to Django backend
         This will be called when integrated with PostgreSQL
         """
-        # TODO: Implement API call to Django backend
-        # Example structure:
-        # headers = {'Authorization': f'Bearer {token}'}
-        # payload = {'grades': self.grades}
-        # response = requests.post(f'{api_url}/api/grades/class/{self.class_id}/sync/', 
-        #                         json=payload, headers=headers)
+        # TODO: Implement full API integration
         pass

@@ -1,23 +1,17 @@
 """
-Grading System Dialog Module
-Handles the configuration of grading rubrics.
-Integrated with the new table model architecture.
-FIXED: Proper sizing and scrollable components
+Grading System Dialog Module - Integrated with Django Backend
+Handles the configuration of grading rubrics with backend persistence.
 """
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QHeaderView, QWidget,
-    QMessageBox, QLineEdit, QAbstractItemView, QScrollArea
+    QMessageBox, QAbstractItemView, QScrollArea
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
-from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtGui import QColor
 from frontend.controller.Academics.Classroom.grading_system_controller import GradingSystemController
 
-
-# ============================================================================
-# DATA MODEL LAYER (from original file)
-# ============================================================================
 
 class ComponentItem:
     """Represents a single grading component"""
@@ -96,13 +90,16 @@ class GradingSystemModel(QObject):
         self.load_default_rubrics()
     
     def load_default_rubrics(self):
-        self.midterm_rubric.add_component(ComponentItem("Performance Task", 20))
-        self.midterm_rubric.add_component(ComponentItem("Quiz", 30))
-        self.midterm_rubric.add_component(ComponentItem("Exam", 50))
+        """Load default rubric structure (only if empty)"""
+        if not self.midterm_rubric.components:
+            self.midterm_rubric.add_component(ComponentItem("Performance Task", 20))
+            self.midterm_rubric.add_component(ComponentItem("Quiz", 30))
+            self.midterm_rubric.add_component(ComponentItem("Exam", 50))
         
-        self.final_rubric.add_component(ComponentItem("Performance Task", 20))
-        self.final_rubric.add_component(ComponentItem("Quiz", 30))
-        self.final_rubric.add_component(ComponentItem("Exam", 50))
+        if not self.final_rubric.components:
+            self.final_rubric.add_component(ComponentItem("Performance Task", 20))
+            self.final_rubric.add_component(ComponentItem("Quiz", 30))
+            self.final_rubric.add_component(ComponentItem("Exam", 50))
     
     def get_rubric(self, term: str):
         if term.lower() == "midterm":
@@ -121,13 +118,8 @@ class GradingSystemModel(QObject):
             'final': self.final_rubric.to_dict()
         }
 
-
-# ============================================================================
-# VIEW LAYER - COMPONENTS
-# ============================================================================
-
 class TermRubricWidget(QWidget):
-    """Widget displaying rubric table for a single term - FIXED: Better sizing"""
+    """Widget displaying rubric table for a single term"""
     
     def __init__(self, term_name: str, term_percentage: int, 
                  controller: GradingSystemController, parent=None):
@@ -154,12 +146,12 @@ class TermRubricWidget(QWidget):
         """)
         layout.addWidget(term_header)
         
-        # Components table - FIXED: Set proper height
+        # Components table
         self.table = QTableWidget()
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["No", "Component", "Percentage"])
-        self.table.setMinimumHeight(150)  # FIXED: Minimum height
-        self.table.setMaximumHeight(200)  # FIXED: Maximum height
+        self.table.setMinimumHeight(150)
+        self.table.setMaximumHeight(200)
         
         self.table.setStyleSheet("""
             QTableWidget {
@@ -363,27 +355,37 @@ class TermRubricWidget(QWidget):
             """)
 
 
-# ============================================================================
-# MAIN DIALOG - FIXED SIZING
-# ============================================================================
-
 class GradingSystemDialog(QDialog):
-    """Main dialog for configuring the grading system - FIXED: Proper sizing and scrolling"""
+    """Main dialog for configuring the grading system - Integrated with Django Backend"""
     rubric_saved = pyqtSignal(dict)
     
-    def __init__(self, parent=None):
+    def __init__(self, class_id: int = None, token: str = None, parent=None):
         super().__init__(parent)
+        self.class_id = class_id
+        self.token = token
+        
         self.model = GradingSystemModel()
-        self.controller = GradingSystemController(self.model)
+        self.controller = GradingSystemController(self.model, class_id, token)
+        
         self.setup_ui()
         self.connect_signals()
-        self.load_initial_data()
+        
+        # Load rubrics from backend if available
+        if class_id and token:
+            if self.controller.load_rubrics_from_backend():
+                print("[GRADING DIALOG] Loaded rubrics from backend")
+                self.load_initial_data()
+            else:
+                print("[GRADING DIALOG] Using default rubrics")
+                self.load_initial_data()
+        else:
+            print("[GRADING DIALOG] No backend connection, using defaults")
+            self.load_initial_data()
     
     def setup_ui(self):
         self.setWindowTitle("Grading System")
         self.setModal(True)
         
-        # FIXED: Better sizing that works with parent window
         self.setMinimumSize(600, 600)
         self.setMaximumSize(800, 900)
         self.resize(650, 700)
@@ -405,7 +407,7 @@ class GradingSystemDialog(QDialog):
         """)
         main_layout.addWidget(header)
         
-        # FIXED: Create scrollable area for content
+        # Scrollable area for content
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
@@ -452,7 +454,7 @@ class GradingSystemDialog(QDialog):
         scroll_area.setWidget(content_widget)
         main_layout.addWidget(scroll_area)
         
-        # Button layout at bottom (fixed, not scrolling)
+        # Button layout at bottom
         button_layout = QHBoxLayout()
         button_layout.setSpacing(15)
         
@@ -508,6 +510,7 @@ class GradingSystemDialog(QDialog):
     def connect_signals(self):
         self.controller.validation_error.connect(self.show_validation_error)
         self.controller.save_success.connect(self.on_save_success)
+        self.controller.api_error.connect(self.show_api_error)
         self.model.data_changed.connect(self.refresh_displays)
     
     def load_initial_data(self):
@@ -551,18 +554,40 @@ class GradingSystemDialog(QDialog):
         """)
         msg_box.exec()
     
+    @pyqtSlot(str)
+    def show_api_error(self, message: str):
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(QMessageBox.Icon.Warning)
+        msg_box.setWindowTitle("API Error")
+        msg_box.setText("Error communicating with backend")
+        msg_box.setInformativeText(message)
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg_box.setStyleSheet("""
+            QMessageBox {
+                background-color: white;
+            }
+            QPushButton {
+                background-color: #084924;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                padding: 6px 20px;
+                min-width: 60px;
+            }
+            QPushButton:hover {
+                background-color: #0A5A2A;
+            }
+        """)
+        msg_box.exec()
+    
     @pyqtSlot()
     def on_save_success(self):
         pass
 
 
-# ============================================================================
-# INTEGRATION FUNCTIONS
-# ============================================================================
-
-def show_grading_dialog(parent_window):
-    """Show the grading system dialog"""
-    dialog = GradingSystemDialog(parent_window)
+def show_grading_dialog(parent_window, class_id=None, token=None):
+    """Show the grading system dialog with backend integration"""
+    dialog = GradingSystemDialog(class_id, token, parent_window)
     dialog.rubric_saved.connect(lambda data: on_rubric_saved(parent_window, data))
     result = dialog.exec()
     return dialog
@@ -579,19 +604,22 @@ def on_rubric_saved(main_window, rubric_data):
         main_window.grade_model.update_rubric_config(rubric_data)
         
         # Trigger table rebuild through controller
-        # This will cause columns_changed signal to emit
         print("[INFO] Table will rebuild with new rubric configuration")
 
 
 def connect_grading_button(main_window, grading_label):
     """
-    Make the grading system label/button clickable.
+    Make the grading system label/button clickable with backend integration.
     
     Usage in MainWindow.__init__:
         connect_grading_button(self, self.grading_label)
     """
     def on_label_click(event):
-        show_grading_dialog(main_window)
+        # Get class_id and token from main_window
+        class_id = getattr(main_window, 'cls', {}).get('id', None)
+        token = getattr(main_window, 'token', None)
+        
+        show_grading_dialog(main_window, class_id, token)
     
     grading_label.mousePressEvent = on_label_click
     grading_label.setCursor(Qt.CursorShape.PointingHandCursor)

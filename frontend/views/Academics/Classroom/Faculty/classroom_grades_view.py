@@ -1,13 +1,14 @@
 """
 Faculty Grades View - Full grade management interface
 Features: bulk input, draft/upload status, expandable columns, grading system management
-UPDATED: Now connected to actual users and persistent storage
+INTEGRATED WITH DJANGO BACKEND: Loads rubrics, students, and grades from Django API
 """
 import os
 import sys
+import requests
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QComboBox, 
-    QLabel, QPushButton, QSpacerItem, QSizePolicy
+    QLabel, QPushButton, QSpacerItem, QSizePolicy, QMessageBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPalette
@@ -25,7 +26,6 @@ try:
     from frontend.controller.Academics.Classroom.grade_controller import GradeController
     from frontend.views.Academics.Classroom.Faculty.table_model import EnhancedGradesTableView
 except ImportError:
-    # Fallback for development
     from frontend.services.Academics.model import GradeDataModel
     from .....controller.Academics.Classroom.grade_controller import GradeController
     from .table_model import EnhancedGradesTableView
@@ -38,6 +38,7 @@ except ImportError:
         label.setEnabled(False)
         print("Warning: grading_system_dialog.py not found")
 
+
 class FacultyGradesView(QWidget):
     
     def __init__(self, cls, username, roles, primary_role, token, parent=None):
@@ -48,6 +49,7 @@ class FacultyGradesView(QWidget):
         self.roles = roles
         self.primary_role = primary_role
         self.token = token
+        self.api_base_url = "http://127.0.0.1:8000/api/academics"
 
         self.setMinimumSize(940, 530)
         
@@ -65,61 +67,126 @@ class FacultyGradesView(QWidget):
         # Connect signals
         self.grade_controller.columns_changed.connect(self.rebuild_table)
         
-        # Load data with flexible loading strategy
-        self.load_students_data()
+        # Load data from backend
+        self.load_rubrics_from_backend()
+        self.load_students_from_backend()
         self.rebuild_table()
     
-    def load_students_data(self):
-        """
-        Flexible student loading with multiple strategies:
-        1. Try Django API (if available)
-        2. Try JSON file (development/fallback)
-        3. Use sample data (ultimate fallback)
-        """
-        print(f"[FACULTY GRADES] Starting flexible data load for class {self.cls.get('id')}")
+    def load_rubrics_from_backend(self):
+        """Load grading rubrics from Django backend API"""
+        print(f"[FACULTY GRADES] Loading rubrics for class {self.cls.get('id')}")
         
-        # Strategy 1: Try Django API (future implementation)
-        if self.token and self._try_load_from_api():
-            print("[FACULTY GRADES] Successfully loaded from Django API")
+        if not self.token:
+            print("[FACULTY GRADES] No token available, using default rubrics")
             return
         
-        # Strategy 2: Try JSON file
+        try:
+            headers = {'Authorization': f'Bearer {self.token}'}
+            url = f"{self.api_base_url}/classes/{self.cls['id']}/grading-rubrics/"
+            
+            response = requests.get(url, headers=headers, timeout=5)
+            
+            if response.status_code == 200:
+                rubrics_data = response.json()
+                print(f"[FACULTY GRADES] Loaded {len(rubrics_data)} rubrics from backend")
+                
+                # Parse rubrics and update grade model
+                self._parse_and_apply_rubrics(rubrics_data)
+            elif response.status_code == 404:
+                print("[FACULTY GRADES] No rubrics found, using defaults")
+            else:
+                print(f"[FACULTY GRADES] API error: {response.status_code}")
+                
+        except requests.exceptions.RequestException as e:
+            print(f"[FACULTY GRADES] Failed to load rubrics: {e}")
+    
+    def _parse_and_apply_rubrics(self, rubrics_data):
+        """Parse rubrics from Django API and apply to grade model"""
+        rubric_config = {
+            'midterm': {
+                'term_percentage': 33,
+                'components': []
+            },
+            'final': {
+                'term_percentage': 67,
+                'components': []
+            }
+        }
+        
+        for rubric in rubrics_data:
+            academic_period = rubric.get('academic_period', '')
+            term_percentage = float(rubric.get('term_percentage', 0))
+            components = rubric.get('components', [])
+            
+            if academic_period == 'midterm':
+                rubric_config['midterm']['term_percentage'] = int(term_percentage)
+                rubric_config['midterm']['components'] = [
+                    {
+                        'id': comp['id'],
+                        'name': comp['name'],
+                        'percentage': int(float(comp['percentage']))
+                    }
+                    for comp in components
+                ]
+            elif academic_period == 'finals':
+                rubric_config['final']['term_percentage'] = int(term_percentage)
+                rubric_config['final']['components'] = [
+                    {
+                        'id': comp['id'],
+                        'name': comp['name'],
+                        'percentage': int(float(comp['percentage']))
+                    }
+                    for comp in components
+                ]
+        
+        # Update grade model with parsed rubrics
+        self.grade_model.update_rubric_config(rubric_config)
+        print(f"[FACULTY GRADES] Applied rubrics - Midterm: {len(rubric_config['midterm']['components'])} components, Final: {len(rubric_config['final']['components'])} components")
+    
+    def load_students_from_backend(self):
+        """Load students from Django backend API"""
+        print(f"[FACULTY GRADES] Loading students for class {self.cls.get('id')}")
+        
+        if not self.token:
+            print("[FACULTY GRADES] No token available, trying fallback methods")
+            self._try_fallback_loading()
+            return
+        
+        try:
+            headers = {'Authorization': f'Bearer {self.token}'}
+            url = f"{self.api_base_url}/classes/{self.cls['id']}/students/"
+            
+            response = requests.get(url, headers=headers, timeout=5)
+            
+            if response.status_code == 200:
+                students_data = response.json()
+                print(f"[FACULTY GRADES] Loaded {students_data.get('count', 0)} students from backend")
+                
+                # Load students into model
+                self.grade_model.load_students_from_django_api(students_data)
+                
+                # Log loaded students
+                for student in self.grade_model.students:
+                    print(f"  - {student['name']} (ID: {student['id']}, Username: {student.get('username', 'N/A')})")
+            else:
+                print(f"[FACULTY GRADES] API error: {response.status_code}, trying fallback")
+                self._try_fallback_loading()
+                
+        except requests.exceptions.RequestException as e:
+            print(f"[FACULTY GRADES] Failed to load students: {e}, trying fallback")
+            self._try_fallback_loading()
+    
+    def _try_fallback_loading(self):
+        """Try fallback loading methods (JSON file, then sample data)"""
         if self._try_load_from_json():
             print("[FACULTY GRADES] Successfully loaded from JSON file")
-            return
-        
-        # Strategy 3: Sample data (ultimate fallback)
-        print("[FACULTY GRADES] Using sample data (fallback)")
-        self.grade_model.load_sample_data()
-        
-        # Log loaded students
-        print(f"[FACULTY GRADES] Loaded {len(self.grade_model.students)} students:")
-        for student in self.grade_model.students:
-            print(f"  - {student['name']} (ID: {student['id']}, Username: {student.get('username', 'N/A')})")
-    
-    def _try_load_from_api(self):
-        """Try to load students from Django API"""
-        # TODO: Implement when Django backend is ready
-        # Example:
-        # try:
-        #     import requests
-        #     headers = {'Authorization': f'Bearer {self.token}'}
-        #     response = requests.get(
-        #         f'http://127.0.0.1:8000/api/classes/{self.cls.get("id")}/students/',
-        #         headers=headers,
-        #         timeout=5
-        #     )
-        #     if response.status_code == 200:
-        #         self.grade_model.load_students_from_django_api(response.json())
-        #         return True
-        # except Exception as e:
-        #     print(f"[FACULTY GRADES] API load failed: {e}")
-        return False
+        else:
+            print("[FACULTY GRADES] Using sample data (fallback)")
+            self.grade_model.load_sample_data()
     
     def _try_load_from_json(self):
         """Try to load students from JSON file"""
         try:
-            # Try multiple possible JSON file locations
             json_paths = [
                 'data/users_data.json',
                 '../data/users_data.json',
@@ -207,7 +274,9 @@ class FacultyGradesView(QWidget):
             }
         """)
         self.grading_label.setCursor(Qt.CursorShape.PointingHandCursor)
-        connect_grading_button(self, self.grading_label)
+        
+        # Connect grading button with class_id and token
+        self._connect_grading_button_with_backend()
         
         download_button = QPushButton("📥 Download")
         download_button.setStyleSheet("""
@@ -232,13 +301,33 @@ class FacultyGradesView(QWidget):
         
         return header_layout
     
+    def _connect_grading_button_with_backend(self):
+        """Connect grading button with backend integration"""
+        def on_grading_click(event):
+            from frontend.views.Academics.Classroom.Faculty.grading_system_dialog import show_grading_dialog
+            
+            # Show dialog with class_id and token for backend integration
+            dialog = show_grading_dialog(
+                self,
+                class_id=self.cls.get('id'),
+                token=self.token
+            )
+            
+            # If rubric was saved, reload rubrics and rebuild table
+            if dialog.result() == dialog.DialogCode.Accepted:
+                print("[FACULTY GRADES] Rubric saved, reloading...")
+                self.load_rubrics_from_backend()
+                self.rebuild_table()
+        
+        self.grading_label.mousePressEvent = on_grading_click
+    
     def rebuild_table(self):
-        """Rebuild table structure"""
+        """Rebuild table structure based on current rubrics"""
         columns_info = self._build_columns_info()
         self.grades_table.load_data(columns_info)
     
     def _build_columns_info(self):
-        """Build column information"""
+        """Build column information based on rubric configuration"""
         columns = [
             {'name': 'No.', 'type': 'fixed', 'width': 60},
             {'name': 'Sort by Last Name', 'type': 'fixed', 'width': 220}
