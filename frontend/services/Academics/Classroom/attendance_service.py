@@ -455,3 +455,13 @@ class AttendanceService:
             return "Good"
         else:
             return "Needs Improvement"
+        
+    def get_student_by_user_id(self, class_id: int, user_id: int) -> Optional[Dict]:
+        """Get a specific student by user ID"""
+        students = self.get_students_for_class(class_id)
+        
+        for student in students:
+            if student.get("user_id") == user_id:
+                return student
+        
+        return None
